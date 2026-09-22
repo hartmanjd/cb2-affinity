@@ -1,7 +1,7 @@
-# CB2 Affinity ML Project
+## CB2 Affinity Project Instructions
 
-This repository is the clean, professional rebuild of an earlier
-experimental CB2 machine-learning project.
+- This is a beginner-focused AI/ML capstone project.
+- Prefer clear, explicit code over highly abstract or optimized code.
 
 ## Project goals
 
@@ -10,6 +10,28 @@ experimental CB2 machine-learning project.
 - Build and compare machine-learning baselines.
 - Evaluate models using chemically meaningful validation strategies.
 - Investigate molecular activity cliffs where supported by the data.
+
+## Notebook style
+
+When creating or editing Jupyter notebooks:
+
+- Add frequent explanatory `#` comments to code cells and blocks according to their logic.
+- Comments should explain both WHAT the code is doing and WHY it is being done.
+- Assume the reader has basic Python knowledge but limited experience with APIs,
+  cheminformatics, machine learning, and scientific data processing.
+- Explain unfamiliar API structures, loops, filters, validation checks, and safeguards.
+- Keep useful safeguards and validation checks, but explain their purpose with comments.
+- Prefer visible intermediate steps over hiding important logic behind abstractions.
+- Avoid unnecessary functions when straightforward sequential notebook code is easier
+  to understand.
+- Do not remove scientific validation or reproducibility measures merely to shorten code.
+- Keep each notebook focused on one stage of the project.
+
+## Existing code
+
+When asked to add explanations or comments to existing working code, do not change
+the executable code unless explicitly requested. Add comments around the existing
+implementation instead.
 
 ## Development principles
 
@@ -28,9 +50,3 @@ earlier rough-draft notebooks.
 Treat that folder as reference material.
 
 Do not modify files in the rough-draft folder unless explicitly asked.
-
-When rebuilding something from the rough draft:
-1. Explain what the old implementation does and compare it to the new implementation. 
-2. The new implementation will likely be less sophisticated but more beginner friendly.
-3. Identify anything scientifically important that must be preserved.
-4. Rebuild it cleanly in this repository.
