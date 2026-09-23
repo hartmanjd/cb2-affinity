@@ -42,6 +42,38 @@ implementation instead.
 - Do not change scientific assumptions without documenting the reason.
 - Keep raw source data unchanged.
 
+## Tables and printed summaries
+
+When printing table-like output in notebooks, format the output so columns are clearly aligned and easy to scan.
+
+- Do not rely on plain `|` separators without fixed column widths.
+- Use formatted f-strings with explicit alignment and width specifiers.
+- Left-align text labels and right-align numeric values.
+- Include thousands separators for large counts where helpful.
+- Keep column widths wide enough for the longest expected label.
+- Prefer readable console tables over compact but misaligned output.
+- Do not change the underlying analysis just to improve formatting.
+
+Example:
+
+```python
+print(
+    f"{'Stage':<30} | "
+    f"{'Measurements':>12} | "
+    f"{'Molecule IDs':>12} | "
+    f"{'Assays':>8} | "
+    f"{'Removed':>10}"
+)
+
+print(
+    f"{name:<30} | "
+    f"{len(rows):>12,} | "
+    f"{molecule_count:>12,} | "
+    f"{assay_count:>8,} | "
+    f"{removed:>10,}"
+)
+```
+
 ## Rough-draft reference
 
 A second folder may be attached to the Codex project containing the

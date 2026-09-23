@@ -1,0 +1,34 @@
+{
+  "source_raw_folder": "data/raw/chembl_cb2_20260922T165756862384Z",
+  "source_manifest": "data/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json",
+  "chembl_version": "ChEMBL_37",
+  "selection_notebook": "notebooks/01_data_exploration.ipynb",
+  "selected_file": "cb2_ki_selected.csv",
+  "selected_records": 4081,
+  "ki_unit": "nM",
+  "columns": [
+    "activity_id",
+    "molecule_chembl_id",
+    "canonical_smiles",
+    "ki_nm",
+    "assay_chembl_id",
+    "document_chembl_id",
+    "assay_description"
+  ],
+  "stage_counts": {
+    "Human binding Ki before cleaning": 5825,
+    "Essential fields and valid nM Ki": 5597,
+    "Exact Ki measurements": 4576,
+    "Acceptable validity status": 4571,
+    "No potential-duplicate flag": 4081,
+    "Unique activity records": 4081
+  },
+  "review_counts": {
+    "basic_review": 228,
+    "ki_limits": 1019,
+    "relation_review": 2,
+    "validity_review": 5,
+    "duplicate_flag_review": 490,
+    "identical_record_copies": 0
+  }
+}
