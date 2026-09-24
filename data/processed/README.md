@@ -19,6 +19,8 @@ project checkpoint, not an automatic "latest folder" lookup.
 | Random forest search | [random_forest/run_03/tuning](random_forest/run_03/tuning/) | CV results, selected settings and forests, predictions, baseline comparison |
 | Mean and median baselines | [dummy_baselines/run_03](dummy_baselines/run_03/) | Four fitted constants, predictions, metrics |
 | Dummy strategy search | [dummy_baselines/run_03/tuning](dummy_baselines/run_03/tuning/) | CV selection of mean or median for each split protocol |
+| XGBoost baseline | [xgboost/run_02](xgboost/run_02/) | Two fitted gradient-boosted regressors with training/validation reports and similarity groups |
+| XGBoost search | [xgboost/run_02/tuning](xgboost/run_02/tuning/) | Training-only CV, selected models, predictions, baseline comparison, and tuned similarity groups |
 
 The dependency chain is `curation/run_05` → `modeling_preparation/run_01` → each
 model run. Each model's `tuning` folder also points to its own baseline manifest.
@@ -54,7 +56,7 @@ Names repeat inside different stage/run folders because their location supplies 
 | `training_summary.csv` | Training counts and timing, plus model-specific details |
 | `predictions.csv` | Observed and predicted training/validation pKi with errors |
 | `metrics.csv` | MAE, RMSE, and R² summaries |
-| `validation_subgroups.csv` | Forest validation errors grouped by similarity to training molecules |
+| `validation_subgroups.csv` | Forest or XGBoost validation errors grouped by similarity to training molecules; XGBoost also saves this for selected models in `tuning` |
 | `cv_folds.csv` | Training structures assigned to internal CV validation folds |
 | `cv_results.csv` | Scores for every searched parameter combination |
 | `best_parameters.json` | Selected parameters, effective settings, CV score, and timing |
@@ -106,7 +108,8 @@ no required fitted-model file is intentionally left out of the staging set.
 
 The notebooks create a candidate folder above the highest saved run number and refuse to
 overwrite an existing folder. A full forest rerun will create `random_forest/run_04`
-and its `tuning` subfolder; the dummy notebook will create `dummy_baselines/run_04`.
+and its `tuning` subfolder; the dummy notebook will create `dummy_baselines/run_04`;
+the XGBoost notebook will create `xgboost/run_03`.
 Dates remain in the manifests. Candidate creation does not automatically accept
 a run or delete earlier results. Running only the tuning export cell a second time
 in the same baseline run stops rather than replacing the first tuning export.
@@ -129,3 +132,10 @@ or split changes, rebuild and verify its downstream model runs before retiring
 inputs they still reference. Update the table above, then stage the notebook and
 complete run records together. Keep the test sets reserved until model choices
 and the final refit procedure are settled.
+
+XGBoost uses the same frozen preparation and reports as the random forest notebook.
+Its completed run records the installed XGBoost version, fixed baseline settings,
+eight candidate combinations, five CV folds per protocol, and the selected settings.
+The search uses only training rows; validation is reported after selection.
+The XGBoost notebook also compares baseline and selected-model training/validation
+metrics, similarity subgroups, and validation plots on the same held-out structures.

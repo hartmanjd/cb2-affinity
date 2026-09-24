@@ -1,0 +1,191 @@
+{
+  "run_started_at_utc": "2026-09-24T21:54:59.605595+00:00",
+  "completed_at_utc": "2026-09-24T21:55:01.775059+00:00",
+  "notebook": "notebooks/06_xgboost.ipynb",
+  "stage": "xgboost_training_and_evaluation",
+  "output_folder": "data/processed/xgboost/run_02",
+  "source_preparation_manifest": "data/processed/modeling_preparation/run_01/manifest.json",
+  "source_preparation_manifest_sha256": "54bf3b3b40023b7c8108d0fcc041d11550e61f854a1a751c6fefff0f12d67986",
+  "source_artifact_sha256": {
+    "data/processed/modeling_preparation/run_01/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
+    "data/processed/modeling_preparation/run_01/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
+    "data/processed/modeling_preparation/run_01/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+  },
+  "xgboost_names": {
+    "random": "random_xgboost",
+    "scaffold": "scaffold_xgboost"
+  },
+  "xgb_parameters": {
+    "random": {
+      "objective": "reg:squarederror",
+      "base_score": null,
+      "booster": null,
+      "callbacks": null,
+      "colsample_bylevel": null,
+      "colsample_bynode": null,
+      "colsample_bytree": 0.8,
+      "device": null,
+      "early_stopping_rounds": null,
+      "enable_categorical": true,
+      "eval_metric": null,
+      "feature_types": null,
+      "feature_weights": null,
+      "gamma": null,
+      "grow_policy": null,
+      "importance_type": null,
+      "interaction_constraints": null,
+      "learning_rate": 0.05,
+      "max_bin": null,
+      "max_cat_threshold": null,
+      "max_cat_to_onehot": null,
+      "max_delta_step": null,
+      "max_depth": 4,
+      "max_leaves": null,
+      "min_child_weight": 2,
+      "missing": "NaN (XGBoost missing-value marker)",
+      "monotone_constraints": null,
+      "multi_strategy": null,
+      "n_estimators": 250,
+      "n_jobs": 4,
+      "num_parallel_tree": null,
+      "random_state": 42,
+      "reg_alpha": null,
+      "reg_lambda": 1,
+      "sampling_method": null,
+      "scale_pos_weight": null,
+      "subsample": 0.9,
+      "tree_method": "hist",
+      "validate_parameters": null,
+      "verbosity": null
+    },
+    "scaffold": {
+      "objective": "reg:squarederror",
+      "base_score": null,
+      "booster": null,
+      "callbacks": null,
+      "colsample_bylevel": null,
+      "colsample_bynode": null,
+      "colsample_bytree": 0.8,
+      "device": null,
+      "early_stopping_rounds": null,
+      "enable_categorical": true,
+      "eval_metric": null,
+      "feature_types": null,
+      "feature_weights": null,
+      "gamma": null,
+      "grow_policy": null,
+      "importance_type": null,
+      "interaction_constraints": null,
+      "learning_rate": 0.05,
+      "max_bin": null,
+      "max_cat_threshold": null,
+      "max_cat_to_onehot": null,
+      "max_delta_step": null,
+      "max_depth": 4,
+      "max_leaves": null,
+      "min_child_weight": 2,
+      "missing": "NaN (XGBoost missing-value marker)",
+      "monotone_constraints": null,
+      "multi_strategy": null,
+      "n_estimators": 250,
+      "n_jobs": 4,
+      "num_parallel_tree": null,
+      "random_state": 42,
+      "reg_alpha": null,
+      "reg_lambda": 1,
+      "sampling_method": null,
+      "scale_pos_weight": null,
+      "subsample": 0.9,
+      "tree_method": "hist",
+      "validate_parameters": null,
+      "verbosity": null
+    }
+  },
+  "training_summary": [
+    {
+      "split_strategy": "random",
+      "model": "random_xgboost",
+      "training_structures": 2860,
+      "features": 2048,
+      "fit_seconds": 0.6682040000159759,
+      "boosting_rounds": 250
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "scaffold_xgboost",
+      "training_structures": 2778,
+      "features": 2048,
+      "fit_seconds": 0.5460505999799352,
+      "boosting_rounds": 250
+    }
+  ],
+  "counts": {
+    "fitted_boosters": 2,
+    "predictions": 6457,
+    "overall_metric_rows": 4,
+    "subgroup_rows": 8,
+    "subsets": {
+      "random": {
+        "train": 2860,
+        "validation": 358,
+        "test": 358
+      },
+      "scaffold": {
+        "train": 2778,
+        "validation": 461,
+        "test": 337
+      }
+    }
+  },
+  "metric_definitions": {
+    "residual": "predicted_pki - observed_pki",
+    "mae_pki": "mean absolute residual in pKi units",
+    "rmse_pki": "square root of mean squared residual in pKi units",
+    "r2": "1 - sum(squared residual) / sum((observed - evaluated-subset mean)^2); undefined if n<2 or target constant"
+  },
+  "subgroup_definitions": {
+    "exact_training_fingerprint": [
+      "exact_match",
+      "no_exact_match"
+    ],
+    "nearest_training_tanimoto_0.80": [
+      "below_0.80",
+      "at_least_0.80"
+    ],
+    "similarity_cutoff": 0.8,
+    "source": "saved validation rows in heldout_training_neighbors.csv"
+  },
+  "model_storage": {
+    "format": "joblib gzip",
+    "compression_level": 3
+  },
+  "output_sha256": {
+    "data/processed/xgboost/run_02/models.joblib.gz": "817443aef5f87bdb3d7d8192c54ca23a1c5d5507eb071a07d127eb67c069cf62",
+    "data/processed/xgboost/run_02/training_summary.csv": "a23274dcc5a0e8f235ee7850a154c10e3f7ced9b8905fd58bbc9d9ab78ac1202",
+    "data/processed/xgboost/run_02/predictions.csv": "f6b27672f21db2f37d49b76fa2b0ec2cb8a0ac5a1d132addfce1565a62087474",
+    "data/processed/xgboost/run_02/metrics.csv": "50bb3db90193fbdea1bee77610034c41fd42d0571c26757342e0ab2d378a6eac",
+    "data/processed/xgboost/run_02/validation_subgroups.csv": "431f493db94d27b92b03abe8c2ee2b36c4fd0dc7e3525fbbae3b00aecc97d65d"
+  },
+  "verification": {
+    "input_hashes": true,
+    "saved_models_and_training_state": true,
+    "prediction_keys_and_arithmetic": true,
+    "overall_metrics_recomputed": true,
+    "subgroups_recomputed": true,
+    "test_excluded": true
+  },
+  "fitting_performed": true,
+  "tuning_performed": false,
+  "test_predictions_performed": false,
+  "test_evaluation_performed": false,
+  "software_versions": {
+    "python": "3.14.6",
+    "rdkit": "2026.03.6",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3",
+    "xgboost": "3.4.1",
+    "matplotlib": "3.11.0"
+  }
+}
