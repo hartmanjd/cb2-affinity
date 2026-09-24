@@ -1,0 +1,156 @@
+{
+  "stage": "support_vector_regression_hyperparameter_search",
+  "notebook": "notebooks/07_support_vector_regression.ipynb",
+  "run_started_at_utc": "2026-09-24T22:06:54.165984+00:00",
+  "completed_at_utc": "2026-09-24T22:12:44.207692+00:00",
+  "output_folder": "data/processed/support_vector_regression/run_01/tuning",
+  "source_preparation_manifest": "data/processed/modeling_preparation/run_01/manifest.json",
+  "source_preparation_manifest_sha256": "54bf3b3b40023b7c8108d0fcc041d11550e61f854a1a751c6fefff0f12d67986",
+  "source_artifact_sha256": {
+    "data/processed/modeling_preparation/run_01/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
+    "data/processed/modeling_preparation/run_01/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
+    "data/processed/modeling_preparation/run_01/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+  },
+  "baseline_manifest": "data/processed/support_vector_regression/run_01/manifest.json",
+  "baseline_manifest_sha256": "b9aa87bf534d6f6f214fc60a98e6964fe93e1c302ea1ae1a7733029c7928cb56",
+  "configuration": {
+    "search": "GridSearchCV",
+    "parameter_grid": {
+      "C": [
+        1.0,
+        10.0
+      ],
+      "epsilon": [
+        0.1,
+        0.3
+      ],
+      "gamma": [
+        "scale",
+        "auto"
+      ]
+    },
+    "scoring": "neg_mean_absolute_error",
+    "refit": true,
+    "search_n_jobs": 1,
+    "folds": 5,
+    "random_cv": {
+      "method": "KFold",
+      "shuffle": true,
+      "random_state": 42
+    },
+    "scaffold_cv": {
+      "method": "GroupKFold",
+      "shuffle": false,
+      "group": "saved_scaffold"
+    },
+    "selection_rule": "minimum unweighted mean fold MAE; first candidate breaks ties",
+    "scope": "bounded first search; best within the declared grid"
+  },
+  "selection": {
+    "random": {
+      "best_candidate_index": 4,
+      "best_parameters": {
+        "C": 10.0,
+        "epsilon": 0.1,
+        "gamma": "scale"
+      },
+      "best_mean_cv_mae_pki": 0.5389327369576561,
+      "effective_parameters": {
+        "C": 10.0,
+        "cache_size": 500,
+        "coef0": 0.0,
+        "degree": 3,
+        "epsilon": 0.1,
+        "gamma": "scale",
+        "kernel": "rbf",
+        "max_iter": -1,
+        "shrinking": true,
+        "tol": 0.001,
+        "verbose": false
+      },
+      "training_structures": 2860,
+      "search_seconds": 154.64305310000782,
+      "refit_seconds": 5.208611965179443
+    },
+    "scaffold": {
+      "best_candidate_index": 4,
+      "best_parameters": {
+        "C": 10.0,
+        "epsilon": 0.1,
+        "gamma": "scale"
+      },
+      "best_mean_cv_mae_pki": 0.6331801108369864,
+      "effective_parameters": {
+        "C": 10.0,
+        "cache_size": 500,
+        "coef0": 0.0,
+        "degree": 3,
+        "epsilon": 0.1,
+        "gamma": "scale",
+        "kernel": "rbf",
+        "max_iter": -1,
+        "shrinking": true,
+        "tol": 0.001,
+        "verbose": false
+      },
+      "training_structures": 2778,
+      "search_seconds": 159.51364019999164,
+      "refit_seconds": 4.652419328689575
+    }
+  },
+  "counts": {
+    "candidates_per_protocol": 8,
+    "selected_models": 2,
+    "prediction_rows": 6457,
+    "subgroup_rows": 8
+  },
+  "subgroup_definitions": {
+    "exact_training_fingerprint": [
+      "exact_match",
+      "no_exact_match"
+    ],
+    "nearest_training_tanimoto_0.80": [
+      "below_0.80",
+      "at_least_0.80"
+    ],
+    "similarity_cutoff": 0.8,
+    "source": "saved validation rows in heldout_training_neighbors.csv"
+  },
+  "model_storage": {
+    "format": "joblib gzip",
+    "compression_level": 3
+  },
+  "output_sha256": {
+    "data/processed/support_vector_regression/run_01/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
+    "data/processed/support_vector_regression/run_01/tuning/cv_results.csv": "c23ce10441a2bbfe9c14f439f66a3620e8c4fe9d09863b64465436dea6a21c76",
+    "data/processed/support_vector_regression/run_01/tuning/predictions.csv": "15adae5b6e6935ea252a653f919cf78070504136e9b013db86098ff348e5f9e7",
+    "data/processed/support_vector_regression/run_01/tuning/metrics.csv": "1db407a934f3d789fae0754cd51dbb41b61772c00a2dc5e71dba57af90d31281",
+    "data/processed/support_vector_regression/run_01/tuning/validation_subgroups.csv": "80baac73e63a0dc0d586bfae6505d11fe187e08b3845fc24dfb1d7327d94a0c7",
+    "data/processed/support_vector_regression/run_01/tuning/baseline_comparison.csv": "df142dd6ba73d7375aaefb275f3c0730d0836d39deb27b3b893ae090e77607d9",
+    "data/processed/support_vector_regression/run_01/tuning/models.joblib.gz": "291bbf4ece03c48f5393a842c66dcdff80d568e6a4ad5a6b98d2f22c07ea8d67",
+    "data/processed/support_vector_regression/run_01/tuning/best_parameters.json": "d116e5dcf99d740cb43102166ba631084437235c2075347ea539401e101f260b"
+  },
+  "verification": {
+    "input_hashes": true,
+    "saved_tables_and_selection": true,
+    "training_only_cv_folds": true,
+    "scaffold_cv_groups_disjoint": true,
+    "serialized_model_predictions": true,
+    "metrics_recomputed": true,
+    "validation_subgroups_recomputed": true,
+    "test_excluded": true
+  },
+  "fitting_performed": true,
+  "tuning_performed": true,
+  "outer_validation_used_for_search": false,
+  "test_predictions_performed": false,
+  "test_evaluation_performed": false,
+  "software_versions": {
+    "python": "3.14.6",
+    "rdkit": "2026.03.6",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3"
+  }
+}

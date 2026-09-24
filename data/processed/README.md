@@ -21,6 +21,8 @@ project checkpoint, not an automatic "latest folder" lookup.
 | Dummy strategy search | [dummy_baselines/run_03/tuning](dummy_baselines/run_03/tuning/) | CV selection of mean or median for each split protocol |
 | XGBoost baseline | [xgboost/run_02](xgboost/run_02/) | Two fitted gradient-boosted regressors with training/validation reports and similarity groups |
 | XGBoost search | [xgboost/run_02/tuning](xgboost/run_02/tuning/) | Training-only CV, selected models, predictions, baseline comparison, and tuned similarity groups |
+| SVR baseline | [support_vector_regression/run_01](support_vector_regression/run_01/) | Two fitted RBF support vector regressors, training/validation reports, and similarity groups |
+| SVR search | [support_vector_regression/run_01/tuning](support_vector_regression/run_01/tuning/) | Training-only CV over `C`, `epsilon`, and `gamma`, selected models, predictions, and tuned similarity groups |
 
 The dependency chain is `curation/run_05` → `modeling_preparation/run_01` → each
 model run. Each model's `tuning` folder also points to its own baseline manifest.
@@ -56,7 +58,7 @@ Names repeat inside different stage/run folders because their location supplies 
 | `training_summary.csv` | Training counts and timing, plus model-specific details |
 | `predictions.csv` | Observed and predicted training/validation pKi with errors |
 | `metrics.csv` | MAE, RMSE, and R² summaries |
-| `validation_subgroups.csv` | Forest or XGBoost validation errors grouped by similarity to training molecules; XGBoost also saves this for selected models in `tuning` |
+| `validation_subgroups.csv` | Forest, XGBoost, or SVR validation errors grouped by similarity to training molecules; XGBoost and SVR also save this for selected models in `tuning` |
 | `cv_folds.csv` | Training structures assigned to internal CV validation folds |
 | `cv_results.csv` | Scores for every searched parameter combination |
 | `best_parameters.json` | Selected parameters, effective settings, CV score, and timing |
@@ -65,6 +67,7 @@ Names repeat inside different stage/run folders because their location supplies 
 A single model file can contain multiple estimators. Forest baseline and tuning
 files each contain two forests, one per split protocol. Dummy baseline files contain
 four estimators (mean and median under both protocols); dummy tuning files contain two.
+XGBoost and SVR baseline and tuning model files each contain two regressors.
 
 ## What provenance means here
 
@@ -109,7 +112,8 @@ no required fitted-model file is intentionally left out of the staging set.
 The notebooks create a candidate folder above the highest saved run number and refuse to
 overwrite an existing folder. A full forest rerun will create `random_forest/run_04`
 and its `tuning` subfolder; the dummy notebook will create `dummy_baselines/run_04`;
-the XGBoost notebook will create `xgboost/run_03`.
+the XGBoost notebook will create `xgboost/run_03`; the SVR notebook will create
+`support_vector_regression/run_02`.
 Dates remain in the manifests. Candidate creation does not automatically accept
 a run or delete earlier results. Running only the tuning export cell a second time
 in the same baseline run stops rather than replacing the first tuning export.
@@ -139,3 +143,8 @@ eight candidate combinations, five CV folds per protocol, and the selected setti
 The search uses only training rows; validation is reported after selection.
 The XGBoost notebook also compares baseline and selected-model training/validation
 metrics, similarity subgroups, and validation plots on the same held-out structures.
+
+SVR uses the same frozen preparation and reports. It fits an RBF kernel to the
+unscaled binary fingerprint bits, then searches eight combinations of `C`,
+`epsilon`, and `gamma` on five training-only folds per protocol. Its baseline and
+selected models include the same metrics, similarity groups, and diagnostic plots.
