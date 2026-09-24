@@ -82,3 +82,7 @@ earlier rough-draft notebooks.
 Treat that folder as reference material.
 
 Do not modify files in the rough-draft folder unless explicitly asked.
+
+## Modeling
+
+- Keep one accepted, complete run per notebook. Replace it when a revised notebook successfully completes verification. Acceptance means the implementation is complete and correct—not that its scores improved.

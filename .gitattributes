@@ -1,0 +1,5 @@
+# Provenance checks hash exact file bytes; checkout must not convert data line endings.
+data/** -text
+
+# Windows-generated CSV and JSON artifacts legitimately use CRLF line endings.
+data/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

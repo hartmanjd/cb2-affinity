@@ -1,0 +1,5 @@
+split_strategy,model,dummy_strategy,training_structures,features,fit_seconds,training_constant_pki
+random,random_dummy_mean,mean,2860,2048,0.0015626999957021326,7.096993787676249
+random,random_dummy_median,median,2860,2048,0.0013079000054858625,7.070581074285707
+scaffold,scaffold_dummy_mean,mean,2778,2048,0.0011729999969247729,7.063787971774695
+scaffold,scaffold_dummy_median,median,2778,2048,0.0011489000171422958,7.036212172654444

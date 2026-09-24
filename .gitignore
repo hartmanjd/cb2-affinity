@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Windows download metadata is not part of the project.
+*:Zone.Identifier

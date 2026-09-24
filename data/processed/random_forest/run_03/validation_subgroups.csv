@@ -1,0 +1,9 @@
+split_strategy,grouping,group,n_structures,mae_pki,rmse_pki,r2,r2_status
+random,exact_training_fingerprint,exact_match,27,0.3810153217688495,0.5304531498541102,0.768602084996791,defined
+random,exact_training_fingerprint,no_exact_match,331,0.5792225331833581,0.7348896596166824,0.6201466123743988,defined
+random,nearest_training_tanimoto_0.80,below_0.80,179,0.5999746505411588,0.7747248611597685,0.5769293912730156,defined
+random,nearest_training_tanimoto_0.80,at_least_0.80,179,0.5285732386848215,0.6640089608814443,0.6748053076738586,defined
+scaffold,exact_training_fingerprint,exact_match,18,0.5474250824543941,0.6873930763313186,0.41591492947906905,defined
+scaffold,exact_training_fingerprint,no_exact_match,443,0.6985719420531551,0.8813189954175061,0.4160057074401099,defined
+scaffold,nearest_training_tanimoto_0.80,below_0.80,375,0.717989869304568,0.9022159584725293,0.3875292275514609,defined
+scaffold,nearest_training_tanimoto_0.80,at_least_0.80,86,0.5822653584245789,0.7419797371154917,0.5430178261278451,defined

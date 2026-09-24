@@ -1,0 +1,122 @@
+{
+  "stage": "dummy_strategy_search",
+  "notebook": "notebooks/05_dummy_baselines.ipynb",
+  "run_started_at_utc": "2026-09-24T15:36:27.131511+00:00",
+  "completed_at_utc": "2026-09-24T15:36:28.528759+00:00",
+  "output_folder": "data/processed/dummy_baselines/run_03/tuning",
+  "source_preparation_manifest": "data/processed/modeling_preparation/run_01/manifest.json",
+  "source_preparation_manifest_sha256": "54bf3b3b40023b7c8108d0fcc041d11550e61f854a1a751c6fefff0f12d67986",
+  "source_artifact_sha256": {
+    "data/processed/modeling_preparation/run_01/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
+    "data/processed/modeling_preparation/run_01/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779"
+  },
+  "baseline_manifest": "data/processed/dummy_baselines/run_03/manifest.json",
+  "baseline_manifest_sha256": "10a272fe1075faa5ae846f649795ebc442972ac05402a654d5e483e12d372cab",
+  "configuration": {
+    "search": "GridSearchCV",
+    "parameter_grid": {
+      "strategy": [
+        "mean",
+        "median"
+      ]
+    },
+    "scoring": "neg_mean_absolute_error",
+    "refit": true,
+    "search_n_jobs": 1,
+    "folds": 5,
+    "random_cv": {
+      "method": "KFold",
+      "shuffle": true,
+      "random_state": 42
+    },
+    "scaffold_cv": {
+      "method": "GroupKFold",
+      "shuffle": false,
+      "group": "saved_scaffold"
+    },
+    "selection_rule": "minimum unweighted mean fold MAE; first candidate breaks ties",
+    "scope": "bounded first search; best within the declared grid"
+  },
+  "selection": {
+    "random": {
+      "best_candidate_index": 0,
+      "best_parameters": {
+        "strategy": "mean"
+      },
+      "best_mean_cv_mae_pki": 0.959853349373437,
+      "effective_parameters": {
+        "constant": null,
+        "quantile": null,
+        "strategy": "mean"
+      },
+      "training_structures": 2860,
+      "search_seconds": 0.041180399974109605,
+      "refit_seconds": 0.0002498626708984375
+    },
+    "scaffold": {
+      "best_candidate_index": 1,
+      "best_parameters": {
+        "strategy": "median"
+      },
+      "best_mean_cv_mae_pki": 0.9604251161000686,
+      "effective_parameters": {
+        "constant": null,
+        "quantile": null,
+        "strategy": "median"
+      },
+      "training_structures": 2778,
+      "search_seconds": 0.028575400006957352,
+      "refit_seconds": 0.0002701282501220703
+    }
+  },
+  "counts": {
+    "candidates_per_protocol": 2,
+    "selected_models": 2,
+    "prediction_rows": 6457
+  },
+  "output_sha256": {
+    "data/processed/dummy_baselines/run_03/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
+    "data/processed/dummy_baselines/run_03/tuning/cv_results.csv": "05565c4660b66b4693963874d13dfd7e8841ae1cc03c774074dd576e0d758191",
+    "data/processed/dummy_baselines/run_03/tuning/predictions.csv": "7fda818be778829fdf7697bff5c07a3c73a0adf796e61e1e3722cbdebfec4ee8",
+    "data/processed/dummy_baselines/run_03/tuning/metrics.csv": "058dcf611fe83cb8b4f40219c522ee41447cc70cc0780f0424b9afacd4df4ba9",
+    "data/processed/dummy_baselines/run_03/tuning/baseline_comparison.csv": "6407b10c6adf96773d87fee44933362335ad96d8dcd5e630edde10c8c0b013c3",
+    "data/processed/dummy_baselines/run_03/tuning/best_parameters.json": "b503f05ba50db9aa20fb619f50d1a7122d99d76fcde514d469d9ff269c99f429",
+    "data/processed/dummy_baselines/run_03/tuning/models.joblib.gz": "28f94065b9b81ff8a35756bab64337d0daec044d19f854795782e132b14aa906"
+  },
+  "verification": {
+    "input_hashes": true,
+    "saved_tables_and_selection": true,
+    "training_only_cv_folds": true,
+    "scaffold_cv_groups_disjoint": true,
+    "serialized_model_predictions": true,
+    "metrics_recomputed": true,
+    "test_excluded": true
+  },
+  "fitting_performed": true,
+  "tuning_performed": true,
+  "outer_validation_used_for_search": false,
+  "test_predictions_performed": false,
+  "test_evaluation_performed": false,
+  "software_versions": {
+    "python": "3.14.6",
+    "rdkit": "2026.03.6",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3"
+  },
+  "path_update": {
+    "updated_at_utc": "2026-09-24T15:56:44.154160+00:00",
+    "record": "data/processed/renaming_manifest.json",
+    "reason": "Descriptive folders and filenames; original execution timestamps and scientific results retained."
+  },
+  "model_storage": {
+    "format": "joblib with gzip compression",
+    "compression_level": 3,
+    "updated_at_utc": "2026-09-24T16:16:16.797007+00:00",
+    "uncompressed_sha256": "139b6c4151b75c813b74a368fd1cca88bd1d8b979fa85a0c0ae0b6e1b8c1f1ee",
+    "compression_preserves_original_serialized_bytes": true,
+    "verification": "All saved estimators loaded and reproduced their training/validation predictions.",
+    "maintenance_record": "data/processed/renaming_manifest.json"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "random": {
+    "best_candidate_index": 0,
+    "best_parameters": {
+      "strategy": "mean"
+    },
+    "best_mean_cv_mae_pki": 0.959853349373437,
+    "effective_parameters": {
+      "constant": null,
+      "quantile": null,
+      "strategy": "mean"
+    },
+    "training_structures": 2860,
+    "search_seconds": 0.041180399974109605,
+    "refit_seconds": 0.0002498626708984375
+  },
+  "scaffold": {
+    "best_candidate_index": 1,
+    "best_parameters": {
+      "strategy": "median"
+    },
+    "best_mean_cv_mae_pki": 0.9604251161000686,
+    "effective_parameters": {
+      "constant": null,
+      "quantile": null,
+      "strategy": "median"
+    },
+    "training_structures": 2778,
+    "search_seconds": 0.028575400006957352,
+    "refit_seconds": 0.0002701282501220703
+  }
+}
