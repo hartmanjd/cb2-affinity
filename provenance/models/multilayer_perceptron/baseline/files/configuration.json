@@ -1,0 +1,55 @@
+{
+  "feature_source": "provenance/preparation/manifest.json",
+  "input_bits": 2048,
+  "internal_split": {
+    "random": {
+      "method": "train_test_split on outer-training molecular rows",
+      "split_seed": 2026,
+      "fit_structures": 2288,
+      "stopping_structures": 572,
+      "scaffold_group_overlap": 197,
+      "exact_fingerprint_group_overlap": 28
+    },
+    "scaffold": {
+      "method": "GroupShuffleSplit on saved outer-training scaffold labels",
+      "split_seed": 2026,
+      "fit_structures": 2169,
+      "stopping_structures": 609,
+      "scaffold_group_overlap": 0,
+      "exact_fingerprint_group_overlap": 6
+    }
+  },
+  "model_parameters": {
+    "loss": "squared_error",
+    "hidden_layer_sizes": [
+      32,
+      16
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "alpha": 0.01,
+    "batch_size": 64,
+    "learning_rate_init": 0.001,
+    "shuffle": true,
+    "early_stopping": false,
+    "max_iter": 1,
+    "n_iter_no_change": 251
+  },
+  "initialization_seeds": [
+    42,
+    7,
+    21,
+    84,
+    2026
+  ],
+  "maximum_epochs": 250,
+  "patience": 20,
+  "epoch_selection": "first strictly lowest internal stopping MSE",
+  "full_refit": "fresh model on every outer-training row for selected epochs",
+  "representative_plot_seed": 42,
+  "cliff_definition": {
+    "scope": "unordered within outer validation",
+    "minimum_tanimoto": 0.8,
+    "minimum_absolute_observed_pki_difference": 1.0
+  }
+}

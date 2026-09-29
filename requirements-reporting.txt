@@ -1,0 +1,2 @@
+# Reporting only; training keeps the exact software versions in each run manifest.
+openpyxl==3.1.5

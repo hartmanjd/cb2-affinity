@@ -1,0 +1,215 @@
+{
+  "stage": "xgboost_hyperparameter_search",
+  "notebook": "notebooks/06_xgboost.ipynb",
+  "run_started_at_utc": "2026-09-24T21:55:01.813857+00:00",
+  "completed_at_utc": "2026-09-24T21:55:36.633647+00:00",
+  "output_folder": "provenance/models/xgboost/run_02/tuning",
+  "source_preparation_manifest": "provenance/preparation/manifest.json",
+  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_artifact_sha256": {
+    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
+    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
+    "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+  },
+  "baseline_manifest": "provenance/models/xgboost/run_02/manifest.json",
+  "baseline_manifest_sha256": "d7d76413ae32f2235268424cab9e059ec3fe765740124e58c01d5a356192f0b2",
+  "configuration": {
+    "search": "GridSearchCV",
+    "parameter_grid": {
+      "max_depth": [
+        3,
+        4
+      ],
+      "learning_rate": [
+        0.05,
+        0.1
+      ],
+      "n_estimators": [
+        150,
+        250
+      ]
+    },
+    "scoring": "neg_mean_absolute_error",
+    "refit": true,
+    "search_n_jobs": 1,
+    "folds": 5,
+    "random_cv": {
+      "method": "KFold",
+      "shuffle": true,
+      "random_state": 42
+    },
+    "scaffold_cv": {
+      "method": "GroupKFold",
+      "shuffle": false,
+      "group": "saved_scaffold"
+    },
+    "selection_rule": "minimum unweighted mean fold MAE; first candidate breaks ties",
+    "scope": "bounded first search; best within the declared grid"
+  },
+  "selection": {
+    "random": {
+      "best_candidate_index": 7,
+      "best_parameters": {
+        "learning_rate": 0.1,
+        "max_depth": 4,
+        "n_estimators": 250
+      },
+      "best_mean_cv_mae_pki": 0.6028335705980344,
+      "effective_parameters": {
+        "objective": "reg:squarederror",
+        "base_score": null,
+        "booster": null,
+        "callbacks": null,
+        "colsample_bylevel": null,
+        "colsample_bynode": null,
+        "colsample_bytree": 0.8,
+        "device": null,
+        "early_stopping_rounds": null,
+        "enable_categorical": true,
+        "eval_metric": null,
+        "feature_types": null,
+        "feature_weights": null,
+        "gamma": null,
+        "grow_policy": null,
+        "importance_type": null,
+        "interaction_constraints": null,
+        "learning_rate": 0.1,
+        "max_bin": null,
+        "max_cat_threshold": null,
+        "max_cat_to_onehot": null,
+        "max_delta_step": null,
+        "max_depth": 4,
+        "max_leaves": null,
+        "min_child_weight": 2,
+        "missing": "NaN (XGBoost missing-value marker)",
+        "monotone_constraints": null,
+        "multi_strategy": null,
+        "n_estimators": 250,
+        "n_jobs": 4,
+        "num_parallel_tree": null,
+        "random_state": 42,
+        "reg_alpha": null,
+        "reg_lambda": 1,
+        "sampling_method": null,
+        "scale_pos_weight": null,
+        "subsample": 0.9,
+        "tree_method": "hist",
+        "validate_parameters": null,
+        "verbosity": null
+      },
+      "training_structures": 2860,
+      "search_seconds": 17.10261430000537,
+      "refit_seconds": 0.5074923038482666
+    },
+    "scaffold": {
+      "best_candidate_index": 7,
+      "best_parameters": {
+        "learning_rate": 0.1,
+        "max_depth": 4,
+        "n_estimators": 250
+      },
+      "best_mean_cv_mae_pki": 0.6724060176999712,
+      "effective_parameters": {
+        "objective": "reg:squarederror",
+        "base_score": null,
+        "booster": null,
+        "callbacks": null,
+        "colsample_bylevel": null,
+        "colsample_bynode": null,
+        "colsample_bytree": 0.8,
+        "device": null,
+        "early_stopping_rounds": null,
+        "enable_categorical": true,
+        "eval_metric": null,
+        "feature_types": null,
+        "feature_weights": null,
+        "gamma": null,
+        "grow_policy": null,
+        "importance_type": null,
+        "interaction_constraints": null,
+        "learning_rate": 0.1,
+        "max_bin": null,
+        "max_cat_threshold": null,
+        "max_cat_to_onehot": null,
+        "max_delta_step": null,
+        "max_depth": 4,
+        "max_leaves": null,
+        "min_child_weight": 2,
+        "missing": "NaN (XGBoost missing-value marker)",
+        "monotone_constraints": null,
+        "multi_strategy": null,
+        "n_estimators": 250,
+        "n_jobs": 4,
+        "num_parallel_tree": null,
+        "random_state": 42,
+        "reg_alpha": null,
+        "reg_lambda": 1,
+        "sampling_method": null,
+        "scale_pos_weight": null,
+        "subsample": 0.9,
+        "tree_method": "hist",
+        "validate_parameters": null,
+        "verbosity": null
+      },
+      "training_structures": 2778,
+      "search_seconds": 16.67918569999165,
+      "refit_seconds": 0.49308347702026367
+    }
+  },
+  "counts": {
+    "candidates_per_protocol": 8,
+    "selected_models": 2,
+    "prediction_rows": 6457,
+    "subgroup_rows": 8
+  },
+  "subgroup_definitions": {
+    "exact_training_fingerprint": [
+      "exact_match",
+      "no_exact_match"
+    ],
+    "nearest_training_tanimoto_0.80": [
+      "below_0.80",
+      "at_least_0.80"
+    ],
+    "similarity_cutoff": 0.8,
+    "source": "saved validation rows in heldout_training_neighbors.csv"
+  },
+  "model_storage": {
+    "format": "joblib gzip",
+    "compression_level": 3
+  },
+  "output_sha256": {
+    "provenance/models/xgboost/run_02/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
+    "provenance/models/xgboost/run_02/tuning/cv_results.csv": "4f6fcd8cdaf08d64e02f18de6b25bb696a5d5732123202bbaaceee431bffb170",
+    "provenance/models/xgboost/run_02/tuning/predictions.csv": "bac90b1d3ff99ed3f5e7f51cf21933a93c286271d22a423ce06ef3577b5ff333",
+    "provenance/models/xgboost/run_02/tuning/metrics.csv": "71ac44e99b60d7b49ffcb133f6b42582ed0844554fa215916c836e1a2ca11895",
+    "provenance/models/xgboost/run_02/tuning/validation_subgroups.csv": "b9b52603a0f6cba7ac0cd107c6be6209443f5185eae8a633084322cb3b64578d",
+    "provenance/models/xgboost/run_02/tuning/baseline_comparison.csv": "26a168afa88edb5a70b7c4fe1c5366b43d553312a718be09a67dae4bb9735942",
+    "provenance/models/xgboost/run_02/tuning/models.joblib.gz": "5ee5eb5e43a5a6ba6408ee63abe7b9eeb71df1611c0c1fb333189be8c3fa9b4f",
+    "provenance/models/xgboost/run_02/tuning/best_parameters.json": "5f6fe443ce288c622289fd9181de162fcc26fe9dc36e550d5472bce4a550bb0d"
+  },
+  "verification": {
+    "input_hashes": true,
+    "saved_tables_and_selection": true,
+    "training_only_cv_folds": true,
+    "scaffold_cv_groups_disjoint": true,
+    "serialized_model_predictions": true,
+    "metrics_recomputed": true,
+    "validation_subgroups_recomputed": true,
+    "test_excluded": true
+  },
+  "fitting_performed": true,
+  "tuning_performed": true,
+  "outer_validation_used_for_search": false,
+  "test_predictions_performed": false,
+  "test_evaluation_performed": false,
+  "software_versions": {
+    "python": "3.14.6",
+    "rdkit": "2026.03.6",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3",
+    "xgboost": "3.4.1"
+  }
+}

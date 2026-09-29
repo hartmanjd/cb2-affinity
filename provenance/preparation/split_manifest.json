@@ -1,0 +1,92 @@
+{
+  "created_at_utc": "2026-09-24T00:54:37.086929+00:00",
+  "source_curation_manifest": "provenance/curation/manifest.json",
+  "curation_manifest_sha256": "117fcd92227be06f6273ea99d1620fb0c9756f570a97dba62a8a93ae9f0409af",
+  "source_sha256": {
+    "provenance/selection/chembl_cb2_20260922T165756862384Z/cb2_ki_selected.csv": "049e6dd538de1a4503c0a8744c70e3f08b884b554d453271ca255860e3af20d1",
+    "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json": "15b307771acda07519009aad96dc3a090c4a54ba056dbd61e5f41b6166810a87",
+    "provenance/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json": "fbe26d64bc56519abdfcb24ee60b2aaf427684d9527743314b423c526be5a532",
+    "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_activity.json": "6db6a56de52d45d06b02f13eabf8c45a50a9b9f3a194c3fbf3851a5f0952376f",
+    "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_assay.json": "4bba2004622540d5df5a43ce95d70108d7dc16d2f81cc78963b0e9287c9b0142",
+    "provenance/curation/measurement_decisions.csv": "f6e726424fff791cb72801e4511aaf41ecdf2ad3aa0511dfad6a629dcb820a7a",
+    "provenance/curation/structure_summary.csv": "e99a9eb43f1cff3b86352c5ccd613f087b7f1a262a817b3093db41dc50dd4449",
+    "provenance/curation/curated_structures.csv": "80f3adcb6598c18b67c51612a798dd0199231851fd68a9af20e4e2d5bcdab953",
+    "provenance/curation/review.json": "63a3f90db1af01c78320704b37d03580ca37c8e41634dc96594ea45cc7e68b1c"
+  },
+  "configuration": {
+    "fingerprint": {
+      "radius": 2,
+      "bits": 2048,
+      "include_chirality": true
+    },
+    "scaffold": {
+      "method": "RDKit Bemis-Murcko",
+      "include_chirality": false,
+      "acyclic_label": "ACYCLIC"
+    },
+    "split": {
+      "strategies": [
+        "random",
+        "scaffold"
+      ],
+      "outer_seed": 42,
+      "inner_seed": 43,
+      "outer_heldout_fraction": 0.2,
+      "inner_test_fraction": 0.5,
+      "random_unit": "molecular row",
+      "scaffold_unit": "scaffold group"
+    },
+    "diagnostics": {
+      "high_tanimoto_at_least": 0.8,
+      "identical_fingerprint_target_gap_at_least_pki": 1.0
+    }
+  },
+  "intended_structure_fractions": {
+    "train": 0.8,
+    "validation": 0.1,
+    "test": 0.1
+  },
+  "actual_proportions": {
+    "random": {
+      "train": {
+        "structures": 2860,
+        "fraction": 0.7997762863534675,
+        "scaffold_groups": 1186
+      },
+      "validation": {
+        "structures": 358,
+        "fraction": 0.10011185682326622,
+        "scaffold_groups": 245
+      },
+      "test": {
+        "structures": 358,
+        "fraction": 0.10011185682326622,
+        "scaffold_groups": 252
+      }
+    },
+    "scaffold": {
+      "train": {
+        "structures": 2778,
+        "fraction": 0.7768456375838926,
+        "scaffold_groups": 1086
+      },
+      "validation": {
+        "structures": 461,
+        "fraction": 0.12891498881431768,
+        "scaffold_groups": 136
+      },
+      "test": {
+        "structures": 337,
+        "fraction": 0.0942393736017897,
+        "scaffold_groups": 136
+      }
+    }
+  },
+  "assignment_file": "provenance/preparation/split_assignments.csv",
+  "assignment_sha256": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
+  "status": "split_checkpoint_only",
+  "path_update": {
+    "record": "provenance/README.md",
+    "reason": "Supporting files consolidated under provenance; original scientific results retained."
+  }
+}

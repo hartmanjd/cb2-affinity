@@ -1,0 +1,155 @@
+{
+  "run_started_at_utc": "2026-09-24T15:36:06.337685+00:00",
+  "completed_at_utc": "2026-09-24T15:36:12.122170+00:00",
+  "notebook": "notebooks/04_random_forest_evaluation.ipynb",
+  "stage": "random_forest_training_and_evaluation",
+  "output_folder": "provenance/models/random_forest/run_03",
+  "source_preparation_manifest": "provenance/preparation/manifest.json",
+  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_artifact_sha256": {
+    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
+    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
+    "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+  },
+  "forest_names": {
+    "random": "random_random_forest",
+    "scaffold": "scaffold_random_forest"
+  },
+  "forest_parameters": {
+    "random": {
+      "bootstrap": true,
+      "ccp_alpha": 0.0,
+      "criterion": "squared_error",
+      "max_depth": null,
+      "max_features": 0.3333333333333333,
+      "max_leaf_nodes": null,
+      "max_samples": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 2,
+      "min_samples_split": 2,
+      "min_weight_fraction_leaf": 0.0,
+      "monotonic_cst": null,
+      "n_estimators": 300,
+      "n_jobs": -1,
+      "oob_score": false,
+      "random_state": 42,
+      "verbose": 0,
+      "warm_start": false
+    },
+    "scaffold": {
+      "bootstrap": true,
+      "ccp_alpha": 0.0,
+      "criterion": "squared_error",
+      "max_depth": null,
+      "max_features": 0.3333333333333333,
+      "max_leaf_nodes": null,
+      "max_samples": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 2,
+      "min_samples_split": 2,
+      "min_weight_fraction_leaf": 0.0,
+      "monotonic_cst": null,
+      "n_estimators": 300,
+      "n_jobs": -1,
+      "oob_score": false,
+      "random_state": 42,
+      "verbose": 0,
+      "warm_start": false
+    }
+  },
+  "training_summary": [
+    {
+      "split_strategy": "random",
+      "model": "random_random_forest",
+      "training_structures": 2860,
+      "features": 2048,
+      "fit_seconds": 1.6938668999937363,
+      "fitted_trees": 300
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "scaffold_random_forest",
+      "training_structures": 2778,
+      "features": 2048,
+      "fit_seconds": 1.6320900000282563,
+      "fitted_trees": 300
+    }
+  ],
+  "counts": {
+    "fitted_forests": 2,
+    "predictions": 6457,
+    "overall_metric_rows": 4,
+    "subgroup_rows": 8,
+    "subsets": {
+      "random": {
+        "train": 2860,
+        "validation": 358,
+        "test": 358
+      },
+      "scaffold": {
+        "train": 2778,
+        "validation": 461,
+        "test": 337
+      }
+    }
+  },
+  "metric_definitions": {
+    "residual": "predicted_pki - observed_pki",
+    "mae_pki": "mean absolute residual in pKi units",
+    "rmse_pki": "square root of mean squared residual in pKi units",
+    "r2": "1 - sum(squared residual) / sum((observed - evaluated-subset mean)^2); undefined if n<2 or target constant"
+  },
+  "subgroup_definitions": {
+    "exact_training_fingerprint": [
+      "exact_match",
+      "no_exact_match"
+    ],
+    "nearest_training_tanimoto_0.80": [
+      "below_0.80",
+      "at_least_0.80"
+    ],
+    "similarity_cutoff": 0.8,
+    "source": "saved validation rows in heldout_training_neighbors.csv"
+  },
+  "output_sha256": {
+    "provenance/models/random_forest/run_03/training_summary.csv": "2d2e435019b1cce583bd2cd6114bebde5128bf8d4734d6c2951833117a3007de",
+    "provenance/models/random_forest/run_03/predictions.csv": "0a4d0f82f6370422678e207a1bbb9751aedc72d3199966dc52235537e60e7cc3",
+    "provenance/models/random_forest/run_03/metrics.csv": "63ccb53627844971d2b6cf91ab2e1ef438b49925ba25376585b2f0443884e6e9",
+    "provenance/models/random_forest/run_03/validation_subgroups.csv": "96ed14d6825442688f259f829b7a3dee3999ea4958b37c7aba753ff9274a6b6b",
+    "provenance/models/random_forest/run_03/models.joblib.gz": "e3654feab373617180b0b01ff73856ee3c8a70045cc7de2a49e3fe23667e31b2"
+  },
+  "verification": {
+    "input_hashes": true,
+    "saved_models_and_training_state": true,
+    "prediction_keys_and_arithmetic": true,
+    "overall_metrics_recomputed": true,
+    "subgroups_recomputed": true,
+    "test_excluded": true
+  },
+  "fitting_performed": true,
+  "tuning_performed": false,
+  "test_predictions_performed": false,
+  "test_evaluation_performed": false,
+  "software_versions": {
+    "python": "3.14.6",
+    "rdkit": "2026.03.6",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3",
+    "matplotlib": "3.11.0"
+  },
+  "path_update": {
+    "record": "provenance/README.md",
+    "reason": "Supporting files consolidated under provenance; original scientific results retained."
+  },
+  "model_storage": {
+    "format": "joblib with gzip compression",
+    "compression_level": 3,
+    "updated_at_utc": "2026-09-24T16:16:16.797007+00:00",
+    "uncompressed_sha256": "236394cb4964b4717b0828160a2bcc2011a4116bcf682b194a6c7630e26a25ef",
+    "compression_preserves_original_serialized_bytes": true,
+    "verification": "All saved estimators loaded and reproduced their training/validation predictions.",
+    "maintenance_record": "data/processed/renaming_manifest.json"
+  }
+}

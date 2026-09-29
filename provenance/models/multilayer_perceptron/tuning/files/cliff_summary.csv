@@ -1,0 +1,3 @@
+split_strategy,model_variant,n_pairs,n_participating_structures,pair_difference_mae_pki_mean,pair_difference_mae_pki_sample_sd,correct_direction_fraction_mean,correct_direction_fraction_sample_sd
+random,tuned,11,19,1.1670412051742522,0.05179863850668881,0.890909090909091,0.11853095282186633
+scaffold,tuned,110,121,1.2878079705336505,0.022434584877809235,0.7127272727272727,0.041956293669870304

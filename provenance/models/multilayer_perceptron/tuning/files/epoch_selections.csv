@@ -1,0 +1,11 @@
+split_strategy,model_variant,initialization_seed,candidate_index,internal_split_seed,selected_epoch,best_stopping_mse_pki2,internal_epochs_run,stopping_reason,internal_history_source,full_refit_epochs_run,full_refit_structures,trainable_parameters,additional_seconds
+random,tuned,42,10,2026,55,0.7810504664127773,75,patience,reused_candidate_fit,55,2860,66113,3.641806200001156
+random,tuned,7,10,2026,52,0.791983261550393,72,patience,reused_candidate_fit,52,2860,66113,3.262557600013679
+random,tuned,21,10,2026,59,0.7901715461278177,79,patience,reused_candidate_fit,59,2860,66113,4.115125100011937
+random,tuned,84,10,2026,62,0.810011764169964,82,patience,new_selected_configuration_fit,62,2860,66113,9.764593700005207
+random,tuned,2026,10,2026,39,0.8610691093834697,59,patience,new_selected_configuration_fit,39,2860,66113,5.284589300019434
+scaffold,tuned,42,11,2026,15,1.0104839968324668,35,patience,reused_candidate_fit,15,2778,66113,0.8350189999910071
+scaffold,tuned,7,11,2026,10,1.026969432266055,30,patience,reused_candidate_fit,10,2778,66113,0.557300699991174
+scaffold,tuned,21,11,2026,16,1.0421483906768987,36,patience,reused_candidate_fit,16,2778,66113,0.8957739000034053
+scaffold,tuned,84,11,2026,14,0.9832989889200476,34,patience,new_selected_configuration_fit,14,2778,66113,2.269402000005357
+scaffold,tuned,2026,11,2026,11,1.045813442679649,31,patience,new_selected_configuration_fit,11,2778,66113,1.9999545000027865

@@ -1,0 +1,183 @@
+{
+  "run_started_at_utc": "2026-09-23T19:59:00.407937+00:00",
+  "completed_at_utc": "2026-09-23T19:59:07.104072+00:00",
+  "notebook": "notebooks/02_data_curation.ipynb",
+  "target_chembl_id": "CHEMBL253",
+  "target_organism": "Homo sapiens",
+  "uniprot": "P34972",
+  "chembl_version": "ChEMBL_37",
+  "selection_manifest": "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json",
+  "selected_csv": "provenance/selection/chembl_cb2_20260922T165756862384Z/cb2_ki_selected.csv",
+  "source_raw_folder": "provenance/raw/chembl_cb2_20260922T165756862384Z",
+  "acquisition_manifest": "provenance/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json",
+  "output_folder": "provenance/curation",
+  "file_sha256": {
+    "provenance/selection/chembl_cb2_20260922T165756862384Z/cb2_ki_selected.csv": "049e6dd538de1a4503c0a8744c70e3f08b884b554d453271ca255860e3af20d1",
+    "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json": "15b307771acda07519009aad96dc3a090c4a54ba056dbd61e5f41b6166810a87",
+    "provenance/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json": "fbe26d64bc56519abdfcb24ee60b2aaf427684d9527743314b423c526be5a532",
+    "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_activity.json": "6db6a56de52d45d06b02f13eabf8c45a50a9b9f3a194c3fbf3851a5f0952376f",
+    "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_assay.json": "4bba2004622540d5df5a43ce95d70108d7dc16d2f81cc78963b0e9287c9b0142",
+    "provenance/curation/measurement_decisions.csv": "f6e726424fff791cb72801e4511aaf41ecdf2ad3aa0511dfad6a629dcb820a7a",
+    "provenance/curation/structure_summary.csv": "e99a9eb43f1cff3b86352c5ccd613f087b7f1a262a817b3093db41dc50dd4449",
+    "provenance/curation/curated_structures.csv": "80f3adcb6598c18b67c51612a798dd0199231851fd68a9af20e4e2d5bcdab953",
+    "provenance/curation/review.json": "63a3f90db1af01c78320704b37d03580ca37c8e41634dc96594ea45cc7e68b1c"
+  },
+  "git": {
+    "commit": "b9781dbccdc9cc7c8745719cc83611ae0319b170",
+    "working_tree_dirty": true
+  },
+  "software_versions": {
+    "python": "3.14.4",
+    "rdkit": "2026.03.6",
+    "pandas": "3.0.6",
+    "openpyxl": "3.1.5"
+  },
+  "policies": {
+    "version": "proposed_v1",
+    "structure_normalization": "RDKit parse and sanitize; canonical isomeric SMILES only",
+    "structure_key": "full RDKit canonical isomeric SMILES in rdkit_smiles",
+    "multiple_components": "quarantine complete representation; no salt or largest-fragment selection",
+    "charge_tautomers_isotopes_stereo": "preserve represented information; no neutralization, tautomer normalization, or stereo/isotope removal",
+    "structure_primary_reason_order": [
+      "parse_or_sanitization_failed",
+      "zero_atoms",
+      "wildcard_atom",
+      "multiple_components_review",
+      "structure_processing_failed"
+    ],
+    "conflict_threshold_pki": 1.0,
+    "conflict_absolute_tolerance_pki": 1e-12,
+    "conflict_review_reason": "pki_range_ge_1.0",
+    "conflict_operator": ">= or within absolute tolerance of threshold",
+    "conflict_basis": "full measurement-level pKi range within rdkit_smiles",
+    "conflict_action": "all activities for a conflicting structure go to review",
+    "assay_grouping_keys": [
+      "rdkit_smiles",
+      "assay_chembl_id"
+    ],
+    "target_aggregation": "median pKi within each structure-assay group, then median of those assay medians",
+    "single_measurement_structure": "retain with n_measurements=1",
+    "missing_document_id": "preserve as missing; exclude only from distinct document count"
+  },
+  "counts": {
+    "input_activities": 4081,
+    "retained_activities": 3905,
+    "structure_review_activities": 34,
+    "conflict_activities": 142,
+    "eligible_structures": 3606,
+    "conflict_structures": 30,
+    "final_curated_structures": 3576,
+    "single_measurement_structures": 3263,
+    "tolerance_only_conflict_structures": 0,
+    "tolerance_only_conflict_activities": 0
+  },
+  "final_status_counts": {
+    "structure_review": 34,
+    "retained": 3905,
+    "measurement_conflict": 142
+  },
+  "review_reason_activity_counts": {
+    "pki_range_ge_1.0": 142,
+    "multiple_components_review": 34
+  },
+  "output_schemas": {
+    "measurement_decisions.csv": [
+      "activity_id",
+      "molecule_chembl_id",
+      "canonical_smiles",
+      "ki_nm",
+      "assay_chembl_id",
+      "document_chembl_id",
+      "assay_description",
+      "pki",
+      "rdkit_smiles",
+      "component_count",
+      "quality_flags",
+      "status",
+      "review_reason"
+    ],
+    "structure_summary.csv": [
+      "rdkit_smiles",
+      "n_measurements",
+      "n_assays",
+      "n_documents",
+      "n_molecule_ids",
+      "pki_min",
+      "pki_max",
+      "pki_range",
+      "pki_overall_median",
+      "max_within_assay_pki_range",
+      "assay_median_pki_range",
+      "pki_target_candidate",
+      "target_minus_overall_median",
+      "measurement_conflict"
+    ],
+    "curated_structures.csv": [
+      "rdkit_smiles",
+      "pki_target",
+      "n_measurements",
+      "n_assays",
+      "n_documents",
+      "n_molecule_ids",
+      "pki_min",
+      "pki_max",
+      "pki_range",
+      "pki_overall_median"
+    ],
+    "review.json": {
+      "Structure review": [
+        "activity_id",
+        "molecule_chembl_id",
+        "canonical_smiles",
+        "ki_nm",
+        "assay_chembl_id",
+        "document_chembl_id",
+        "assay_description",
+        "pki",
+        "rdkit_smiles",
+        "component_count",
+        "quality_flags",
+        "status",
+        "review_reason",
+        "structure_pki_range",
+        "max_within_assay_pki_range",
+        "assay_median_pki_range"
+      ],
+      "Measurement conflicts": [
+        "activity_id",
+        "molecule_chembl_id",
+        "canonical_smiles",
+        "ki_nm",
+        "assay_chembl_id",
+        "document_chembl_id",
+        "assay_description",
+        "pki",
+        "rdkit_smiles",
+        "component_count",
+        "quality_flags",
+        "status",
+        "review_reason",
+        "structure_pki_range",
+        "max_within_assay_pki_range",
+        "assay_median_pki_range"
+      ]
+    }
+  },
+  "audit": {
+    "absolute_tolerance": 1e-10,
+    "relative_tolerance": 0,
+    "results": {
+      "source_values": true,
+      "pki": true,
+      "structure": true,
+      "quality_flags": true,
+      "aggregation": true,
+      "workbook_summary": true,
+      "saved_files": true
+    }
+  },
+  "path_update": {
+    "record": "provenance/README.md",
+    "reason": "Supporting files consolidated under provenance; original scientific results retained."
+  }
+}

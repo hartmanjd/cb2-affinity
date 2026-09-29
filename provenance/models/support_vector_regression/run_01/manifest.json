@@ -1,0 +1,132 @@
+{
+  "run_started_at_utc": "2026-09-24T22:06:13.746810+00:00",
+  "completed_at_utc": "2026-09-24T22:06:54.123607+00:00",
+  "notebook": "notebooks/07_support_vector_regression.ipynb",
+  "stage": "support_vector_regression_training_and_evaluation",
+  "output_folder": "provenance/models/support_vector_regression/run_01",
+  "source_preparation_manifest": "provenance/preparation/manifest.json",
+  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_artifact_sha256": {
+    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
+    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
+    "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+  },
+  "svr_names": {
+    "random": "random_svr",
+    "scaffold": "scaffold_svr"
+  },
+  "svr_parameters": {
+    "random": {
+      "C": 1.0,
+      "cache_size": 500,
+      "coef0": 0.0,
+      "degree": 3,
+      "epsilon": 0.1,
+      "gamma": "scale",
+      "kernel": "rbf",
+      "max_iter": -1,
+      "shrinking": true,
+      "tol": 0.001,
+      "verbose": false
+    },
+    "scaffold": {
+      "C": 1.0,
+      "cache_size": 500,
+      "coef0": 0.0,
+      "degree": 3,
+      "epsilon": 0.1,
+      "gamma": "scale",
+      "kernel": "rbf",
+      "max_iter": -1,
+      "shrinking": true,
+      "tol": 0.001,
+      "verbose": false
+    }
+  },
+  "training_summary": [
+    {
+      "split_strategy": "random",
+      "model": "random_svr",
+      "training_structures": 2860,
+      "features": 2048,
+      "fit_seconds": 4.748004299995955,
+      "support_vectors": 2513
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "scaffold_svr",
+      "training_structures": 2778,
+      "features": 2048,
+      "fit_seconds": 4.400087699992582,
+      "support_vectors": 2402
+    }
+  ],
+  "counts": {
+    "fitted_regressors": 2,
+    "predictions": 6457,
+    "overall_metric_rows": 4,
+    "subgroup_rows": 8,
+    "subsets": {
+      "random": {
+        "train": 2860,
+        "validation": 358,
+        "test": 358
+      },
+      "scaffold": {
+        "train": 2778,
+        "validation": 461,
+        "test": 337
+      }
+    }
+  },
+  "metric_definitions": {
+    "residual": "predicted_pki - observed_pki",
+    "mae_pki": "mean absolute residual in pKi units",
+    "rmse_pki": "square root of mean squared residual in pKi units",
+    "r2": "1 - sum(squared residual) / sum((observed - evaluated-subset mean)^2); undefined if n<2 or target constant"
+  },
+  "subgroup_definitions": {
+    "exact_training_fingerprint": [
+      "exact_match",
+      "no_exact_match"
+    ],
+    "nearest_training_tanimoto_0.80": [
+      "below_0.80",
+      "at_least_0.80"
+    ],
+    "similarity_cutoff": 0.8,
+    "source": "saved validation rows in heldout_training_neighbors.csv"
+  },
+  "model_storage": {
+    "format": "joblib gzip",
+    "compression_level": 3
+  },
+  "output_sha256": {
+    "provenance/models/support_vector_regression/run_01/models.joblib.gz": "7b347b0f4b5520ad3e52032d4a41b66ed162c3f2fe654bc8df573757a9ec74aa",
+    "provenance/models/support_vector_regression/run_01/training_summary.csv": "a68da3f427f045ba7cef7efcf075a1d8cc819796aae23c80c90dfd1de6820484",
+    "provenance/models/support_vector_regression/run_01/predictions.csv": "c7a98339dcece18fde2f208734e6219c9f544ec4799e96b87236a50ba2c7bba9",
+    "provenance/models/support_vector_regression/run_01/metrics.csv": "4cb958ec3fc849a8050d1b38671b98f5ff0599adae077df12d788f6c8bcf2035",
+    "provenance/models/support_vector_regression/run_01/validation_subgroups.csv": "940cbf659d3db73f8d659374c9041bcc424361f2921e03ae690cacf223d8b464"
+  },
+  "verification": {
+    "input_hashes": true,
+    "saved_models_and_training_state": true,
+    "prediction_keys_and_arithmetic": true,
+    "overall_metrics_recomputed": true,
+    "subgroups_recomputed": true,
+    "test_excluded": true
+  },
+  "fitting_performed": true,
+  "tuning_performed": false,
+  "test_predictions_performed": false,
+  "test_evaluation_performed": false,
+  "software_versions": {
+    "python": "3.14.6",
+    "rdkit": "2026.03.6",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.9.0",
+    "joblib": "1.5.3",
+    "matplotlib": "3.11.0"
+  }
+}

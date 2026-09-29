@@ -219,3 +219,8 @@ __marimo__/
 
 # Windows download metadata is not part of the project.
 *:Zone.Identifier
+
+# Temporary MLP executions and rollback files; only accepted files are retained.
+provenance/models/multilayer_perceptron/**/.pending-*
+provenance/models/multilayer_perceptron/**/.previous-*
+provenance/models/multilayer_perceptron/**/.~*
