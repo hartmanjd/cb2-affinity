@@ -326,6 +326,9 @@ def description(name):
 
 
 DESCRIPTIONS.update({
+    "build_dummy_summary.py": "Builds a combined dummy-baseline workbook with exact scores, strategy explanations, diagnostics and evidence links.",
+    "dummy_artifacts.py": "Publishes baseline and tuned dummy results together with rollback if reporting fails.",
+    "test_dummy_reporting.py": "Checks dummy-baseline publication, hash links, incomplete or corrupt evidence rejection, and rollback.",
     "build_xgboost_summary.py": "Builds a combined XGBoost workbook with exact scores, boosting/settings explanations, diagnostics and evidence links.",
     "xgboost_artifacts.py": "Publishes baseline and tuned XGBoost results together with rollback if reporting fails.",
     "test_xgboost_reporting.py": "Checks XGBoost publication, hash links, incomplete or corrupt evidence rejection, and rollback.",
@@ -340,7 +343,7 @@ DESCRIPTIONS.update({
     "test_fetch_models.py": "Checks model download verification, corrupt-download rejection, and the missing-model instruction.",
     "import_validation.json": "Checksums and verification results for supplied model summary workbooks.",
     "test_mlp_artifacts.py": "Checks successful replacement, failed-candidate preservation and rollback of MLP results.",
-    "build_mlp_summary.py": "Builds readable MLP workbooks with scores, training explanations, full tables and file links.",
+    "build_mlp_summary.py": "Builds one combined MLP workbook (baseline and tuned) with seed scores, training explanations, full tables and file links.",
     "mlp_artifacts.py": "Publishes one audited MLP execution; keeps current results safe until replacement succeeds.",
     "summary.xlsx": "Model overview, architecture, training settings, results and supporting tables for the current execution.",
     "test_provenance_workflow.py": "Tests that reruns use matching datasets and review records retain their values without extra Excel files.",
@@ -393,8 +396,8 @@ def latest_models(state, status):
     models = []
     for model, variant, folder, tuning_child in MODEL_FOLDERS:
         parent = ROOT / "provenance/models" / folder
-        pattern = (("files/tuning/manifest.json" if tuning_child else "files/baseline/manifest.json") if folder in {"random_forest", "support_vector_regression", "xgboost"} else
-                   "files/manifest.json" if folder.startswith("multilayer_perceptron/") else
+        pattern = (("files/tuning/manifest.json" if tuning_child else "files/baseline/manifest.json") if folder in {"dummy_baselines", "random_forest", "support_vector_regression", "xgboost"} else
+                   "manifest.json" if folder.startswith("multilayer_perceptron/") else
                    "run_*/tuning/manifest.json" if tuning_child else "run_*/manifest.json")
         candidates = [p for p in parent.glob(pattern) if read_json(p).get("completed_at_utc")]
         label = f"{model} / {variant}"
@@ -494,7 +497,7 @@ def build_master_reference():
                "preparation": "Fingerprint arrays, split assignments, similarity diagnostics, and preparation metadata.",
                "identical_fingerprints": "Identical-fingerprint groups, members, and boundary crossings.",
                "models": "Model families with fitted models, predictions, settings, and diagnostics.",
-               "files": "Detailed artifacts for the accepted execution; open the model or variant summary.xlsx first.",
+               "files": "Detailed artifacts for the accepted execution; open the model's summary.xlsx first.",
                "baseline": "Baseline model executions.", "tuning": "Training-only searches, selected settings, and refits."}
     for directory in directories:
         base = Path(directory).name

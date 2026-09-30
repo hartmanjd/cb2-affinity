@@ -47,8 +47,8 @@ Raw downloads, model artifacts, scores, and prediction values are unchanged.
 
 The `curation/run_05` folder and the archive folders were removed. Supporting
 curation files were consolidated directly here so existing model results remain
-traceable until the fresh run replaces them. The MLP folder now keeps one baseline and one tuned execution,
-each with `summary.xlsx` beside its detailed `files/` folder. The older baseline
+traceable until the fresh run replaces them. The MLP folder now keeps one baseline and one tuned execution
+in `baseline/` and `tuning/`, with one combined `summary.xlsx` beside them. The older baseline
 attempts were deleted. Start with [the MLP guide](models/multilayer_perceptron/README.md).
 No archive restoration is required to use this project.
 
@@ -61,8 +61,17 @@ available while saved models still depend on them.
 The final cell in each notebook checks saved evidence and refreshes the Markdown
 model comparison and master reference. You can also run
 `python scripts/build_project_reference.py` from the project root. Both preserve
-the supplied data provenance workbook unchanged. MLP summaries are separate,
-automatically generated workbooks refreshed when a new MLP execution is accepted.
+the supplied data provenance workbook unchanged. Model summaries are
+automatically generated workbooks refreshed when a new model execution is accepted.
+
+## Dummy baseline reference
+
+[The combined dummy summary](models/dummy_baselines/summary.xlsx) uses the same
+display as the forest, XGBoost and SVR summaries. Its constant mean and median
+predictors are the no-skill reference every real model should beat. Supporting
+evidence sits in `models/dummy_baselines/files/` under baseline, tuning, and
+diagnostics. See [the dummy guide](models/dummy_baselines/README.md) for how the
+summary was generated and automatic replacement on notebook 05 reruns.
 
 ## Random forest reference
 
@@ -89,3 +98,11 @@ parameter explanations, the complete search, and derived cliff diagnostics.
 Supporting evidence sits in `models/xgboost/files/` under baseline, tuning, and
 diagnostics. See [the XGBoost guide](models/xgboost/README.md) for how the summary
 was generated and automatic replacement on notebook 06 reruns.
+
+## Multilayer perceptron reference
+
+[The combined MLP summary](models/multilayer_perceptron/summary.xlsx) uses the same
+display, plus MLP-only sheets for initialization seeds, selected epochs and loss
+histories. Its files sit directly in `models/multilayer_perceptron/baseline/` and
+`tuning/`, because notebooks 08 and 09 publish those variants separately. See
+[the MLP guide](models/multilayer_perceptron/README.md) for rerun behavior.

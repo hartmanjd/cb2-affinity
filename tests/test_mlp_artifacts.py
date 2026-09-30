@@ -16,10 +16,10 @@ class PublicationTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         for variant in ['baseline','tuning']:
-            folder = self.root/MLP/variant/'files'
+            folder = self.root/MLP/variant
             folder.mkdir(parents=True)
             (folder/'old.txt').write_text(variant)
-            (folder.parent/'summary.xlsx').write_bytes(b'previous workbook')
+        (self.root/MLP/'summary.xlsx').write_bytes(b'previous workbook')
         source = self.root/'source.json'; source.write_text('{}')
         self.candidate = new_mlp_candidate(self.root, 'baseline')
         output = self.candidate/'metrics.csv'; output.write_text('score\n1\n')
@@ -33,18 +33,18 @@ class PublicationTests(unittest.TestCase):
     def save(self):
         (self.candidate/'manifest.json').write_text(json.dumps(self.manifest))
 
-    def fake_summary(self, variant, root):
-        (root/MLP/variant/'summary.xlsx').write_bytes(b'new workbook')
+    def fake_summary(self, root):
+        (root/MLP/'summary.xlsx').write_bytes(b'new workbook')
 
     def test_success_replaces_current_and_clears_dependent_tuning(self):
         with patch('build_mlp_summary.build_summary', side_effect=self.fake_summary):
             result=publish_mlp(self.root,self.candidate,'baseline')
         saved=json.loads((result/'manifest.json').read_text())
-        self.assertEqual(saved['output_folder'],(MLP/'baseline/files').as_posix())
+        self.assertEqual(saved['output_folder'],(MLP/'baseline').as_posix())
         self.assertTrue(all((self.root/p).is_file() for p in saved['output_sha256']))
         self.assertFalse((result/'old.txt').exists())
-        self.assertFalse((self.root/MLP/'tuning/files').exists())
-        self.assertFalse((self.root/MLP/'tuning/summary.xlsx').exists())
+        self.assertFalse((self.root/MLP/'tuning').exists())
+        self.assertEqual((self.root/MLP/'summary.xlsx').read_bytes(),b'new workbook')
         self.assertFalse(list((self.root/MLP).rglob('.previous-*')))
         self.assertFalse(self.candidate.exists())
 
@@ -53,7 +53,7 @@ class PublicationTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError,'Output changed'):
             publish_mlp(self.root,self.candidate,'baseline')
         for variant in ['baseline','tuning']:
-            self.assertTrue((self.root/MLP/variant/'files/old.txt').exists())
+            self.assertTrue((self.root/MLP/variant/'old.txt').exists())
 
     def test_report_failure_restores_both_variants_and_candidate(self):
         original=(self.candidate/'manifest.json').read_bytes()
@@ -61,8 +61,8 @@ class PublicationTests(unittest.TestCase):
             with self.assertRaises(PermissionError):publish_mlp(self.root,self.candidate,'baseline')
         self.assertEqual((self.candidate/'manifest.json').read_bytes(),original)
         for variant in ['baseline','tuning']:
-            self.assertTrue((self.root/MLP/variant/'files/old.txt').exists())
-            self.assertEqual((self.root/MLP/variant/'summary.xlsx').read_bytes(),b'previous workbook')
+            self.assertTrue((self.root/MLP/variant/'old.txt').exists())
+        self.assertEqual((self.root/MLP/'summary.xlsx').read_bytes(),b'previous workbook')
 
     def test_incomplete_candidate_is_never_selected_as_baseline(self):
         from provenance_support import matching_stage
@@ -80,6 +80,6 @@ class PublicationTests(unittest.TestCase):
         (candidate/'manifest.json').write_text(json.dumps(manifest))
         with patch('build_mlp_summary.build_summary',side_effect=self.fake_summary):
             publish_mlp(self.root,candidate,'tuning')
-        self.assertTrue((self.root/MLP/'baseline/files/old.txt').exists())
-        self.assertEqual((self.root/MLP/'baseline/summary.xlsx').read_bytes(),b'previous workbook')
-        self.assertFalse((self.root/MLP/'tuning/files/old.txt').exists())
+        self.assertTrue((self.root/MLP/'baseline/old.txt').exists())
+        self.assertEqual((self.root/MLP/'summary.xlsx').read_bytes(),b'new workbook')
+        self.assertFalse((self.root/MLP/'tuning/old.txt').exists())

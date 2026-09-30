@@ -3,7 +3,7 @@
   "completed_at_utc": "2026-09-24T15:36:27.089981+00:00",
   "notebook": "notebooks/05_dummy_baselines.ipynb",
   "stage": "dummy_training_and_evaluation",
-  "output_folder": "provenance/models/dummy_baselines/run_03",
+  "output_folder": "provenance/models/dummy_baselines/files/baseline",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
   "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
   "source_artifact_sha256": {
@@ -100,10 +100,10 @@
     "r2": "1 - sum(squared residual) / sum((observed - evaluated-subset mean)^2); undefined if n<2 or target constant"
   },
   "output_sha256": {
-    "provenance/models/dummy_baselines/run_03/training_summary.csv": "a42ba796ce8cf8f6fedda16277f4a8f27e2d0f8bd884ad0a9e50b77419465465",
-    "provenance/models/dummy_baselines/run_03/predictions.csv": "1490f21e3ccae738778df683e8ae0c398eab195a4b8e1bfdbc219a962d24e9e7",
-    "provenance/models/dummy_baselines/run_03/metrics.csv": "ee5b8d151c3f658d7e05a1933862d0ac6caaf2e377d0fbd853a49580ac8a528a",
-    "provenance/models/dummy_baselines/run_03/models.joblib.gz": "722ea7b2f5cc03bc897ca1cd84fcf98be3ca3cc73751bb361fe1e89471557e77"
+    "provenance/models/dummy_baselines/files/baseline/training_summary.csv": "a42ba796ce8cf8f6fedda16277f4a8f27e2d0f8bd884ad0a9e50b77419465465",
+    "provenance/models/dummy_baselines/files/baseline/predictions.csv": "1490f21e3ccae738778df683e8ae0c398eab195a4b8e1bfdbc219a962d24e9e7",
+    "provenance/models/dummy_baselines/files/baseline/metrics.csv": "ee5b8d151c3f658d7e05a1933862d0ac6caaf2e377d0fbd853a49580ac8a528a",
+    "provenance/models/dummy_baselines/files/baseline/models.joblib.gz": "722ea7b2f5cc03bc897ca1cd84fcf98be3ca3cc73751bb361fe1e89471557e77"
   },
   "verification": {
     "input_hashes": true,

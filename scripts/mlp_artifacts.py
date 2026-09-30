@@ -1,4 +1,8 @@
-"""Keep one complete MLP execution per variant, replacing it only after audits pass."""
+"""Keep one complete MLP execution per variant, replacing it only after audits pass.
+
+Layout: multilayer_perceptron/summary.xlsx (one combined workbook) beside the
+baseline/ and tuning/ folders, which each hold that variant's files directly.
+"""
 from pathlib import Path
 import json
 import shutil
@@ -9,12 +13,16 @@ MLP = Path('provenance/models/multilayer_perceptron')
 
 
 def new_mlp_candidate(root, variant):
-    """Write a new execution separately so a failed fit cannot erase current results."""
+    """Write a new execution separately so a failed fit cannot erase current results.
+
+    The candidate sits beside baseline/ and tuning/ (not inside them) because the
+    whole variant folder is swapped in when the candidate is accepted.
+    """
     if variant not in {'baseline', 'tuning'}:
         raise ValueError(variant)
-    parent = Path(root) / MLP / variant
+    parent = Path(root) / MLP
     parent.mkdir(parents=True, exist_ok=True)
-    return Path(tempfile.mkdtemp(prefix='.pending-', dir=parent))
+    return Path(tempfile.mkdtemp(prefix=f'.pending-{variant}-', dir=parent))
 
 
 def replace_path(value, old, new):
@@ -33,14 +41,15 @@ def publish_mlp(root, candidate, variant):
     A new baseline invalidates tuning derived from the previous baseline. Those
     dependent results are removed only after the replacement baseline is complete.
     Notebook 09 then produces a new tuning execution from this accepted baseline.
+    Either publication rebuilds the one combined summary.xlsx beside both folders.
     """
     from build_mlp_summary import build_summary
     root, candidate = Path(root).resolve(), Path(candidate).resolve()
     if variant not in {'baseline', 'tuning'}:
         raise ValueError(variant)
-    parent = root / MLP / variant
-    assert candidate.parent == parent and candidate.name.startswith('.pending-')
-    destination = parent / 'files'
+    parent = root / MLP
+    assert candidate.parent == parent and candidate.name.startswith(f'.pending-{variant}-')
+    destination = parent / variant
     manifest_path = candidate / 'manifest.json'
     manifest = json.loads(manifest_path.read_text())
     assert manifest.get('completed_at_utc') and manifest.get('verification')
@@ -59,12 +68,11 @@ def publish_mlp(root, candidate, variant):
     assert not manifest.get('test_evaluation_performed')
     # No historical directory survives a successful publication. Temporary backups
     # let a locked workbook or other write failure restore the previous result.
-    old_files, old_book = parent/'.previous-files', parent/'.previous-summary.xlsx'
-    dependent = root/MLP/'tuning'
-    backups = [(destination, old_files), (parent/'summary.xlsx', old_book)]
+    backups = [(destination, parent/f'.previous-{variant}'),
+               (parent/'summary.xlsx', parent/'.previous-summary.xlsx')]
     if variant == 'baseline':
-        backups += [(dependent/'files', dependent/'.previous-files'),
-                    (dependent/'summary.xlsx', dependent/'.previous-summary.xlsx')]
+        # Tuning was derived from the old baseline, so it is set aside with it.
+        backups.append((parent/'tuning', parent/'.previous-tuning'))
     assert not any(backup.exists() for _, backup in backups), 'An interrupted publication needs recovery before retrying.'
     original_json = {p.name: p.read_bytes() for p in candidate.glob('*.json')}
     old, new = candidate.relative_to(root).as_posix(), destination.relative_to(root).as_posix()
@@ -83,7 +91,7 @@ def publish_mlp(root, candidate, variant):
                 moved.append((current, backup))
         candidate.rename(destination)
         promoted = True
-        build_summary(variant, root)
+        build_summary(root)
     except Exception:
         # Restore the previous result and leave the failed candidate for inspection.
         if promoted:

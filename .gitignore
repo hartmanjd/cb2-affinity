@@ -225,6 +225,11 @@ provenance/models/multilayer_perceptron/**/.pending-*
 provenance/models/multilayer_perceptron/**/.previous-*
 provenance/models/multilayer_perceptron/**/.~*
 
+# Temporary dummy-baseline executions and rollback files.
+provenance/models/dummy_baselines/.pending-*
+provenance/models/dummy_baselines/.previous-*
+provenance/models/dummy_baselines/.~*
+
 # Temporary random forest executions and rollback files.
 provenance/models/random_forest/.pending-*
 provenance/models/random_forest/.previous-*

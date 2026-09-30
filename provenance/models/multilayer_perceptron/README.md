@@ -1,49 +1,59 @@
 # Multilayer perceptron
 
-Open the summary that matches your question:
+Open [summary.xlsx](summary.xlsx) for baseline and tuned results on both frozen
+splits. It follows the combined random forest, XGBoost, SVR and dummy display: a
+results overview, Training Guide, Settings, exact saved tables, search/selection
+records, similarity and cliff diagnostics, and portable Evidence Files links.
 
-| Variant | Quick overview | Detailed evidence |
-| --- | --- | --- |
-| Baseline | [baseline/summary.xlsx](baseline/summary.xlsx) | [baseline/files/](baseline/files/) |
-| Tuned | [tuning/summary.xlsx](tuning/summary.xlsx) | [tuning/files/](tuning/files/) |
+The MLP layout is slightly different from the other models, because its two
+variants come from two notebooks that run at different times:
 
-The first sheet prominently displays random/scaffold validation and training
-scores, including variation across five initialization seeds. One accepted
-execution includes all five seeds on both splits; these are not obsolete runs.
-Reserved test sets remain unevaluated.
+| Folder | Contents |
+| --- | --- |
+| `summary.xlsx` | One combined workbook for baseline and tuned results |
+| `baseline/` | Notebook 08's files: models, predictions, scores, histories, cliff pairs, figures, manifest |
+| `tuning/` | Notebook 09's files: search records, selected models, predictions, scores, figures, manifest |
 
-**Training Guide** explains architecture, input features, optimization, early
-stopping, data sizes, and the meaning of the scores. **Settings** preserves the
-complete JSON configuration and software versions. Subsequent sheets contain
-exact scores and all CSV tables, including predictions, training histories,
-similarity diagnostics and activity cliffs. The tuning summary also includes
-search rankings, per-candidate results and comparison with its baseline.
+The baseline network has hidden layers [32, 16] on 2,048 Morgan fingerprint bits.
+Each variant trains five initialization seeds per split, so the overview shows
+seed means with their sample SD; the SD measures seed variability, not a
+confidence interval. The tuned search compares 12 candidates per split on an
+internal stopping set carved from the training molecules; outer validation is
+never used for selection. Reserved test sets remain unevaluated.
 
-**Evidence Files** links every original file and records its checksum. Compressed
-`models.joblib.gz` files hold the fitted Python models and remain binaries;
-their weights are not expanded into spreadsheet cells. PNG plots remain linked
-files. The summary workbooks are reports, not model inputs.
+Beyond the sheets shared with the other models, the workbook adds MLP-only sheets:
+Score Summary, Search by Seed, Selected Epochs, Stopping / Refit / Search History,
+Internal Membership, and the saved per-seed cliff tables. Compressed
+`models.joblib.gz` files and PNG figures remain linked files.
 
-## One accepted execution
+## How this summary was produced
 
-The current baseline and tuned results were retained, with numbered execution
-folders removed. Older baseline attempts were deleted. Their deletion does not
-change the scientific limitation that validation labels were used during earlier
-development; these are development-validation scores, not final test estimates.
+The workbook is generated directly from the saved evidence by
+`scripts/build_mlp_summary.py`. It checks every manifest checksum, the
+tuning-to-baseline link, the reused baseline files, and recomputes the seed
+means and SDs against the saved `seed_summary.csv` before writing.
 
-Notebooks 08 and 09 save a candidate separately, run their scientific audits, and
-then replace `files/` and `summary.xlsx`. A failed fit or workbook write preserves
-the previous accepted result. After successful replacement, temporary rollback
-copies are deleted. An interrupted candidate may remain hidden as `.pending-*`;
-it is never selected as an accepted result.
+The two earlier per-variant workbooks (`baseline/summary.xlsx` and
+`tuning/summary.xlsx`) were replaced by this single workbook, and each variant's
+former `files/` subfolder was flattened into `baseline/` or `tuning/`. All data
+files, figures and model binaries are byte-identical to the originals. Manifest
+paths and the tuning-to-baseline hash are updated for relocation.
 
-Tuning uses the baseline's frozen internal assignments and activity-cliff pairs.
-Therefore, successfully replacing the baseline clears its now-outdated dependent
-tuning result and summary. Run notebook 09 next to populate them again. Tuning
-replacement leaves the current baseline intact. Each successful execution keeps
-one accepted result per variant, regardless of whether the score improved.
+## Reruns
 
-To refresh both summaries from saved files without retraining:
+Notebooks 08 and 09 save a temporary candidate beside `baseline/` and `tuning/`,
+run their scientific audits, then swap in the new variant folder and rebuild
+`summary.xlsx`. A failed fit or workbook write preserves the previous accepted
+result. After successful replacement, temporary rollback copies are deleted.
+Interrupted `.pending-*` candidates are never selected as accepted results.
+
+Tuning reuses the baseline's frozen internal assignments and activity-cliff pairs.
+Therefore, successfully replacing the baseline also clears the now-outdated
+`tuning/` folder. The workbook then shows the baseline and marks tuning as
+pending. Run notebook 09 next to populate it again. Tuning replacement leaves the
+current baseline intact.
+
+Refresh only the workbook, without training:
 
 ```bash
 python scripts/build_mlp_summary.py
