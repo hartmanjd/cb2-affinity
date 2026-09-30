@@ -1,0 +1,16 @@
+[
+  {
+    "workbook": "random_forest_baseline_summary.xlsx",
+    "sha256": "b240cdd53f4b0e860199f382d1668f3bd8999a8f12c3a46228763330a224898b",
+    "source_file_checksums_verified": 8,
+    "saved_table_rows_verified": 6463,
+    "cover_settings_metrics_and_derived_diagnostics": "passed"
+  },
+  {
+    "workbook": "random_forest_tuned_summary.xlsx",
+    "sha256": "4e9df87d063fd6e50a71beb5d96ea5cb703f10a33bc0f3030b494ca947ef95f0",
+    "source_file_checksums_verified": 10,
+    "saved_table_rows_verified": 12131,
+    "cover_settings_metrics_and_derived_diagnostics": "passed"
+  }
+]

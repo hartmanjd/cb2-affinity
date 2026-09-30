@@ -3,7 +3,7 @@
   "notebook": "notebooks/07_support_vector_regression.ipynb",
   "run_started_at_utc": "2026-09-24T22:06:54.165984+00:00",
   "completed_at_utc": "2026-09-24T22:12:44.207692+00:00",
-  "output_folder": "provenance/models/support_vector_regression/run_01/tuning",
+  "output_folder": "provenance/models/support_vector_regression/files/tuning",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
   "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
   "source_artifact_sha256": {
@@ -11,8 +11,8 @@
     "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
     "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
   },
-  "baseline_manifest": "provenance/models/support_vector_regression/run_01/manifest.json",
-  "baseline_manifest_sha256": "083438cd2d63f2ea507c43a510daacd7f4f397cdca966dc4bb2e633d84583c08",
+  "baseline_manifest": "provenance/models/support_vector_regression/files/baseline/manifest.json",
+  "baseline_manifest_sha256": "b796617f3d9b8ee51ebfd98f9f68a65b7e25263b706dd4c686fed4989c3b95e8",
   "configuration": {
     "search": "GridSearchCV",
     "parameter_grid": {
@@ -121,14 +121,14 @@
     "compression_level": 3
   },
   "output_sha256": {
-    "provenance/models/support_vector_regression/run_01/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
-    "provenance/models/support_vector_regression/run_01/tuning/cv_results.csv": "c23ce10441a2bbfe9c14f439f66a3620e8c4fe9d09863b64465436dea6a21c76",
-    "provenance/models/support_vector_regression/run_01/tuning/predictions.csv": "15adae5b6e6935ea252a653f919cf78070504136e9b013db86098ff348e5f9e7",
-    "provenance/models/support_vector_regression/run_01/tuning/metrics.csv": "1db407a934f3d789fae0754cd51dbb41b61772c00a2dc5e71dba57af90d31281",
-    "provenance/models/support_vector_regression/run_01/tuning/validation_subgroups.csv": "80baac73e63a0dc0d586bfae6505d11fe187e08b3845fc24dfb1d7327d94a0c7",
-    "provenance/models/support_vector_regression/run_01/tuning/baseline_comparison.csv": "df142dd6ba73d7375aaefb275f3c0730d0836d39deb27b3b893ae090e77607d9",
-    "provenance/models/support_vector_regression/run_01/tuning/models.joblib.gz": "291bbf4ece03c48f5393a842c66dcdff80d568e6a4ad5a6b98d2f22c07ea8d67",
-    "provenance/models/support_vector_regression/run_01/tuning/best_parameters.json": "d116e5dcf99d740cb43102166ba631084437235c2075347ea539401e101f260b"
+    "provenance/models/support_vector_regression/files/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
+    "provenance/models/support_vector_regression/files/tuning/cv_results.csv": "c23ce10441a2bbfe9c14f439f66a3620e8c4fe9d09863b64465436dea6a21c76",
+    "provenance/models/support_vector_regression/files/tuning/predictions.csv": "15adae5b6e6935ea252a653f919cf78070504136e9b013db86098ff348e5f9e7",
+    "provenance/models/support_vector_regression/files/tuning/metrics.csv": "1db407a934f3d789fae0754cd51dbb41b61772c00a2dc5e71dba57af90d31281",
+    "provenance/models/support_vector_regression/files/tuning/validation_subgroups.csv": "80baac73e63a0dc0d586bfae6505d11fe187e08b3845fc24dfb1d7327d94a0c7",
+    "provenance/models/support_vector_regression/files/tuning/baseline_comparison.csv": "df142dd6ba73d7375aaefb275f3c0730d0836d39deb27b3b893ae090e77607d9",
+    "provenance/models/support_vector_regression/files/tuning/models.joblib.gz": "291bbf4ece03c48f5393a842c66dcdff80d568e6a4ad5a6b98d2f22c07ea8d67",
+    "provenance/models/support_vector_regression/files/tuning/best_parameters.json": "d116e5dcf99d740cb43102166ba631084437235c2075347ea539401e101f260b"
   },
   "verification": {
     "input_hashes": true,

@@ -1,0 +1,49 @@
+{
+  "workbook": "support_vector_regression_combined_summary.xlsx",
+  "sha256": "4cc3edc32d90b81f42aa0c7aa1d5292c81a20fc2c68e2aad28dc66b55837876f",
+  "source_file_checksums_verified": 19,
+  "saved_table_rows_verified": 18602,
+  "settings_verified": 735,
+  "recomputed_metric_rows": 8,
+  "derived_rows_verified": 270,
+  "numeric_verification": "passed",
+  "presentation_corrections": [
+    "Base Training Guide: SVR has no random_state parameter; distinguish deterministic fitting from the seeded KFold splitter.",
+    "Tuned Training Guide: SVR has no random_state parameter; distinguish deterministic fitting from the seeded KFold splitter."
+  ],
+  "layout": "Readable overview, training guide, settings, exact tables, diagnostics, and evidence sheets; consolidate to the existing random forest display and update links for files/.",
+  "relocations": {
+    "provenance/models/support_vector_regression/run_01/predictions.csv": "provenance/models/support_vector_regression/files/baseline/predictions.csv",
+    "provenance/models/support_vector_regression/run_01/models.joblib.gz": "provenance/models/support_vector_regression/files/baseline/models.joblib.gz",
+    "provenance/models/support_vector_regression/run_01/validation_subgroups.csv": "provenance/models/support_vector_regression/files/baseline/validation_subgroups.csv",
+    "provenance/models/support_vector_regression/run_01/manifest.json": "provenance/models/support_vector_regression/files/baseline/manifest.json",
+    "provenance/models/support_vector_regression/run_01/training_summary.csv": "provenance/models/support_vector_regression/files/baseline/training_summary.csv",
+    "provenance/models/support_vector_regression/run_01/metrics.csv": "provenance/models/support_vector_regression/files/baseline/metrics.csv",
+    "provenance/models/support_vector_regression/run_01/tuning/baseline_comparison.csv": "provenance/models/support_vector_regression/files/tuning/baseline_comparison.csv",
+    "provenance/models/support_vector_regression/run_01/tuning/predictions.csv": "provenance/models/support_vector_regression/files/tuning/predictions.csv",
+    "provenance/models/support_vector_regression/run_01/tuning/models.joblib.gz": "provenance/models/support_vector_regression/files/tuning/models.joblib.gz",
+    "provenance/models/support_vector_regression/run_01/tuning/validation_subgroups.csv": "provenance/models/support_vector_regression/files/tuning/validation_subgroups.csv",
+    "provenance/models/support_vector_regression/run_01/tuning/manifest.json": "provenance/models/support_vector_regression/files/tuning/manifest.json",
+    "provenance/models/support_vector_regression/run_01/tuning/cv_results.csv": "provenance/models/support_vector_regression/files/tuning/cv_results.csv",
+    "provenance/models/support_vector_regression/run_01/tuning/best_parameters.json": "provenance/models/support_vector_regression/files/tuning/best_parameters.json",
+    "provenance/models/support_vector_regression/run_01/tuning/cv_folds.csv": "provenance/models/support_vector_regression/files/tuning/cv_folds.csv",
+    "provenance/models/support_vector_regression/run_01/tuning/metrics.csv": "provenance/models/support_vector_regression/files/tuning/metrics.csv"
+  },
+  "original_file_sha256": {
+    "predictions.csv": "c7a98339dcece18fde2f208734e6219c9f544ec4799e96b87236a50ba2c7bba9",
+    "models.joblib.gz": "7b347b0f4b5520ad3e52032d4a41b66ed162c3f2fe654bc8df573757a9ec74aa",
+    "validation_subgroups.csv": "940cbf659d3db73f8d659374c9041bcc424361f2921e03ae690cacf223d8b464",
+    "manifest.json": "083438cd2d63f2ea507c43a510daacd7f4f397cdca966dc4bb2e633d84583c08",
+    "training_summary.csv": "a68da3f427f045ba7cef7efcf075a1d8cc819796aae23c80c90dfd1de6820484",
+    "metrics.csv": "4cb958ec3fc849a8050d1b38671b98f5ff0599adae077df12d788f6c8bcf2035",
+    "tuning/baseline_comparison.csv": "df142dd6ba73d7375aaefb275f3c0730d0836d39deb27b3b893ae090e77607d9",
+    "tuning/predictions.csv": "15adae5b6e6935ea252a653f919cf78070504136e9b013db86098ff348e5f9e7",
+    "tuning/models.joblib.gz": "291bbf4ece03c48f5393a842c66dcdff80d568e6a4ad5a6b98d2f22c07ea8d67",
+    "tuning/validation_subgroups.csv": "80baac73e63a0dc0d586bfae6505d11fe187e08b3845fc24dfb1d7327d94a0c7",
+    "tuning/manifest.json": "c09659b7d9f0efaaae6edd2b4cf794386944bf8f24988fb931923adf91d5083a",
+    "tuning/cv_results.csv": "c23ce10441a2bbfe9c14f439f66a3620e8c4fe9d09863b64465436dea6a21c76",
+    "tuning/best_parameters.json": "d116e5dcf99d740cb43102166ba631084437235c2075347ea539401e101f260b",
+    "tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
+    "tuning/metrics.csv": "1db407a934f3d789fae0754cd51dbb41b61772c00a2dc5e71dba57af90d31281"
+  }
+}

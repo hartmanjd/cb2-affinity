@@ -224,3 +224,13 @@ __marimo__/
 provenance/models/multilayer_perceptron/**/.pending-*
 provenance/models/multilayer_perceptron/**/.previous-*
 provenance/models/multilayer_perceptron/**/.~*
+
+# Temporary random forest executions and rollback files.
+provenance/models/random_forest/.pending-*
+provenance/models/random_forest/.previous-*
+provenance/models/random_forest/.~*
+
+# Temporary SVR executions and rollback files.
+provenance/models/support_vector_regression/.pending-*
+provenance/models/support_vector_regression/.previous-*
+provenance/models/support_vector_regression/.~*

@@ -3,7 +3,7 @@
   "completed_at_utc": "2026-09-24T15:36:12.122170+00:00",
   "notebook": "notebooks/04_random_forest_evaluation.ipynb",
   "stage": "random_forest_training_and_evaluation",
-  "output_folder": "provenance/models/random_forest/run_03",
+  "output_folder": "provenance/models/random_forest/files/baseline",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
   "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
   "source_artifact_sha256": {
@@ -112,11 +112,11 @@
     "source": "saved validation rows in heldout_training_neighbors.csv"
   },
   "output_sha256": {
-    "provenance/models/random_forest/run_03/training_summary.csv": "2d2e435019b1cce583bd2cd6114bebde5128bf8d4734d6c2951833117a3007de",
-    "provenance/models/random_forest/run_03/predictions.csv": "0a4d0f82f6370422678e207a1bbb9751aedc72d3199966dc52235537e60e7cc3",
-    "provenance/models/random_forest/run_03/metrics.csv": "63ccb53627844971d2b6cf91ab2e1ef438b49925ba25376585b2f0443884e6e9",
-    "provenance/models/random_forest/run_03/validation_subgroups.csv": "96ed14d6825442688f259f829b7a3dee3999ea4958b37c7aba753ff9274a6b6b",
-    "provenance/models/random_forest/run_03/models.joblib.gz": "e3654feab373617180b0b01ff73856ee3c8a70045cc7de2a49e3fe23667e31b2"
+    "provenance/models/random_forest/files/baseline/training_summary.csv": "2d2e435019b1cce583bd2cd6114bebde5128bf8d4734d6c2951833117a3007de",
+    "provenance/models/random_forest/files/baseline/predictions.csv": "0a4d0f82f6370422678e207a1bbb9751aedc72d3199966dc52235537e60e7cc3",
+    "provenance/models/random_forest/files/baseline/metrics.csv": "63ccb53627844971d2b6cf91ab2e1ef438b49925ba25376585b2f0443884e6e9",
+    "provenance/models/random_forest/files/baseline/validation_subgroups.csv": "96ed14d6825442688f259f829b7a3dee3999ea4958b37c7aba753ff9274a6b6b",
+    "provenance/models/random_forest/files/baseline/models.joblib.gz": "e3654feab373617180b0b01ff73856ee3c8a70045cc7de2a49e3fe23667e31b2"
   },
   "verification": {
     "input_hashes": true,

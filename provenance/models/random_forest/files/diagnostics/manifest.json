@@ -1,0 +1,15 @@
+{
+  "stage": "random_forest_report_diagnostics",
+  "source_preparation_manifest": "provenance/preparation/manifest.json",
+  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "definition": {
+    "scope": "unordered within outer validation",
+    "minimum_tanimoto": 0.8,
+    "minimum_absolute_observed_pki_difference": 1.0
+  },
+  "pair_count": 121,
+  "origin_note": "Copied from the verified MLP pair set for the same preparation. This local snapshot is independent of future MLP runs.",
+  "output_sha256": {
+    "provenance/models/random_forest/files/diagnostics/cliff_pairs.csv": "3404bd28e0702be1d12c148010b457615b2b2eb0ce809324633a87b18c164990"
+  }
+}

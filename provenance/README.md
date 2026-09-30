@@ -63,3 +63,20 @@ model comparison and master reference. You can also run
 `python scripts/build_project_reference.py` from the project root. Both preserve
 the supplied data provenance workbook unchanged. MLP summaries are separate,
 automatically generated workbooks refreshed when a new MLP execution is accepted.
+
+## Random forest reference
+
+[The combined random forest summary](models/random_forest/summary.xlsx) presents
+baseline and tuned results together. Its supporting files are grouped under
+`models/random_forest/files/`, with separate baseline, tuning, and diagnostic
+subfolders. See [the forest guide](models/random_forest/README.md) for verification
+and rerun behavior.
+
+## Support vector regression reference
+
+[The combined SVR summary](models/support_vector_regression/summary.xlsx) uses
+the same display as the forest summary, with baseline and tuned scores, kernel
+and parameter explanations, the complete search, and derived cliff diagnostics.
+Supporting evidence sits in `models/support_vector_regression/files/` under
+baseline, tuning, and diagnostics. See [the SVR guide](models/support_vector_regression/README.md)
+for the supplied-workbook audit and automatic replacement on notebook 07 reruns.

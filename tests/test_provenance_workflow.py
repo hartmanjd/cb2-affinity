@@ -85,7 +85,7 @@ class DatasetHandoffTests(unittest.TestCase):
         curation = json.loads((self.root / self.curation).read_text())
         curation["source_raw_folder"] = "provenance/raw/snapshot_1"
         self.write(self.curation, curation)
-        self.write("provenance/models/random_forest/run_01/manifest.json", {
+        self.write("provenance/models/random_forest/files/baseline/manifest.json", {
             "completed_at_utc": "2026-02-01", "source_preparation_manifest": self.preparation,
             "source_preparation_manifest_sha256": sha256(self.root / self.preparation),
         })
