@@ -1,7 +1,7 @@
 {
   "stage": "xgboost_report_diagnostics",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
-  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_preparation_manifest_sha256": "2df49a0c79a438791ee7cc7e749f0556cb706e77e17e29837fab4246d6f6a2b6",
   "definition": {
     "scope": "unordered within outer validation",
     "minimum_tanimoto": 0.8,

@@ -5,7 +5,6 @@ hold each variant's saved files directly. The display matches the random forest,
 XGBoost, SVR and dummy summaries, plus MLP-only sheets (seeds, epochs, histories).
 """
 from pathlib import Path
-from collections import defaultdict
 from statistics import mean, stdev
 import csv
 import hashlib

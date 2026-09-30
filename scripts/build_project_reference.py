@@ -17,7 +17,6 @@ import os
 import re
 from provenance_support import (
     latest_acquisition, current_selection, current_curation, current_preparation,
-    load_review_record,
 )
 from fetch_models import require_models
 
@@ -43,7 +42,7 @@ def project_files():
     for directory, subdirs, files in os.walk(ROOT):
         subdirs[:] = sorted(d for d in subdirs if d not in excluded and not d.startswith(('.pending-', '.previous-')))
         for name in sorted(files):
-            if name.endswith(":Zone.Identifier") or name.startswith((".~", ".pending-", ".previous-")):
+            if name in excluded or name.endswith(":Zone.Identifier") or name.startswith((".~", ".pending-", ".previous-")):
                 continue
             names.append((Path(directory) / name).relative_to(ROOT).as_posix())
     return sorted(names)
@@ -122,8 +121,8 @@ def verify_saved_evidence():
             assert len({r["rdkit_smiles"] for r in rows}) == len(rows)
             assert {r["rdkit_smiles"] for r in rows} == membership[metric["split_strategy"], metric["subset"]]
             y = [float(r["observed_pki"]) for r in rows]
-            errors = [float(r["predicted_pki"]) - a for r, a in zip(rows, y)]
-            for row, error in zip(rows, errors):
+            errors = [float(r["predicted_pki"]) - a for r, a in zip(rows, y, strict=True)]
+            for row, error in zip(rows, errors, strict=True):
                 for key, value in [("residual", error), ("absolute_error", abs(error)), ("squared_error", error**2)]:
                     assert math.isclose(float(row[key]), value, rel_tol=1e-9, abs_tol=1e-10), (path, key)
             average = mean(y)
@@ -326,6 +325,8 @@ def description(name):
 
 
 DESCRIPTIONS.update({
+    "requirements.txt": "Exact package versions for running the notebooks; they match every run manifest.",
+    ".python-version": "Python version (3.14.6) used by the pinned environment; read by uv.",
     "build_dummy_summary.py": "Builds a combined dummy-baseline workbook with exact scores, strategy explanations, diagnostics and evidence links.",
     "dummy_artifacts.py": "Publishes baseline and tuned dummy results together with rollback if reporting fails.",
     "test_dummy_reporting.py": "Checks dummy-baseline publication, hash links, incomplete or corrupt evidence rejection, and rollback.",
@@ -341,7 +342,8 @@ DESCRIPTIONS.update({
     "test_forest_reporting.py": "Checks forest diagnostics, incomplete-run rejection, publication and rollback.",
     "fetch_models.py": "Downloads fitted models from the GitHub Release and accepts them only if they match manifest checksums; also uploads new models.",
     "test_fetch_models.py": "Checks model download verification, corrupt-download rejection, and the missing-model instruction.",
-    "import_validation.json": "Checksums and verification results for supplied model summary workbooks.",
+    "random_forest_import_validation.json": "One-time check of the supplied random forest workbooks against the earlier saved evidence.",
+    "support_vector_regression_import_validation.json": "One-time check of the supplied SVR workbook against the earlier saved evidence, with file relocations.",
     "test_mlp_artifacts.py": "Checks successful replacement, failed-candidate preservation and rollback of MLP results.",
     "build_mlp_summary.py": "Builds one combined MLP workbook (baseline and tuned) with seed scores, training explanations, full tables and file links.",
     "mlp_artifacts.py": "Publishes one audited MLP execution; keeps current results safe until replacement succeeds.",
@@ -396,9 +398,9 @@ def latest_models(state, status):
     models = []
     for model, variant, folder, tuning_child in MODEL_FOLDERS:
         parent = ROOT / "provenance/models" / folder
-        pattern = (("files/tuning/manifest.json" if tuning_child else "files/baseline/manifest.json") if folder in {"dummy_baselines", "random_forest", "support_vector_regression", "xgboost"} else
-                   "manifest.json" if folder.startswith("multilayer_perceptron/") else
-                   "run_*/tuning/manifest.json" if tuning_child else "run_*/manifest.json")
+        # MLP variants hold their files directly; the other families use files/<variant>/.
+        pattern = ("manifest.json" if folder.startswith("multilayer_perceptron/") else
+                   "files/tuning/manifest.json" if tuning_child else "files/baseline/manifest.json")
         candidates = [p for p in parent.glob(pattern) if read_json(p).get("completed_at_utc")]
         label = f"{model} / {variant}"
         if not candidates:
@@ -488,7 +490,7 @@ def build_master_reference():
              "The data provenance [Excel workbook](provenance/CB2_data_provenance.xlsx) is the supplied presentation snapshot and is not overwritten by reruns. "
              "Git internals, environments, caches, and Windows download tags are excluded.", "", "## Folders", "",
              "| Folder | Purpose |", "| --- | --- |"]
-    directories = sorted({str(parent) for name in names for parent in Path(name).parents if str(parent) != "."})
+    directories = sorted({parent.as_posix() for name in names for parent in Path(name).parents if parent.as_posix() != "."})
     purpose = {"notebooks": "Ten ordered scientific pipeline notebooks.", "scripts": "Storage helpers, evidence checks, and Markdown reference updates.",
                "tests": "Dataset handoff and review-record checks without downloads or model training.",
                "results": "Current headline comparison; supporting evidence is under provenance/models/.", "provenance": "All source and supporting evidence, plus data and model summary workbooks.",
@@ -498,7 +500,8 @@ def build_master_reference():
                "identical_fingerprints": "Identical-fingerprint groups, members, and boundary crossings.",
                "models": "Model families with fitted models, predictions, settings, and diagnostics.",
                "files": "Detailed artifacts for the accepted execution; open the model's summary.xlsx first.",
-               "baseline": "Baseline model executions.", "tuning": "Training-only searches, selected settings, and refits."}
+               "baseline": "Baseline model executions.", "tuning": "Training-only searches, selected settings, and refits.",
+               "history": "One-time records of past events; not read by the pipeline."}
     for directory in directories:
         base = Path(directory).name
         text = purpose.get(base, "Recorded execution; consult its manifest for dataset and settings." if base.startswith("run_") else base.replace("_", " ") + " supporting files.")

@@ -11,8 +11,8 @@
       "strategy": "mean"
     },
     "training_structures": 2860,
-    "search_seconds": 0.041180399974109605,
-    "refit_seconds": 0.0002498626708984375
+    "search_seconds": 0.010848928999621421,
+    "refit_seconds": 0.0001232624053955078
   },
   "scaffold": {
     "best_candidate_index": 1,
@@ -26,7 +26,7 @@
       "strategy": "median"
     },
     "training_structures": 2778,
-    "search_seconds": 0.028575400006957352,
-    "refit_seconds": 0.0002701282501220703
+    "search_seconds": 0.010154650000913534,
+    "refit_seconds": 0.00016188621520996094
   }
 }

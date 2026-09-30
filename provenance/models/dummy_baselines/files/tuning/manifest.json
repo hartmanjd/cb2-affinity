@@ -1,17 +1,17 @@
 {
   "stage": "dummy_strategy_search",
   "notebook": "notebooks/05_dummy_baselines.ipynb",
-  "run_started_at_utc": "2026-09-24T15:36:27.131511+00:00",
-  "completed_at_utc": "2026-09-24T15:36:28.528759+00:00",
+  "run_started_at_utc": "2026-09-30T20:18:52.312124+00:00",
+  "completed_at_utc": "2026-09-30T20:18:52.485225+00:00",
   "output_folder": "provenance/models/dummy_baselines/files/tuning",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
-  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_preparation_manifest_sha256": "2df49a0c79a438791ee7cc7e749f0556cb706e77e17e29837fab4246d6f6a2b6",
   "source_artifact_sha256": {
-    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
-    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779"
+    "provenance/preparation/fingerprints_and_targets.npz": "b8a71aa5b21a1e0eab8976c2000704543b7c0da7b98e5b098e1e8d26134ce731",
+    "provenance/preparation/split_assignments.csv": "c5fa61ce27b3c44f5b5338139a3fcf5613ba8dc358431ae55bad82aff3a6fe9a"
   },
   "baseline_manifest": "provenance/models/dummy_baselines/files/baseline/manifest.json",
-  "baseline_manifest_sha256": "070a7442abdeb7f006e7deeef803ce89f117b6bdf1101119f5cd236b885d8943",
+  "baseline_manifest_sha256": "6456f7f40f52c145169db328bec8bc7021f0e01b6dc86c8a4cd77dbb69c45f31",
   "configuration": {
     "search": "GridSearchCV",
     "parameter_grid": {
@@ -50,8 +50,8 @@
         "strategy": "mean"
       },
       "training_structures": 2860,
-      "search_seconds": 0.041180399974109605,
-      "refit_seconds": 0.0002498626708984375
+      "search_seconds": 0.010848928999621421,
+      "refit_seconds": 0.0001232624053955078
     },
     "scaffold": {
       "best_candidate_index": 1,
@@ -65,8 +65,8 @@
         "strategy": "median"
       },
       "training_structures": 2778,
-      "search_seconds": 0.028575400006957352,
-      "refit_seconds": 0.0002701282501220703
+      "search_seconds": 0.010154650000913534,
+      "refit_seconds": 0.00016188621520996094
     }
   },
   "counts": {
@@ -75,13 +75,13 @@
     "prediction_rows": 6457
   },
   "output_sha256": {
-    "provenance/models/dummy_baselines/files/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
-    "provenance/models/dummy_baselines/files/tuning/cv_results.csv": "05565c4660b66b4693963874d13dfd7e8841ae1cc03c774074dd576e0d758191",
-    "provenance/models/dummy_baselines/files/tuning/predictions.csv": "7fda818be778829fdf7697bff5c07a3c73a0adf796e61e1e3722cbdebfec4ee8",
-    "provenance/models/dummy_baselines/files/tuning/metrics.csv": "058dcf611fe83cb8b4f40219c522ee41447cc70cc0780f0424b9afacd4df4ba9",
-    "provenance/models/dummy_baselines/files/tuning/baseline_comparison.csv": "6407b10c6adf96773d87fee44933362335ad96d8dcd5e630edde10c8c0b013c3",
-    "provenance/models/dummy_baselines/files/tuning/best_parameters.json": "b503f05ba50db9aa20fb619f50d1a7122d99d76fcde514d469d9ff269c99f429",
-    "provenance/models/dummy_baselines/files/tuning/models.joblib.gz": "28f94065b9b81ff8a35756bab64337d0daec044d19f854795782e132b14aa906"
+    "provenance/models/dummy_baselines/files/tuning/cv_folds.csv": "ca3435e755bc1b8cefd73e7bb00a3d650c64a4b1047f11f6134e03f42a9b10ce",
+    "provenance/models/dummy_baselines/files/tuning/cv_results.csv": "18cf7b0434578970e9a3210b642a79ad0614b28bd7d8e42b256b964467842538",
+    "provenance/models/dummy_baselines/files/tuning/predictions.csv": "6abd12a580158e43e0e378a840fcd24cc418532443aef25b5f92f85b67cb6829",
+    "provenance/models/dummy_baselines/files/tuning/metrics.csv": "562048da85a64e0ca97e18e2178b9423fb07b9b1b03a14940f6dcf2aa0c75ceb",
+    "provenance/models/dummy_baselines/files/tuning/baseline_comparison.csv": "1203e483f60db6e719d93cc96d4dc92aee86627734180b3336ea4d399ce82952",
+    "provenance/models/dummy_baselines/files/tuning/models.joblib.gz": "7f94296503c5bf353248a3a833380164a08ec69bcce9f22650d10ac711457310",
+    "provenance/models/dummy_baselines/files/tuning/best_parameters.json": "4152f72f07a6e1637ab761e5dbb5f4c47d640e164d0a19481ffa37988fac71be"
   },
   "verification": {
     "input_hashes": true,
@@ -99,23 +99,11 @@
   "test_evaluation_performed": false,
   "software_versions": {
     "python": "3.14.6",
+    "platform": "Linux",
     "rdkit": "2026.03.6",
     "numpy": "2.5.0",
     "pandas": "3.0.3",
     "scikit_learn": "1.9.0",
     "joblib": "1.5.3"
-  },
-  "path_update": {
-    "record": "provenance/README.md",
-    "reason": "Supporting files consolidated under provenance; original scientific results retained."
-  },
-  "model_storage": {
-    "format": "joblib with gzip compression",
-    "compression_level": 3,
-    "updated_at_utc": "2026-09-24T16:16:16.797007+00:00",
-    "uncompressed_sha256": "139b6c4151b75c813b74a368fd1cca88bd1d8b979fa85a0c0ae0b6e1b8c1f1ee",
-    "compression_preserves_original_serialized_bytes": true,
-    "verification": "All saved estimators loaded and reproduced their training/validation predictions.",
-    "maintenance_record": "data/processed/renaming_manifest.json"
   }
 }

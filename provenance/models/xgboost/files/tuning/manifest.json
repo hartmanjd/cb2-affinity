@@ -1,18 +1,18 @@
 {
   "stage": "xgboost_hyperparameter_search",
   "notebook": "notebooks/06_xgboost.ipynb",
-  "run_started_at_utc": "2026-09-24T21:55:01.813857+00:00",
-  "completed_at_utc": "2026-09-24T21:55:36.633647+00:00",
+  "run_started_at_utc": "2026-09-30T20:19:08.934755+00:00",
+  "completed_at_utc": "2026-09-30T20:19:35.442685+00:00",
   "output_folder": "provenance/models/xgboost/files/tuning",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
-  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_preparation_manifest_sha256": "2df49a0c79a438791ee7cc7e749f0556cb706e77e17e29837fab4246d6f6a2b6",
   "source_artifact_sha256": {
-    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
-    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
-    "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+    "provenance/preparation/fingerprints_and_targets.npz": "b8a71aa5b21a1e0eab8976c2000704543b7c0da7b98e5b098e1e8d26134ce731",
+    "provenance/preparation/split_assignments.csv": "c5fa61ce27b3c44f5b5338139a3fcf5613ba8dc358431ae55bad82aff3a6fe9a",
+    "provenance/preparation/heldout_training_neighbors.csv": "2f4c44392c37a8cafb98a36b6c335182e10bb5b6f36a87fe8f63b7fdf6b010a8"
   },
   "baseline_manifest": "provenance/models/xgboost/files/baseline/manifest.json",
-  "baseline_manifest_sha256": "94c738160cee037cb29b387a51197359a2383f05bd4d9380f8854225ac62fe05",
+  "baseline_manifest_sha256": "336cde9dd14f43b67dfc9abb62705b606ad228dd9450d2560832003bbc38ce50",
   "configuration": {
     "search": "GridSearchCV",
     "parameter_grid": {
@@ -54,7 +54,7 @@
         "max_depth": 4,
         "n_estimators": 250
       },
-      "best_mean_cv_mae_pki": 0.6028335705980344,
+      "best_mean_cv_mae_pki": 0.6032289321617612,
       "effective_parameters": {
         "objective": "reg:squarederror",
         "base_score": null,
@@ -98,8 +98,8 @@
         "verbosity": null
       },
       "training_structures": 2860,
-      "search_seconds": 17.10261430000537,
-      "refit_seconds": 0.5074923038482666
+      "search_seconds": 12.977068073996634,
+      "refit_seconds": 0.5289723873138428
     },
     "scaffold": {
       "best_candidate_index": 7,
@@ -108,7 +108,7 @@
         "max_depth": 4,
         "n_estimators": 250
       },
-      "best_mean_cv_mae_pki": 0.6724060176999712,
+      "best_mean_cv_mae_pki": 0.673655450861699,
       "effective_parameters": {
         "objective": "reg:squarederror",
         "base_score": null,
@@ -152,8 +152,8 @@
         "verbosity": null
       },
       "training_structures": 2778,
-      "search_seconds": 16.67918569999165,
-      "refit_seconds": 0.49308347702026367
+      "search_seconds": 12.865832279996539,
+      "refit_seconds": 0.5237898826599121
     }
   },
   "counts": {
@@ -179,14 +179,14 @@
     "compression_level": 3
   },
   "output_sha256": {
-    "provenance/models/xgboost/files/tuning/cv_folds.csv": "b2692627b21dde7d223afddf6320a298c63c0512d6ae60adae08af7382f6466f",
-    "provenance/models/xgboost/files/tuning/cv_results.csv": "4f6fcd8cdaf08d64e02f18de6b25bb696a5d5732123202bbaaceee431bffb170",
-    "provenance/models/xgboost/files/tuning/predictions.csv": "bac90b1d3ff99ed3f5e7f51cf21933a93c286271d22a423ce06ef3577b5ff333",
-    "provenance/models/xgboost/files/tuning/metrics.csv": "71ac44e99b60d7b49ffcb133f6b42582ed0844554fa215916c836e1a2ca11895",
-    "provenance/models/xgboost/files/tuning/validation_subgroups.csv": "b9b52603a0f6cba7ac0cd107c6be6209443f5185eae8a633084322cb3b64578d",
-    "provenance/models/xgboost/files/tuning/baseline_comparison.csv": "26a168afa88edb5a70b7c4fe1c5366b43d553312a718be09a67dae4bb9735942",
-    "provenance/models/xgboost/files/tuning/models.joblib.gz": "5ee5eb5e43a5a6ba6408ee63abe7b9eeb71df1611c0c1fb333189be8c3fa9b4f",
-    "provenance/models/xgboost/files/tuning/best_parameters.json": "5f6fe443ce288c622289fd9181de162fcc26fe9dc36e550d5472bce4a550bb0d"
+    "provenance/models/xgboost/files/tuning/cv_folds.csv": "ca3435e755bc1b8cefd73e7bb00a3d650c64a4b1047f11f6134e03f42a9b10ce",
+    "provenance/models/xgboost/files/tuning/cv_results.csv": "63d9fa45063773da0f024005b3200d59a6cec237573213498caa8fcfa1bfae61",
+    "provenance/models/xgboost/files/tuning/predictions.csv": "a8b0018899541459506c70cbdce2d8e5b44632176c0fa910edf66e14ddb440f2",
+    "provenance/models/xgboost/files/tuning/metrics.csv": "260784685d049b1c2de09c067f08bfd02d9ac1504210718c403237188e970af1",
+    "provenance/models/xgboost/files/tuning/validation_subgroups.csv": "daf937bd272bfbaa025b8deb99bb1265377337945788598e6bc66bbae948061a",
+    "provenance/models/xgboost/files/tuning/baseline_comparison.csv": "e823b973cac79ca3b41e97662c3db23e777a5a4d1cceaf45dfdd91ccddf0607d",
+    "provenance/models/xgboost/files/tuning/models.joblib.gz": "62e344a9bbbd32aca260fd7283326566f6318fda1d656fef5f382a0eeeb76acc",
+    "provenance/models/xgboost/files/tuning/best_parameters.json": "86272fab31fbb2ce7ce8fdda4de8c8f9d2d1acb486e5e807192b820039a04f26"
   },
   "verification": {
     "input_hashes": true,
@@ -205,6 +205,7 @@
   "test_evaluation_performed": false,
   "software_versions": {
     "python": "3.14.6",
+    "platform": "Linux",
     "rdkit": "2026.03.6",
     "numpy": "2.5.0",
     "pandas": "3.0.3",

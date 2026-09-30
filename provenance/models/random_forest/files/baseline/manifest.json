@@ -1,15 +1,15 @@
 {
-  "run_started_at_utc": "2026-09-24T15:36:06.337685+00:00",
-  "completed_at_utc": "2026-09-24T15:36:12.122170+00:00",
+  "run_started_at_utc": "2026-09-30T20:17:03.513305+00:00",
+  "completed_at_utc": "2026-09-30T20:17:08.137212+00:00",
   "notebook": "notebooks/04_random_forest_evaluation.ipynb",
   "stage": "random_forest_training_and_evaluation",
   "output_folder": "provenance/models/random_forest/files/baseline",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
-  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_preparation_manifest_sha256": "2df49a0c79a438791ee7cc7e749f0556cb706e77e17e29837fab4246d6f6a2b6",
   "source_artifact_sha256": {
-    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
-    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
-    "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8"
+    "provenance/preparation/fingerprints_and_targets.npz": "b8a71aa5b21a1e0eab8976c2000704543b7c0da7b98e5b098e1e8d26134ce731",
+    "provenance/preparation/split_assignments.csv": "c5fa61ce27b3c44f5b5338139a3fcf5613ba8dc358431ae55bad82aff3a6fe9a",
+    "provenance/preparation/heldout_training_neighbors.csv": "2f4c44392c37a8cafb98a36b6c335182e10bb5b6f36a87fe8f63b7fdf6b010a8"
   },
   "forest_names": {
     "random": "random_random_forest",
@@ -63,7 +63,7 @@
       "model": "random_random_forest",
       "training_structures": 2860,
       "features": 2048,
-      "fit_seconds": 1.6938668999937363,
+      "fit_seconds": 1.3778569290007,
       "fitted_trees": 300
     },
     {
@@ -71,7 +71,7 @@
       "model": "scaffold_random_forest",
       "training_structures": 2778,
       "features": 2048,
-      "fit_seconds": 1.6320900000282563,
+      "fit_seconds": 1.3385311039965018,
       "fitted_trees": 300
     }
   ],
@@ -112,11 +112,11 @@
     "source": "saved validation rows in heldout_training_neighbors.csv"
   },
   "output_sha256": {
-    "provenance/models/random_forest/files/baseline/training_summary.csv": "2d2e435019b1cce583bd2cd6114bebde5128bf8d4734d6c2951833117a3007de",
-    "provenance/models/random_forest/files/baseline/predictions.csv": "0a4d0f82f6370422678e207a1bbb9751aedc72d3199966dc52235537e60e7cc3",
-    "provenance/models/random_forest/files/baseline/metrics.csv": "63ccb53627844971d2b6cf91ab2e1ef438b49925ba25376585b2f0443884e6e9",
-    "provenance/models/random_forest/files/baseline/validation_subgroups.csv": "96ed14d6825442688f259f829b7a3dee3999ea4958b37c7aba753ff9274a6b6b",
-    "provenance/models/random_forest/files/baseline/models.joblib.gz": "e3654feab373617180b0b01ff73856ee3c8a70045cc7de2a49e3fe23667e31b2"
+    "provenance/models/random_forest/files/baseline/models.joblib.gz": "f80dc94e43d7b64eda50f62d794393c02b7a2b1110bdf3093b00de275fb396fe",
+    "provenance/models/random_forest/files/baseline/training_summary.csv": "a8d95927ad71cc3f36bee632ff0018b8d4a2c5a113b4776a318fdfea50173ad8",
+    "provenance/models/random_forest/files/baseline/predictions.csv": "0e5ad81f872cad621bdc24afb7b030ec613c2c3f194c8c7202887b0021fe784e",
+    "provenance/models/random_forest/files/baseline/metrics.csv": "303b57d8528f4081b69c58090417dba48220f3de84fd42d407188c7cd95d2981",
+    "provenance/models/random_forest/files/baseline/validation_subgroups.csv": "437dbe11fc3cdb761e286081cab88b5492a193187d1251cfd46996cf0e6b1365"
   },
   "verification": {
     "input_hashes": true,
@@ -132,24 +132,12 @@
   "test_evaluation_performed": false,
   "software_versions": {
     "python": "3.14.6",
+    "platform": "Linux",
     "rdkit": "2026.03.6",
     "numpy": "2.5.0",
     "pandas": "3.0.3",
     "scikit_learn": "1.9.0",
     "joblib": "1.5.3",
     "matplotlib": "3.11.0"
-  },
-  "path_update": {
-    "record": "provenance/README.md",
-    "reason": "Supporting files consolidated under provenance; original scientific results retained."
-  },
-  "model_storage": {
-    "format": "joblib with gzip compression",
-    "compression_level": 3,
-    "updated_at_utc": "2026-09-24T16:16:16.797007+00:00",
-    "uncompressed_sha256": "236394cb4964b4717b0828160a2bcc2011a4116bcf682b194a6c7630e26a25ef",
-    "compression_preserves_original_serialized_bytes": true,
-    "verification": "All saved estimators loaded and reproduced their training/validation predictions.",
-    "maintenance_record": "data/processed/renaming_manifest.json"
   }
 }

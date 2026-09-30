@@ -6,7 +6,7 @@
       "epsilon": 0.1,
       "gamma": "scale"
     },
-    "best_mean_cv_mae_pki": 0.5389327369576561,
+    "best_mean_cv_mae_pki": 0.5389327369576562,
     "effective_parameters": {
       "C": 10.0,
       "cache_size": 500,
@@ -21,8 +21,8 @@
       "verbose": false
     },
     "training_structures": 2860,
-    "search_seconds": 154.64305310000782,
-    "refit_seconds": 5.208611965179443
+    "search_seconds": 124.16570728700026,
+    "refit_seconds": 3.8620502948760986
   },
   "scaffold": {
     "best_candidate_index": 4,
@@ -46,7 +46,7 @@
       "verbose": false
     },
     "training_structures": 2778,
-    "search_seconds": 159.51364019999164,
-    "refit_seconds": 4.652419328689575
+    "search_seconds": 109.45351130999916,
+    "refit_seconds": 4.06059193611145
   }
 }

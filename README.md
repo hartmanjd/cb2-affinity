@@ -20,6 +20,7 @@ and model artifacts remain under `provenance/`.
 | `provenance/` | Data provenance workbook, model summaries, and all supporting files |
 | `results/` | A readable headline model comparison |
 | `scripts/` | Shared storage helpers, evidence checks, and Markdown reference updates |
+| `tests/` | Automated checks for dataset handoffs, publication, rollback, and model downloads |
 
 There are no archive folders. The old `curation/run_05` folder is removed; the
 supporting evidence for the preserved model results is now directly under
@@ -63,10 +64,24 @@ stops future growth but does not shrink existing clones.
 ## Fresh run
 
 Open this Linux checkout in VS Code: `/home/justin/code/cb2-affinity` (WSL: Ubuntu).
-Use the same Python environment throughout the run, with NumPy, pandas, RDKit,
-scikit-learn, joblib, matplotlib, XGBoost, and openpyxl available. Notebook checks
-still compare recorded software versions; rerun preparation before fitting in a
-new environment rather than bypassing the checks.
+All saved results were produced on Linux with the exact versions in
+`requirements.txt` and Python 3.14.6 (`.python-version`). Create that environment
+once with [uv](https://docs.astral.sh/uv/), then select `.venv` as the notebook
+kernel in VS Code:
+
+```bash
+uv venv --python 3.14.6 .venv
+```
+
+```bash
+uv pip install --python .venv/bin/python -r requirements.txt
+```
+
+Notebook checks compare the installed versions **and the operating system** with
+the preparation run. Tree models (random forest, XGBoost) can resolve near-tied
+splits differently on Windows and Linux, so results are only exactly
+reproducible on the same OS. If you change packages or OS, rerun notebook 03
+onward rather than bypassing the checks.
 
 In a new clone, first run `python scripts/fetch_models.py` (see [Fitted models](#fitted-models)).
 Each notebook's final cell verifies every recorded checksum, including the models.

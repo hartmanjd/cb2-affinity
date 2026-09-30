@@ -1,6 +1,6 @@
 {
-  "run_started_at_utc": "2026-09-24T00:54:32.876894+00:00",
-  "completed_at_utc": "2026-09-24T00:54:40.773125+00:00",
+  "run_started_at_utc": "2026-09-30T20:16:51.283335+00:00",
+  "completed_at_utc": "2026-09-30T20:16:55.979003+00:00",
   "notebook": "notebooks/03_modeling_preparation.ipynb",
   "stage": "modeling_preparation",
   "output_folder": "provenance/preparation",
@@ -9,25 +9,25 @@
   "source_acquisition_manifest": "provenance/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json",
   "source_sha256": {
     "provenance/selection/chembl_cb2_20260922T165756862384Z/cb2_ki_selected.csv": "049e6dd538de1a4503c0a8744c70e3f08b884b554d453271ca255860e3af20d1",
-    "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json": "15b307771acda07519009aad96dc3a090c4a54ba056dbd61e5f41b6166810a87",
+    "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json": "47f6a4d1e64035c4f14bf38311d0e7724c2ab7294d018a1e9d8b8dcd6950f655",
     "provenance/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json": "fbe26d64bc56519abdfcb24ee60b2aaf427684d9527743314b423c526be5a532",
     "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_activity.json": "6db6a56de52d45d06b02f13eabf8c45a50a9b9f3a194c3fbf3851a5f0952376f",
     "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_assay.json": "4bba2004622540d5df5a43ce95d70108d7dc16d2f81cc78963b0e9287c9b0142",
     "provenance/curation/measurement_decisions.csv": "f6e726424fff791cb72801e4511aaf41ecdf2ad3aa0511dfad6a629dcb820a7a",
     "provenance/curation/structure_summary.csv": "e99a9eb43f1cff3b86352c5ccd613f087b7f1a262a817b3093db41dc50dd4449",
     "provenance/curation/curated_structures.csv": "80f3adcb6598c18b67c51612a798dd0199231851fd68a9af20e4e2d5bcdab953",
-    "provenance/curation/review.json": "63a3f90db1af01c78320704b37d03580ca37c8e41634dc96594ea45cc7e68b1c",
-    "provenance/curation/manifest.json": "117fcd92227be06f6273ea99d1620fb0c9756f570a97dba62a8a93ae9f0409af"
+    "provenance/curation/review.json": "eabd85131b6f43eb5c58c1f6bbaf78d3b09b1ea9afd03d065a13c9ca806b0b91",
+    "provenance/curation/manifest.json": "b54db8fbccadc63afa5ae136efb764489f85d9ac05e4ccbcdabe32eeaf83be2a"
   },
   "artifact_sha256": {
-    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
-    "provenance/preparation/identical_fingerprints/fingerprint_groups.csv": "812f58999fd679c0412d78dd7cf1f2be51f011f36be391241f43d7fd0f9a3190",
-    "provenance/preparation/identical_fingerprints/fingerprint_group_members.csv": "2dba1abbee9fed50572e786a453a9c2bc57ee71e1dcd8fe277a0911b4bd5d76c",
-    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779",
-    "provenance/preparation/split_manifest.json": "8160e66b3ee1264d1aacfd93a8a34b1014933886005a013abfaf8317a4dfc87f",
-    "provenance/preparation/identical_fingerprints/cross_split_fingerprint_pairs.csv": "cecbb80799603a67e8d7c92291f9d34ddb102abbcfed429ff544e8ca0a8a17ae",
-    "provenance/preparation/heldout_training_neighbors.csv": "7ecc5346a6090ba42d702c0f8863666a21edf024719b1ec1d36a8042e10992d8",
-    "provenance/preparation/audit_summary.json": "e4c5cb2fef680f7e8b445de77aa361f391a54c75dcaa10041485bb7617bbdd5b"
+    "provenance/preparation/fingerprints_and_targets.npz": "b8a71aa5b21a1e0eab8976c2000704543b7c0da7b98e5b098e1e8d26134ce731",
+    "provenance/preparation/identical_fingerprints/fingerprint_groups.csv": "f2638c9cb10aac1ae77cb6fb82948afe8352874956064741a11a99b09d567117",
+    "provenance/preparation/identical_fingerprints/fingerprint_group_members.csv": "4fe50ae55ccbc13221d0a25bbf6e3f6f1d021f4e711e71af6df12b44ff9d2446",
+    "provenance/preparation/split_assignments.csv": "c5fa61ce27b3c44f5b5338139a3fcf5613ba8dc358431ae55bad82aff3a6fe9a",
+    "provenance/preparation/split_manifest.json": "863180273a9d99451f02db5e430c719fbe3408976008fa92385fb31255087582",
+    "provenance/preparation/identical_fingerprints/cross_split_fingerprint_pairs.csv": "474c0d226f23c99dcb38b197cde29ce1fe4c098a9b6ced17d78f703cbbe6cbec",
+    "provenance/preparation/heldout_training_neighbors.csv": "2f4c44392c37a8cafb98a36b6c335182e10bb5b6f36a87fe8f63b7fdf6b010a8",
+    "provenance/preparation/audit_summary.json": "8d0b6f0c8441eebb9135d476adb298681d9266563e870b64ce13638658e5031d"
   },
   "target_policy": "median pKi within each structure-assay group, then median of those assay medians",
   "structure_policy": "full RDKit canonical isomeric SMILES in rdkit_smiles",
@@ -1656,17 +1656,14 @@
   "test_evaluation_performed": false,
   "software_versions": {
     "python": "3.14.6",
+    "platform": "Linux",
     "rdkit": "2026.03.6",
     "numpy": "2.5.0",
     "pandas": "3.0.3",
     "scikit_learn": "1.9.0"
   },
   "git": {
-    "commit": "31c9f15e4346962323d5addbc54c6560db4b5260",
+    "commit": "d3f24f177f67198bc3ab66411000c47a8d9bee25",
     "working_tree_dirty": true
-  },
-  "path_update": {
-    "record": "provenance/README.md",
-    "reason": "Supporting files consolidated under provenance; original scientific results retained."
   }
 }

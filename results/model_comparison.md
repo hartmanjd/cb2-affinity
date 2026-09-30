@@ -14,12 +14,12 @@ The [provenance workbook](../provenance/CB2_data_provenance.xlsx) is the supplie
 | Dummy | tuned | scaffold | 461 | 0.9558 | 1.1473 | -0.0041 | chembl_cb2_20260922T165756862384Z | current preparation |
 | Random forest | baseline | random | 358 | 0.5643 | 0.7215 | 0.6313 | chembl_cb2_20260922T165756862384Z | current preparation |
 | Random forest | baseline | scaffold | 461 | 0.6927 | 0.8746 | 0.4166 | chembl_cb2_20260922T165756862384Z | current preparation |
-| Random forest | tuned | random | 358 | 0.5605 | 0.7257 | 0.6269 | chembl_cb2_20260922T165756862384Z | current preparation |
-| Random forest | tuned | scaffold | 461 | 0.6931 | 0.8808 | 0.4082 | chembl_cb2_20260922T165756862384Z | current preparation |
-| XGBoost | baseline | random | 358 | 0.6449 | 0.8197 | 0.5240 | chembl_cb2_20260922T165756862384Z | current preparation |
-| XGBoost | baseline | scaffold | 461 | 0.7349 | 0.9002 | 0.3819 | chembl_cb2_20260922T165756862384Z | current preparation |
-| XGBoost | tuned | random | 358 | 0.6097 | 0.7833 | 0.5653 | chembl_cb2_20260922T165756862384Z | current preparation |
-| XGBoost | tuned | scaffold | 461 | 0.7033 | 0.8681 | 0.4251 | chembl_cb2_20260922T165756862384Z | current preparation |
+| Random forest | tuned | random | 358 | 0.5597 | 0.7243 | 0.6284 | chembl_cb2_20260922T165756862384Z | current preparation |
+| Random forest | tuned | scaffold | 461 | 0.6941 | 0.8812 | 0.4076 | chembl_cb2_20260922T165756862384Z | current preparation |
+| XGBoost | baseline | random | 358 | 0.6356 | 0.8128 | 0.5320 | chembl_cb2_20260922T165756862384Z | current preparation |
+| XGBoost | baseline | scaffold | 461 | 0.7230 | 0.8851 | 0.4025 | chembl_cb2_20260922T165756862384Z | current preparation |
+| XGBoost | tuned | random | 358 | 0.6059 | 0.7735 | 0.5762 | chembl_cb2_20260922T165756862384Z | current preparation |
+| XGBoost | tuned | scaffold | 461 | 0.7081 | 0.8762 | 0.4143 | chembl_cb2_20260922T165756862384Z | current preparation |
 | Support vector regression | baseline | random | 358 | 0.5545 | 0.7237 | 0.6290 | chembl_cb2_20260922T165756862384Z | current preparation |
 | Support vector regression | baseline | scaffold | 461 | 0.6596 | 0.8240 | 0.4821 | chembl_cb2_20260922T165756862384Z | current preparation |
 | Support vector regression | tuned | random | 358 | 0.5225 | 0.6850 | 0.6677 | chembl_cb2_20260922T165756862384Z | current preparation |

@@ -1,14 +1,14 @@
 {
-  "run_started_at_utc": "2026-09-24T15:36:24.767929+00:00",
-  "completed_at_utc": "2026-09-24T15:36:27.089981+00:00",
+  "run_started_at_utc": "2026-09-30T20:18:51.940626+00:00",
+  "completed_at_utc": "2026-09-30T20:18:52.282537+00:00",
   "notebook": "notebooks/05_dummy_baselines.ipynb",
   "stage": "dummy_training_and_evaluation",
   "output_folder": "provenance/models/dummy_baselines/files/baseline",
   "source_preparation_manifest": "provenance/preparation/manifest.json",
-  "source_preparation_manifest_sha256": "8847f5bdc691256517519d50b9a53ec80372ab01f74e5d7dc4985f24723b2531",
+  "source_preparation_manifest_sha256": "2df49a0c79a438791ee7cc7e749f0556cb706e77e17e29837fab4246d6f6a2b6",
   "source_artifact_sha256": {
-    "provenance/preparation/fingerprints_and_targets.npz": "fe367598cf80441b5ee7e3012b400b74a090c4367190e2e35a7a205e149f6bd2",
-    "provenance/preparation/split_assignments.csv": "f67d6a55a0116c0f5ab86c65255659483585df85699df25f841b3da265f9b779"
+    "provenance/preparation/fingerprints_and_targets.npz": "b8a71aa5b21a1e0eab8976c2000704543b7c0da7b98e5b098e1e8d26134ce731",
+    "provenance/preparation/split_assignments.csv": "c5fa61ce27b3c44f5b5338139a3fcf5613ba8dc358431ae55bad82aff3a6fe9a"
   },
   "model_names": [
     "random_dummy_mean",
@@ -45,7 +45,7 @@
       "dummy_strategy": "mean",
       "training_structures": 2860,
       "features": 2048,
-      "fit_seconds": 0.0015626999957021326,
+      "fit_seconds": 0.0024223200016422197,
       "training_constant_pki": 7.096993787676249
     },
     {
@@ -54,7 +54,7 @@
       "dummy_strategy": "median",
       "training_structures": 2860,
       "features": 2048,
-      "fit_seconds": 0.0013079000054858625,
+      "fit_seconds": 0.0005393829997046851,
       "training_constant_pki": 7.070581074285707
     },
     {
@@ -63,7 +63,7 @@
       "dummy_strategy": "mean",
       "training_structures": 2778,
       "features": 2048,
-      "fit_seconds": 0.0011729999969247729,
+      "fit_seconds": 0.0003485080014797859,
       "training_constant_pki": 7.063787971774695
     },
     {
@@ -72,7 +72,7 @@
       "dummy_strategy": "median",
       "training_structures": 2778,
       "features": 2048,
-      "fit_seconds": 0.0011489000171422958,
+      "fit_seconds": 0.00039564699545735493,
       "training_constant_pki": 7.036212172654444
     }
   ],
@@ -100,10 +100,10 @@
     "r2": "1 - sum(squared residual) / sum((observed - evaluated-subset mean)^2); undefined if n<2 or target constant"
   },
   "output_sha256": {
-    "provenance/models/dummy_baselines/files/baseline/training_summary.csv": "a42ba796ce8cf8f6fedda16277f4a8f27e2d0f8bd884ad0a9e50b77419465465",
-    "provenance/models/dummy_baselines/files/baseline/predictions.csv": "1490f21e3ccae738778df683e8ae0c398eab195a4b8e1bfdbc219a962d24e9e7",
-    "provenance/models/dummy_baselines/files/baseline/metrics.csv": "ee5b8d151c3f658d7e05a1933862d0ac6caaf2e377d0fbd853a49580ac8a528a",
-    "provenance/models/dummy_baselines/files/baseline/models.joblib.gz": "722ea7b2f5cc03bc897ca1cd84fcf98be3ca3cc73751bb361fe1e89471557e77"
+    "provenance/models/dummy_baselines/files/baseline/models.joblib.gz": "a19864f2b80d3647f787f2c0fc915faaef22565ca7bb9789b86512953d8ec1de",
+    "provenance/models/dummy_baselines/files/baseline/training_summary.csv": "875f902dbd5609195ec4dc73d4a28bca7745f4e12748ac9ea3a4bae2e106db50",
+    "provenance/models/dummy_baselines/files/baseline/predictions.csv": "2562431ef2c4655bc1f6974ea28c42bbbb8940c09bd7eb1e1649fbda3c15580e",
+    "provenance/models/dummy_baselines/files/baseline/metrics.csv": "b65b8668af9a036e1f9ed4ef830dd7ec79850f69271317608ad63170d41add87"
   },
   "verification": {
     "input_hashes": true,
@@ -118,23 +118,11 @@
   "test_evaluation_performed": false,
   "software_versions": {
     "python": "3.14.6",
+    "platform": "Linux",
     "rdkit": "2026.03.6",
     "numpy": "2.5.0",
     "pandas": "3.0.3",
     "scikit_learn": "1.9.0",
     "joblib": "1.5.3"
-  },
-  "path_update": {
-    "record": "provenance/README.md",
-    "reason": "Supporting files consolidated under provenance; original scientific results retained."
-  },
-  "model_storage": {
-    "format": "joblib with gzip compression",
-    "compression_level": 3,
-    "updated_at_utc": "2026-09-24T16:16:16.797007+00:00",
-    "uncompressed_sha256": "568f4765c55022da8f6098d454ea87d12291e717dff100184702e34f987890dc",
-    "compression_preserves_original_serialized_bytes": true,
-    "verification": "All saved estimators loaded and reproduced their training/validation predictions.",
-    "maintenance_record": "data/processed/renaming_manifest.json"
   }
 }

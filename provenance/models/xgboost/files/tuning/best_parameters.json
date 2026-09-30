@@ -6,7 +6,7 @@
       "max_depth": 4,
       "n_estimators": 250
     },
-    "best_mean_cv_mae_pki": 0.6028335705980344,
+    "best_mean_cv_mae_pki": 0.6032289321617612,
     "effective_parameters": {
       "objective": "reg:squarederror",
       "base_score": null,
@@ -50,8 +50,8 @@
       "verbosity": null
     },
     "training_structures": 2860,
-    "search_seconds": 17.10261430000537,
-    "refit_seconds": 0.5074923038482666
+    "search_seconds": 12.977068073996634,
+    "refit_seconds": 0.5289723873138428
   },
   "scaffold": {
     "best_candidate_index": 7,
@@ -60,7 +60,7 @@
       "max_depth": 4,
       "n_estimators": 250
     },
-    "best_mean_cv_mae_pki": 0.6724060176999712,
+    "best_mean_cv_mae_pki": 0.673655450861699,
     "effective_parameters": {
       "objective": "reg:squarederror",
       "base_score": null,
@@ -104,7 +104,7 @@
       "verbosity": null
     },
     "training_structures": 2778,
-    "search_seconds": 16.67918569999165,
-    "refit_seconds": 0.49308347702026367
+    "search_seconds": 12.865832279996539,
+    "refit_seconds": 0.5237898826599121
   }
 }

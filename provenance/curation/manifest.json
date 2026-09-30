@@ -1,6 +1,6 @@
 {
-  "run_started_at_utc": "2026-09-23T19:59:00.407937+00:00",
-  "completed_at_utc": "2026-09-23T19:59:07.104072+00:00",
+  "run_started_at_utc": "2026-09-30T20:16:38.700464+00:00",
+  "completed_at_utc": "2026-09-30T20:16:45.235884+00:00",
   "notebook": "notebooks/02_data_curation.ipynb",
   "target_chembl_id": "CHEMBL253",
   "target_organism": "Homo sapiens",
@@ -13,23 +13,24 @@
   "output_folder": "provenance/curation",
   "file_sha256": {
     "provenance/selection/chembl_cb2_20260922T165756862384Z/cb2_ki_selected.csv": "049e6dd538de1a4503c0a8744c70e3f08b884b554d453271ca255860e3af20d1",
-    "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json": "15b307771acda07519009aad96dc3a090c4a54ba056dbd61e5f41b6166810a87",
+    "provenance/selection/chembl_cb2_20260922T165756862384Z/selection_manifest.json": "47f6a4d1e64035c4f14bf38311d0e7724c2ab7294d018a1e9d8b8dcd6950f655",
     "provenance/raw/chembl_cb2_20260922T165756862384Z/acquisition_manifest.json": "fbe26d64bc56519abdfcb24ee60b2aaf427684d9527743314b423c526be5a532",
     "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_activity.json": "6db6a56de52d45d06b02f13eabf8c45a50a9b9f3a194c3fbf3851a5f0952376f",
     "provenance/raw/chembl_cb2_20260922T165756862384Z/chembl_cb2_assay.json": "4bba2004622540d5df5a43ce95d70108d7dc16d2f81cc78963b0e9287c9b0142",
     "provenance/curation/measurement_decisions.csv": "f6e726424fff791cb72801e4511aaf41ecdf2ad3aa0511dfad6a629dcb820a7a",
     "provenance/curation/structure_summary.csv": "e99a9eb43f1cff3b86352c5ccd613f087b7f1a262a817b3093db41dc50dd4449",
     "provenance/curation/curated_structures.csv": "80f3adcb6598c18b67c51612a798dd0199231851fd68a9af20e4e2d5bcdab953",
-    "provenance/curation/review.json": "63a3f90db1af01c78320704b37d03580ca37c8e41634dc96594ea45cc7e68b1c"
+    "provenance/curation/review.json": "eabd85131b6f43eb5c58c1f6bbaf78d3b09b1ea9afd03d065a13c9ca806b0b91"
   },
   "git": {
-    "commit": "b9781dbccdc9cc7c8745719cc83611ae0319b170",
+    "commit": "d3f24f177f67198bc3ab66411000c47a8d9bee25",
     "working_tree_dirty": true
   },
   "software_versions": {
-    "python": "3.14.4",
+    "python": "3.14.6",
+    "platform": "Linux",
     "rdkit": "2026.03.6",
-    "pandas": "3.0.6",
+    "pandas": "3.0.3",
     "openpyxl": "3.1.5"
   },
   "policies": {
@@ -72,8 +73,8 @@
     "tolerance_only_conflict_activities": 0
   },
   "final_status_counts": {
-    "structure_review": 34,
     "retained": 3905,
+    "structure_review": 34,
     "measurement_conflict": 142
   },
   "review_reason_activity_counts": {
@@ -175,9 +176,5 @@
       "workbook_summary": true,
       "saved_files": true
     }
-  },
-  "path_update": {
-    "record": "provenance/README.md",
-    "reason": "Supporting files consolidated under provenance; original scientific results retained."
   }
 }

@@ -33,7 +33,7 @@ def cliff_pairs(features, targets, keys, split_indices):
             similarity = (bits[left] & bits[right]).bit_count()/union if union else 1.0
             if similarity >= .8:
                 result.append(dict(zip(PAIR_FIELDS, [split,str(keys[left]),str(keys[right]),similarity,
-                    float(targets[left]),float(targets[right]),difference,bits[left]==bits[right]])))
+                    float(targets[left]),float(targets[right]),difference,bits[left]==bits[right]], strict=True)))
     return result
 
 
@@ -46,7 +46,7 @@ def save_cliffs(root, folder, prep_path, features, targets, keys, split_indices,
     with path.open('w', newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=PAIR_FIELDS);writer.writeheader();writer.writerows(rows)
     record = {'stage':stage,
-              'source_preparation_manifest':str(prep_path),
+              'source_preparation_manifest':Path(prep_path).as_posix(),
               'source_preparation_manifest_sha256':sha256(root/prep_path),
               'definition':{'scope':'unordered within outer validation','minimum_tanimoto':.8,
                             'minimum_absolute_observed_pki_difference':1.0},
@@ -58,7 +58,7 @@ def scores(rows):
     if not rows:
         return {'n_structures':0,'mae_pki':None,'rmse_pki':None,'r2':None,'r2_status':'undefined_empty'}
     observed=[float(r['observed_pki']) for r in rows]
-    errors=[float(r['predicted_pki'])-y for r,y in zip(rows,observed)]
+    errors=[float(r['predicted_pki'])-y for r,y in zip(rows,observed,strict=True)]
     denominator=sum((y-mean(observed))**2 for y in observed)
     return {'n_structures':len(rows),'mae_pki':mean(abs(e) for e in errors),
             'rmse_pki':math.sqrt(mean(e*e for e in errors)),
