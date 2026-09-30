@@ -80,3 +80,12 @@ and parameter explanations, the complete search, and derived cliff diagnostics.
 Supporting evidence sits in `models/support_vector_regression/files/` under
 baseline, tuning, and diagnostics. See [the SVR guide](models/support_vector_regression/README.md)
 for the supplied-workbook audit and automatic replacement on notebook 07 reruns.
+
+## XGBoost reference
+
+[The combined XGBoost summary](models/xgboost/summary.xlsx) uses the same display
+as the forest and SVR summaries, with baseline and tuned scores, boosting and
+parameter explanations, the complete search, and derived cliff diagnostics.
+Supporting evidence sits in `models/xgboost/files/` under baseline, tuning, and
+diagnostics. See [the XGBoost guide](models/xgboost/README.md) for how the summary
+was generated and automatic replacement on notebook 06 reruns.

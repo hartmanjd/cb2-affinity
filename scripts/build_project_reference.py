@@ -326,6 +326,9 @@ def description(name):
 
 
 DESCRIPTIONS.update({
+    "build_xgboost_summary.py": "Builds a combined XGBoost workbook with exact scores, boosting/settings explanations, diagnostics and evidence links.",
+    "xgboost_artifacts.py": "Publishes baseline and tuned XGBoost results together with rollback if reporting fails.",
+    "test_xgboost_reporting.py": "Checks XGBoost publication, hash links, incomplete or corrupt evidence rejection, and rollback.",
     "build_svr_summary.py": "Builds a combined SVR workbook with exact scores, kernel/settings explanations, diagnostics and evidence links.",
     "svr_artifacts.py": "Publishes baseline and tuned SVR results together with rollback if reporting fails.",
     "test_svr_reporting.py": "Checks SVR publication, hash links, incomplete or corrupt evidence rejection, and rollback.",
@@ -390,7 +393,7 @@ def latest_models(state, status):
     models = []
     for model, variant, folder, tuning_child in MODEL_FOLDERS:
         parent = ROOT / "provenance/models" / folder
-        pattern = (("files/tuning/manifest.json" if tuning_child else "files/baseline/manifest.json") if folder in {"random_forest", "support_vector_regression"} else
+        pattern = (("files/tuning/manifest.json" if tuning_child else "files/baseline/manifest.json") if folder in {"random_forest", "support_vector_regression", "xgboost"} else
                    "files/manifest.json" if folder.startswith("multilayer_perceptron/") else
                    "run_*/tuning/manifest.json" if tuning_child else "run_*/manifest.json")
         candidates = [p for p in parent.glob(pattern) if read_json(p).get("completed_at_utc")]

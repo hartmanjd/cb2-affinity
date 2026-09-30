@@ -10,7 +10,7 @@ results exactly as supplied; it does not update automatically when notebooks run
 For current results and file locations, use the links below. All supporting data
 and model artifacts remain under `provenance/`.
 
-[SVR summary](provenance/models/support_vector_regression/summary.xlsx) · [Random forest summary](provenance/models/random_forest/summary.xlsx) · [MLP summaries](provenance/models/multilayer_perceptron/README.md) · [Model comparison](results/model_comparison.md) · [Every file explained](MASTER_REFERENCE.md)
+[XGBoost summary](provenance/models/xgboost/summary.xlsx) · [SVR summary](provenance/models/support_vector_regression/summary.xlsx) · [Random forest summary](provenance/models/random_forest/summary.xlsx) · [MLP summaries](provenance/models/multilayer_perceptron/README.md) · [Model comparison](results/model_comparison.md) · [Every file explained](MASTER_REFERENCE.md)
 
 ## Folders
 
@@ -89,9 +89,9 @@ No manual edits to an old run number are needed. Missing or incompatible stages
 stop with an instruction to run the prerequisite. Candidate outputs receive a
 new candidate folder and are published only when verification and the completion
 manifest succeed. MLP results use a single `files/` folder per baseline/tuning
-variant, beside a generated `summary.xlsx`. Random forest and SVR each use one combined
+variant, beside a generated `summary.xlsx`. Random forest, XGBoost, and SVR each use one combined
 `summary.xlsx` beside `files/baseline/`, `files/tuning/`, and `files/diagnostics/`;
-notebooks 04 and 07 replace their respective baseline and tuning together after the complete experiment passes. A successful MLP baseline replacement
+notebooks 04, 06, and 07 replace their respective baseline and tuning together after the complete experiment passes. A successful MLP baseline replacement
 clears dependent tuning results; run notebook 09 to regenerate them. Current model results remain visible until replacements finish;
 the model comparison identifies older-dataset/preparation results explicitly.
 
