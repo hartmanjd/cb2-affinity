@@ -1,6 +1,7 @@
 # Headline model results
 
-[model_comparison.md](model_comparison.md) provides the readable comparison.
+[model_comparison.md](model_comparison.md) provides the readable comparison, and
+[noise_ceiling.png](noise_ceiling.png) shows how close each model gets to the measurement-noise floor (notebook 10).
 The [data provenance workbook](../provenance/CB2_data_provenance.xlsx) shows where the
 dataset came from. Exact current scores
 and supporting tables are under `provenance/models/`.

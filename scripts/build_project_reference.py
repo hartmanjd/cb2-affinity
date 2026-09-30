@@ -493,7 +493,7 @@ def build_master_reference():
              "Git internals, environments, caches, and Windows download tags are excluded.", "", "## Folders", "",
              "| Folder | Purpose |", "| --- | --- |"]
     directories = sorted({parent.as_posix() for name in names for parent in Path(name).parents if parent.as_posix() != "."})
-    purpose = {"notebooks": "Ten ordered scientific pipeline notebooks.", "scripts": "Storage helpers, evidence checks, and Markdown reference updates.",
+    purpose = {"notebooks": "Eleven ordered scientific pipeline notebooks.", "scripts": "Storage helpers, evidence checks, and Markdown reference updates.",
                "tests": "Dataset handoff and review-record checks without downloads or model training.",
                "results": "Current headline comparison; supporting evidence is under provenance/models/.", "provenance": "All source and supporting evidence, plus data and model summary workbooks.",
                "raw": "Original ChEMBL downloads, unchanged.", "selection": "Selected measurements and exclusion records.",

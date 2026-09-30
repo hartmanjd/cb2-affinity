@@ -16,7 +16,7 @@ supporting data and model artifacts remain under `provenance/`.
 
 | Folder | Purpose |
 | --- | --- |
-| `notebooks/` | The ten scientific notebooks, in execution order |
+| `notebooks/` | The eleven scientific notebooks, in execution order |
 | `provenance/` | Data provenance workbook, model summaries, and all supporting files |
 | `results/` | A readable headline model comparison |
 | `scripts/` | Shared storage helpers, evidence checks, and Markdown reference updates |
@@ -98,6 +98,7 @@ Run each notebook top to bottom, in order:
 8. `07_support_vector_regression.ipynb` — SVR baseline and tuning.
 9. `08_mlp_baseline.ipynb` — corrected internal stopping and full-training refits.
 10. `09_mlp_tuning.ipynb` — bounded MLP search and refits.
+11. `10_noise_ceiling.ipynb` — how close each model gets to the measurement-noise floor (no training).
 
 Each notebook finds the completed upstream stage for the current acquisition.
 No manual edits to an old run number are needed. Missing or incompatible stages
@@ -115,6 +116,13 @@ the model comparison identifies older-dataset/preparation results explicitly.
 The final cell of every notebook verifies evidence and refreshes the model
 comparison, the data provenance workbook, and the master reference. Saved notebook outputs remain
 from the previous execution until you rerun them; old printed paths are historical.
+
+## How good can a model get?
+
+Repeat lab measurements of the same molecule disagree, so no model can reliably
+beat that measurement noise. Notebook 10 uses a published estimate for ChEMBL Ki
+data (about 0.54 pKi) and plots every model between "no skill" and that floor:
+[results/noise_ceiling.png](results/noise_ceiling.png).
 
 ## Refresh the generated references
 

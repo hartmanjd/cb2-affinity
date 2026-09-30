@@ -56,7 +56,7 @@ accepted execution directly in its folder; earlier versions remain in git histor
 The MLP folder keeps its baseline and tuned executions in `baseline/` and `tuning/`,
 with one combined `summary.xlsx` beside them.
 
-Run notebooks 00–09 in order. They select only completed stages matching the newest
+Run notebooks 00–10 in order. They select only completed stages matching the newest
 acquisition and upstream manifest hashes. Model comparisons carry their dataset
 identity and current/previous-preparation status. Refreshing the download does not
 make an earlier saved model a result on the new dataset. Original sources stay
