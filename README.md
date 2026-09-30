@@ -27,6 +27,39 @@ supporting evidence for the preserved model results is now directly under
 scores are preserved. Stage-specific review records remain as JSON files for the pipeline audits.
 The supplied workbook is a reference document, not a pipeline input.
 
+## Fitted models
+
+The fitted estimators (`models.joblib.gz`, about 100 MB in total) are not stored
+in git. Git keeps every version of a committed file forever, so each retrain made
+the repository, pushes, and clones larger. Instead they are attached to the
+[`fitted-models` GitHub Release](https://github.com/hartmanjd/cb2-affinity/releases/tag/fitted-models).
+Each run manifest, which *is* committed, still records every model's SHA-256
+checksum, so the provenance chain is unchanged.
+
+After cloning, download and verify them once (standard library only):
+
+```bash
+python scripts/fetch_models.py
+```
+
+A download is kept only if its bytes match the checksum in its manifest, and an
+existing local file that differs is never overwritten. Report builders and
+notebook 09 stop with this instruction when models are missing. Release file
+names include part of the checksum, so older commits can still fetch the exact
+models they recorded.
+
+**After retraining** (maintainer step): the notebook writes new models locally
+and records their checksums. Publish them *before* pushing that commit, or other
+people cannot fetch them. This requires the GitHub CLI (`gh`) and only uploads
+files the release does not already have:
+
+```bash
+python scripts/fetch_models.py --upload
+```
+
+Models committed before this change remain in the git history; untracking them
+stops future growth but does not shrink existing clones.
+
 ## Fresh run
 
 Open this Linux checkout in VS Code: `/home/justin/code/cb2-affinity` (WSL: Ubuntu).
@@ -34,6 +67,9 @@ Use the same Python environment throughout the run, with NumPy, pandas, RDKit,
 scikit-learn, joblib, matplotlib, XGBoost, and openpyxl available. Notebook checks
 still compare recorded software versions; rerun preparation before fitting in a
 new environment rather than bypassing the checks.
+
+In a new clone, first run `python scripts/fetch_models.py` (see [Fitted models](#fitted-models)).
+Each notebook's final cell verifies every recorded checksum, including the models.
 
 Run each notebook top to bottom, in order:
 
@@ -66,7 +102,8 @@ from the previous execution until you rerun them; old printed paths are historic
 
 ## Refresh the generated references
 
-With the dependency in `requirements-reporting.txt` installed:
+With the dependency in `requirements-reporting.txt` installed and the
+[fitted models](#fitted-models) fetched:
 
 ```bash
 python scripts/build_project_reference.py --check

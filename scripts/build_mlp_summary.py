@@ -12,6 +12,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.worksheet.hyperlink import Hyperlink
+from fetch_models import require_models
 
 ROOT = Path(__file__).resolve().parents[1]
 MLP = Path('provenance/models/multilayer_perceptron')
@@ -83,6 +84,7 @@ def numeric(value):
 def build_summary(variant, root=ROOT):
     root = Path(root)
     parent = root / MLP / variant
+    require_models(root, MLP / variant)  # Fitted models live outside git; fetch before hashing.
     folder = parent / 'files'
     manifest = read_json(folder / 'manifest.json')
     assert manifest.get('completed_at_utc'), 'A completed run is required.'

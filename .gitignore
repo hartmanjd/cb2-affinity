@@ -234,3 +234,8 @@ provenance/models/random_forest/.~*
 provenance/models/support_vector_regression/.pending-*
 provenance/models/support_vector_regression/.previous-*
 provenance/models/support_vector_regression/.~*
+
+# Fitted models are published as GitHub Release assets, not committed: git keeps
+# every version of these large binaries forever. Their checksums stay in the
+# committed run manifests. Get them with: python scripts/fetch_models.py
+provenance/models/**/models.joblib.gz

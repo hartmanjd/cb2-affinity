@@ -19,6 +19,7 @@ from provenance_support import (
     latest_acquisition, current_selection, current_curation, current_preparation,
     load_review_record,
 )
+from fetch_models import require_models
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -50,6 +51,8 @@ def project_files():
 
 def verify_saved_evidence():
     """Check bytes, notebook syntax, preserved payloads, and prediction arithmetic."""
+    # Fitted models live outside git; explain how to fetch them before hashing.
+    require_models(ROOT)
     checked = 0
     aliases = {"curation_manifest_sha256": "source_curation_manifest",
                "assignment_sha256": "assignment_file"}
@@ -277,7 +280,7 @@ DESCRIPTIONS = {
     "cross_split_fingerprint_pairs.csv": "Identical-fingerprint pairs that cross train/validation/test boundaries.",
     "heldout_training_neighbors.csv": "Nearest-training similarity for held-out structures; no model test performance.",
     "audit_summary.json": "Preparation audits covering fingerprint equivalence, splits, and chemical similarity.",
-    "models.joblib.gz": "Original fitted estimators with lossless gzip compression.",
+    "models.joblib.gz": "Original fitted estimators with lossless gzip compression; kept outside git, fetch with scripts/fetch_models.py.",
     "predictions.csv": "Saved observed and predicted training/validation pKi; reserved tests are absent.",
     "metrics.csv": "Per-model training and validation MAE, RMSE, and R-squared.",
     "training_summary.csv": "Training sample counts, timing, and model-specific information.",
@@ -330,6 +333,8 @@ DESCRIPTIONS.update({
     "forest_diagnostics.py": "Freezes validation cliff pairs and recomputes report-only cliff and similarity metrics.",
     "forest_artifacts.py": "Publishes a complete forest baseline+tuning execution and workbook, with rollback on failure.",
     "test_forest_reporting.py": "Checks forest diagnostics, incomplete-run rejection, publication and rollback.",
+    "fetch_models.py": "Downloads fitted models from the GitHub Release and accepts them only if they match manifest checksums; also uploads new models.",
+    "test_fetch_models.py": "Checks model download verification, corrupt-download rejection, and the missing-model instruction.",
     "import_validation.json": "Checksums and verification results for supplied model summary workbooks.",
     "test_mlp_artifacts.py": "Checks successful replacement, failed-candidate preservation and rollback of MLP results.",
     "build_mlp_summary.py": "Builds readable MLP workbooks with scores, training explanations, full tables and file links.",

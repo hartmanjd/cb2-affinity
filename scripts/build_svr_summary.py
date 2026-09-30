@@ -12,6 +12,7 @@ from openpyxl.worksheet.hyperlink import Hyperlink
 from openpyxl.utils import get_column_letter
 from build_mlp_summary import digest, read_json, read_csv, flatten, numeric
 from forest_diagnostics import derive
+from fetch_models import require_models
 
 ROOT=Path(__file__).resolve().parents[1]
 SVR=Path('provenance/models/support_vector_regression')
@@ -22,6 +23,7 @@ TABLES={'metrics.csv':'Scores by Split','training_summary.csv':'Training Summary
 
 def build_summary(root=ROOT):
     root=Path(root);parent=root/SVR;files=parent/'files'
+    require_models(root,SVR)  # Fitted models live outside git; fetch before hashing.
     manifests={v:read_json(files/v/'manifest.json') for v in ['baseline','tuning']}
     baseline,tuning=manifests['baseline'],manifests['tuning']
     assert baseline.get('completed_at_utc') and tuning.get('completed_at_utc')
