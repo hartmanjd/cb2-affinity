@@ -3,12 +3,12 @@
 Human CB2 binding-affinity dataset curation and model comparison.
 
 Start with [the data provenance workbook](provenance/CB2_data_provenance.xlsx).
-It is the supplied, human-readable presentation reference, with eight sheets:
-Overview, Download Record, Filter Funnel, Kept Measurements, Quarantine, Assays,
-Documents, and Pipeline Settings. It retains the earlier snapshot's paths and
-results exactly as supplied; it does not update automatically when notebooks run.
-For current results and file locations, use the links below. All supporting data
-and model artifacts remain under `provenance/`.
+It shows where every number in the dataset came from, with sheets for the
+Overview, Filter Funnel, Removal Reasons, Kept Measurements, Removed Measurements,
+Assays, Documents, Pipeline Settings, and Evidence Files. It is generated from the
+current pipeline files and refreshed by each notebook's final cell, so it always
+matches the data. For model results and file locations, use the links below. All
+supporting data and model artifacts remain under `provenance/`.
 
 [XGBoost summary](provenance/models/xgboost/summary.xlsx) · [SVR summary](provenance/models/support_vector_regression/summary.xlsx) · [Random forest summary](provenance/models/random_forest/summary.xlsx) · [MLP summary](provenance/models/multilayer_perceptron/summary.xlsx) · [Dummy summary](provenance/models/dummy_baselines/summary.xlsx) · [Model comparison](results/model_comparison.md) · [Every file explained](MASTER_REFERENCE.md)
 
@@ -26,7 +26,7 @@ There are no archive folders. The old `curation/run_05` folder is removed; the
 supporting evidence for the preserved model results is now directly under
 `provenance/curation/`. The original download and all saved model predictions and
 scores are preserved. Stage-specific review records remain as JSON files for the pipeline audits.
-The supplied workbook is a reference document, not a pipeline input.
+The data provenance workbook is a generated report, not a pipeline input.
 
 ## Fitted models
 
@@ -113,8 +113,7 @@ clears dependent tuning results; run notebook 09 to regenerate them. Current mod
 the model comparison identifies older-dataset/preparation results explicitly.
 
 The final cell of every notebook verifies evidence and refreshes the model
-comparison and master reference. It never modifies the presentation workbook.
-Update the workbook separately when you want it to reflect a fresh run. Saved notebook outputs remain
+comparison, the data provenance workbook, and the master reference. Saved notebook outputs remain
 from the previous execution until you rerun them; old printed paths are historical.
 
 ## Refresh the generated references

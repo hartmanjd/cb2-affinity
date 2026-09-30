@@ -57,5 +57,4 @@ Refresh only the workbook, without training:
 python scripts/build_mlp_summary.py
 ```
 
-This requires `requirements-reporting.txt`. It does not modify the separately
-maintained `provenance/CB2_data_provenance.xlsx` presentation workbook.
+This requires `requirements-reporting.txt`.

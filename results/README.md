@@ -1,8 +1,8 @@
 # Headline model results
 
 [model_comparison.md](model_comparison.md) provides the readable comparison.
-The [provenance workbook](../provenance/CB2_data_provenance.xlsx) is the supplied
-presentation snapshot and stays unchanged during reruns. Exact current scores
+The [data provenance workbook](../provenance/CB2_data_provenance.xlsx) shows where the
+dataset came from. Exact current scores
 and supporting tables are under `provenance/models/`.
 
 All fitted models, predictions, metrics, settings, and diagnostic figures are

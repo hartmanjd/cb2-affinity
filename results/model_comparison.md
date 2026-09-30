@@ -2,7 +2,7 @@
 
 Saved baseline and tuned validation results. Each row identifies its dataset and whether it matches the newest preparation. Results remain visible until new runs complete. Reserved tests are unevaluated. MLP entries are means ± sample SD across seeds.
 
-The [provenance workbook](../provenance/CB2_data_provenance.xlsx) is the supplied presentation snapshot. Current exact scores and predictions are under `provenance/models/`; this comparison refreshes independently.
+The [data provenance workbook](../provenance/CB2_data_provenance.xlsx) shows where the dataset came from. Current exact scores and predictions are under `provenance/models/`; this comparison refreshes independently.
 
 | Model | Variant | Split | N | MAE | RMSE | R² | Dataset | Status |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |

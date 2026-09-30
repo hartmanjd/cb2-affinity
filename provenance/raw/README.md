@@ -10,8 +10,9 @@ Only completed acquisitions have an acquisition manifest. Notebook 01 uses the
 newest completed acquisition automatically. Existing snapshots remain available
 while preserved model results reference them.
 
-The single [workbook](../CB2_data_provenance.xlsx) lists download versions, dates,
-queries, endpoint counts, and checksums in Download Record. Non-Ki activities
+The [data provenance workbook](../CB2_data_provenance.xlsx) lists the download
+version, date, record counts and checksums, and accounts for every downloaded
+activity as kept or removed. Non-Ki activities
 remain in the source so every exclusion can be accounted for.
 
 The active project does not use BindingDB or IUPHAR/BPS Guide to Pharmacology
