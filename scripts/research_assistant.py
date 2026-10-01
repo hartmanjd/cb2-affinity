@@ -31,13 +31,15 @@ import io
 import json
 import math
 import os
+import re
 import sys
+import time
 
 import joblib
 import numpy as np
 import pandas as pd
-from rdkit import Chem, DataStructs, RDLogger
-from rdkit.Chem import Descriptors, QED, rdFingerprintGenerator, rdFMCS, rdMolDescriptors
+from rdkit import Chem, DataStructs, RDLogger, rdBase
+from rdkit.Chem import Descriptors, QED, rdCIPLabeler, rdFingerprintGenerator, rdFMCS, rdMolDescriptors
 from rdkit.Chem.Draw import rdMolDraw2D
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from scipy import stats
@@ -659,7 +661,11 @@ def find_compound(data, identifier):
     molecule = Chem.MolFromSmiles(text)
     if molecule is not None and molecule.GetNumAtoms():
         return data.row_of_smiles.get(Chem.MolToSmiles(molecule))
-    hits = data.compounds.index[data.compounds["name"].fillna("").str.contains(text, case=False, regex=False)]
+    # An exact name first: a substring search alone would return "Rac-Ibipinabant" for "Ibipinabant".
+    names = data.compounds["name"].fillna("")
+    hits = data.compounds.index[names.str.lower() == text.lower()]
+    if not len(hits):
+        hits = data.compounds.index[names.str.contains(text, case=False, regex=False)]
     return int(hits[0]) if len(hits) else None
 
 
@@ -815,6 +821,39 @@ def correlation(data, x, y="pki", table="compounds", filters=None, substructure=
             "interval_note": "95% intervals from the Fisher z-transform. r squared is the share of variance explained."}
 
 
+UNSPECIFIED_STEREO_NOTE = ("'unspecified' means the recorded structure does not define that centre's configuration "
+                           "(for example a racemate, an unresolved mixture, or an atom RDKit flags only as a possible "
+                           "stereocentre). Report it as unspecified; do not try to assign R or S.")
+
+
+def stereochemistry(molecule):
+    """CIP labels for every stereocentre (R/S) and stereo double bond (E/Z), from RDKit's new labeller.
+
+    Assigning R/S by hand means ranking substituents by the CIP priority rules, which takes a
+    language model minutes of reasoning and is still sometimes wrong; RDKit does it exactly.
+    Atom numbers follow the order atoms appear in the SMILES as given, counting from 0, so
+    "the second stereocentre in the SMILES" is the second entry. A stereocentre whose
+    configuration the SMILES does not specify is reported as "unspecified".
+    """
+    molecule = Chem.Mol(molecule)   # Labelling writes properties onto the atoms; keep the caller's copy clean.
+    rdCIPLabeler.AssignCIPLabels(molecule)
+    centres = []
+    for index, _ in Chem.FindMolChiralCenters(molecule, includeUnassigned=True, useLegacyImplementation=False):
+        atom = molecule.GetAtomWithIdx(index)
+        centres.append({"atom_number_in_smiles": index, "element": atom.GetSymbol(),
+                        "label": atom.GetProp("_CIPCode") if atom.HasProp("_CIPCode") else "unspecified"})
+    double_bonds = [{"atom_numbers_in_smiles": [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()],
+                     "label": bond.GetProp("_CIPCode")}
+                    for bond in molecule.GetBonds() if bond.HasProp("_CIPCode")]
+    result = {"stereocentres": centres, "double_bonds": double_bonds}
+    if any(centre["label"] == "unspecified" for centre in centres):
+        # Without this note DeepSeek treated "unspecified" as a puzzle: asked for nabilone's SMILES
+        # it spent over two minutes building stereoisomers and returned a wrong structure in both
+        # A/B runs. With it, it was right every time (scripts/stereo_note_ab_test.py).
+        result["note"] = UNSPECIFIED_STEREO_NOTE
+    return result
+
+
 def describe_molecule(data, smiles):
     molecule = molecule_from_text(smiles)
     canonical = Chem.MolToSmiles(molecule)
@@ -828,6 +867,7 @@ def describe_molecule(data, smiles):
     result = {"canonical_smiles": canonical, "formula": rdMolDescriptors.CalcMolFormula(molecule),
               "descriptors": {k: clean_value(v) for k, v in compute_descriptors(molecule).items()},
               "named_substructures_present": groups, "ring_systems": ring_systems(molecule),
+              "stereochemistry": stereochemistry(molecule),
               "scaffold": scaffold, "scaffold_name": name_scaffold(scaffold),
               "molecules_in_dataset_with_this_scaffold": int((data.compounds["scaffold"] == scaffold).sum()),
               "in_dataset": row is not None}
@@ -1275,8 +1315,10 @@ TOOL_SCHEMAS = [
          {"x": {"type": "string"}, "y": {"type": "string"}, "table": {"type": "string", "enum": list(TABLE_DESCRIPTIONS)},
           "filters": FILTERS_SCHEMA, "substructure": {"type": "string", "description": SUBSTRUCTURE_TEXT}}, ["x"]),
     tool("describe_molecule", "Compute properties of ANY molecule from its SMILES (need not be in the dataset): formula, "
-         "descriptors, named substructures, ring_systems (RDKit-matched names), scaffold and scaffold_name, and whether it is "
-         "in the dataset. Use this instead of reading a SMILES yourself, and use its names for rings and scaffolds.", {"smiles": {"type": "string"}}, ["smiles"]),
+         "descriptors, named substructures, ring_systems (RDKit-matched names), stereochemistry (R/S of every stereocentre and "
+         "E/Z of every stereo double bond, in SMILES order), scaffold and scaffold_name, and whether it is in the dataset. "
+         "Use this instead of reading a SMILES yourself, and use its names for rings and scaffolds and its R/S and E/Z "
+         "labels rather than assigning CIP priorities yourself.", {"smiles": {"type": "string"}}, ["smiles"]),
     tool("lookup_compound", "Everything recorded about one dataset molecule, found by SMILES, ChEMBL ID or name: curated pKi "
          "with an approximate 95% measurement range, every individual measurement with assay and paper, split membership, "
          "scaffold_name and descriptors.",
@@ -1377,6 +1419,85 @@ def run_tool(data, name, arguments):
     if len(text) > MAX_RESULT_CHARS:
         text = text[:MAX_RESULT_CHARS] + ' ... [result cut; ask for fewer rows or columns]"'
     return text, images
+
+
+# ---------------------------------------------------------------------------
+# Pre-fetch: run the obvious tools before the LLM sees the question
+# ---------------------------------------------------------------------------
+# Many questions name their molecules outright ("what is nabilone's pKi?", "describe CCN1CC...").
+# Asking the LLM to request those look-ups costs a full round trip each. Pre-fetch finds them
+# with plain code, runs the same tools the LLM would call, and attaches the results to the
+# question, so the LLM starts with the numbers in hand. No language model is involved: the
+# matching is regular expressions and RDKit, and the results come from run_tool unchanged.
+PREFETCH_HEADER = "PRE-FETCHED TOOL RESULTS"
+MAX_PREFETCH = 4   # Look-ups attached to one question; more would crowd the context.
+CHEMBL_ID_PATTERN = re.compile(r"\bCHEMBL\d+\b", re.IGNORECASE)
+SMILES_CHARACTERS = set("()=#[]@/\\0123456789cnos")
+
+
+def smiles_in_text(text):
+    """Whitespace-separated tokens that RDKit parses as a molecule of at least 4 heavy atoms.
+
+    A token must also contain a bond, ring, bracket or aromatic character, so ordinary words
+    that happen to parse (e.g. "CO", "CCC" in prose) are not mistaken for structures.
+    """
+    found = []
+    for token in text.split():
+        token = token.strip("'\".,;:?!`")
+        candidates = [token, token[:-1]] if token.endswith(")") else [token]   # "(see CCO)" -> "CCO"
+        for candidate in candidates:
+            if len(candidate) < 5 or not SMILES_CHARACTERS & set(candidate):
+                continue
+            with rdBase.BlockLogs():   # Most tokens are not SMILES; keep RDKit's parse errors quiet.
+                molecule = Chem.MolFromSmiles(candidate)
+            if molecule is not None and molecule.GetNumHeavyAtoms() >= 4:
+                found.append(candidate)
+                break
+    return found
+
+
+def prefetch_requests(data, text):
+    """The tool calls a question obviously needs: (tool name, arguments), at most MAX_PREFETCH.
+
+    - each SMILES -> describe_molecule (formula, descriptors, rings, scaffold, measured pKi if any)
+    - each ChEMBL molecule ID or recorded compound name -> lookup_compound (measurements, papers)
+    Predictions are never pre-fetched: whether to predict is the LLM's decision, and predict_pki
+    applies the test-set refusal itself when it is asked.
+    """
+    requests = [("describe_molecule", {"smiles": smiles}) for smiles in smiles_in_text(text)]
+    requests += [("lookup_compound", {"identifier": chembl_id.upper()}) for chembl_id in CHEMBL_ID_PATTERN.findall(text)]
+    # Names: whole-word, case-insensitive, longest first so "Methanandamide" is not also read as
+    # "Anandamide". Each ChEMBL molecule is looked up once even if several of its names appear.
+    lowered, seen = text.lower(), set()
+    for chembl_id, name in sorted(data.names.items(), key=lambda item: -len(item[1])):
+        pattern = r"(?<![\w-])" + re.escape(name.lower()) + r"(?![\w-])"
+        if len(name) >= 4 and chembl_id not in seen and re.search(pattern, lowered):
+            seen.add(chembl_id)
+            lowered = re.sub(pattern, " ", lowered)
+            # Looked up by ID, which is exact, rather than by name, which is matched loosely.
+            requests.append(("lookup_compound", {"identifier": chembl_id}))
+    unique = []
+    for request in requests:
+        if request not in unique:
+            unique.append(request)
+    return unique[:MAX_PREFETCH]
+
+
+def prefetch(data, text, on_tool=None):
+    """Run prefetch_requests and return the block to attach to the question ('' if none apply)."""
+    sections = []
+    for name, arguments in prefetch_requests(data, text):
+        result, images = run_tool(data, name, arguments)
+        sections.append(f"[{name}({json.dumps(arguments)})]\n{result}")
+        if on_tool:
+            # Shown to the person like any other tool call, marked so it is clear the LLM did not ask.
+            on_tool(f"{name} (pre-fetched)", json.dumps(arguments), result, images)
+    if not sections:
+        return ""
+    return (f"\n\n{PREFETCH_HEADER}. Before this question reached you, the project's code recognised the "
+            "molecules named in it and ran these tools. Treat each result exactly as a tool result you "
+            "requested: quote numbers from it, and call further tools for anything it does not cover.\n\n"
+            + "\n\n".join(sections))
 
 
 # ---------------------------------------------------------------------------
@@ -1513,13 +1634,21 @@ def add_usage(totals, usage, model):
 
 
 def chat_turn(client, data, messages, model=DEFAULT_MODEL, thinking=DEFAULT_THINKING, max_tool_rounds=15,
-              on_tool=None, usage=None, compact=None):
+              on_tool=None, usage=None, compact=None, deadline=None, prefetch_tools=True):
     """Answer the latest user message, running as many tool calls as the LLM asks for.
 
     `messages` (a list of dicts starting with the system prompt) is extended in place with
     the assistant's replies and tool results, so the next question keeps the context.
     `on_tool(name, arguments, result_text, images)` is called after each tool, which lets
     the app show progress live. Returns the final answer text.
+
+    `deadline` (a time.time() value) is an optional time limit: once it has passed, no further
+    tool round starts and the LLM is asked to answer from the tool results it already has, with
+    thinking off so the forced answer is quick. A request already in flight is not interrupted;
+    pair the deadline with a client timeout for a hard cap.
+
+    With `prefetch_tools`, molecules named in the new question are looked up first (see prefetch)
+    and the results are attached to it, saving the LLM a round trip for each.
     """
     usage = usage if usage is not None else {}
     tools = conversation_profile(str(client.base_url), compact)[1]
@@ -1529,7 +1658,14 @@ def chat_turn(client, data, messages, model=DEFAULT_MODEL, thinking=DEFAULT_THIN
     # the model's own earlier tool calls fall out of the window and it loops or answers blind.
     options = ({"extra_body": {"thinking": {"type": "enabled" if thinking else "disabled"}}}
                if is_hosted(str(client.base_url)) else {"extra_body": {"options": {"num_ctx": LOCAL_CONTEXT_TOKENS}}})
+    latest = messages[-1] if messages else {}
+    if prefetch_tools and latest.get("role") == "user" and PREFETCH_HEADER not in latest.get("content", ""):
+        latest["content"] = latest["content"] + prefetch(data, latest["content"], on_tool)
+    out_of_time = False
     for _ in range(max_tool_rounds):
+        if deadline is not None and time.time() >= deadline:
+            out_of_time = True
+            break
         response = client.chat.completions.create(model=model, messages=messages, tools=tools, **options)
         add_usage(usage, response.usage, model)
         message = response.choices[0].message
@@ -1542,9 +1678,13 @@ def chat_turn(client, data, messages, model=DEFAULT_MODEL, thinking=DEFAULT_THIN
             messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
             if on_tool:
                 on_tool(call.function.name, call.function.arguments, result, images)
-    # Safety stop: after too many rounds, ask for an answer with what has been found so far.
-    messages.append({"role": "user", "content": "Tool limit reached. Answer now from the results you already have, "
+    # Safety stop: after too many rounds, or once the time limit has passed, ask for an answer
+    # with what has been found so far.
+    limit = "Time limit reached" if out_of_time else "Tool limit reached"
+    messages.append({"role": "user", "content": f"{limit}. Answer now from the results you already have, "
                                                 "and say what is still unchecked."})
+    if out_of_time and is_hosted(str(client.base_url)):
+        options = {"extra_body": {"thinking": {"type": "disabled"}}}   # A forced answer should not think at length.
     response = client.chat.completions.create(model=model, messages=messages, tools=tools, tool_choice="none", **options)
     add_usage(usage, response.usage, model)
     messages.append(message_to_dict(response.choices[0].message))

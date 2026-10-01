@@ -283,6 +283,68 @@ class ChatLoopTests(unittest.TestCase):
         messages = assistant.new_conversation() + [{"role": "user", "content": "?"}]
         self.assertEqual(assistant.chat_turn(client, DATA, messages, max_tool_rounds=2), "Best answer so far.")
 
+    def test_stereo_labels_come_from_rdkit(self):
+        def labels(smiles):
+            result = json.loads(assistant.run_tool(DATA, "describe_molecule", {"smiles": smiles})[0])["stereochemistry"]
+            return [c["label"] for c in result["stereocentres"]], [b["label"] for b in result["double_bonds"]]
+        # (R)-methanandamide, with anandamide's four cis (Z) double bonds.
+        self.assertEqual(labels("CCCCC/C=C\\C/C=C\\C/C=C\\C/C=C\\CCCC(=O)N[C@H](C)CO"), (["R"], ["Z"] * 4))
+        # Taranabant is (S,S), listed in the order the stereocentres appear in the SMILES.
+        self.assertEqual(labels("C[C@H](NC(=O)C(C)(C)Oc1ccc(C(F)(F)F)cn1)[C@@H](Cc1ccc(Cl)cc1)c1cccc(C#N)c1")[0], ["S", "S"])
+        # Nabilone is recorded as a racemate, so its stereocentres are unspecified rather than guessed,
+        # and a note says not to resolve them (the A/B test found DeepSeek otherwise tries, and errs).
+        self.assertEqual(labels("CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21")[0], ["unspecified"] * 2)
+        def note(smiles):
+            return json.loads(assistant.run_tool(DATA, "describe_molecule", {"smiles": smiles})[0])["stereochemistry"].get("note")
+        self.assertEqual(note("CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21"), assistant.UNSPECIFIED_STEREO_NOTE)
+        self.assertIsNone(note("CCCCC/C=C\\C/C=C\\C/C=C\\C/C=C\\CCCC(=O)N[C@H](C)CO"))   # Fully defined: no note.
+
+
+class PrefetchTests(unittest.TestCase):
+    def test_molecules_in_a_question_are_recognised_by_code(self):
+        smiles = "CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21"
+        self.assertEqual(assistant.prefetch_requests(DATA, f"What is the formula of {smiles}?"),
+                         [("describe_molecule", {"smiles": smiles})])
+        # Names and IDs are looked up by ChEMBL ID, which is exact.
+        self.assertEqual(assistant.prefetch_requests(DATA, "What is the pKi of nabilone?"),
+                         [("lookup_compound", {"identifier": "CHEMBL2218896"})])
+        self.assertEqual(assistant.prefetch_requests(DATA, "Tell me about chembl600647"),
+                         [("lookup_compound", {"identifier": "CHEMBL600647"})])
+        # "Methanandamide" contains "anandamide", and "Rac-Ibipinabant" contains "Ibipinabant":
+        # each must be read as the one molecule actually named.
+        self.assertEqual(assistant.prefetch_requests(DATA, "Is methanandamide stable?"),
+                         [("lookup_compound", {"identifier": "CHEMBL120526"})])
+        self.assertEqual(assistant.prefetch_requests(DATA, "What about Rac-Ibipinabant?"),
+                         [("lookup_compound", {"identifier": "CHEMBL158784"})])
+        # Ordinary words and short fragments are not structures, and dataset-wide questions need nothing.
+        self.assertEqual(assistant.prefetch_requests(DATA, "How many molecules have pKi of 9 or higher? See CCO, CO2, SVR."), [])
+        self.assertLessEqual(len(assistant.prefetch_requests(DATA, " ".join(["nabilone anandamide cannabidiol",
+                                                                             "CHEMBL600647 CHEMBL3410832 honokiol"]))),
+                             assistant.MAX_PREFETCH)
+
+    def test_exact_names_win_over_partial_matches(self):
+        for name, chembl_id in [("Ibipinabant", "CHEMBL412262"), ("Rac-Ibipinabant", "CHEMBL158784")]:
+            result = json.loads(assistant.run_tool(DATA, "lookup_compound", {"identifier": name})[0])
+            self.assertEqual(result["compound"]["chembl_ids"], chembl_id)
+
+    def test_results_are_attached_to_the_question_and_shown_as_pre_fetched(self):
+        client = FakeClient([reply("Nabilone's curated pKi is 7.98.")])
+        messages = assistant.new_conversation() + [{"role": "user", "content": "What is the pKi of nabilone?"}]
+        seen = []
+        assistant.chat_turn(client, DATA, messages, on_tool=lambda name, *rest: seen.append(name))
+        sent = client.requests[0][-1]["content"]
+        self.assertTrue(sent.startswith("What is the pKi of nabilone?"))
+        self.assertIn(assistant.PREFETCH_HEADER, sent)
+        self.assertIn('"chembl_ids": "CHEMBL2218896"', sent)   # The same JSON run_tool gives the LLM.
+        self.assertEqual(seen, ["lookup_compound (pre-fetched)"])
+        # A question is pre-fetched once, and the switch turns it off.
+        assistant.chat_turn(FakeClient([reply("again")]), DATA, messages[:-1])
+        self.assertEqual(messages[-2]["content"].count(assistant.PREFETCH_HEADER), 1)
+        off = FakeClient([reply("ok")])
+        assistant.chat_turn(off, DATA, assistant.new_conversation() + [{"role": "user", "content": "pKi of nabilone?"}],
+                            prefetch_tools=False)
+        self.assertNotIn(assistant.PREFETCH_HEADER, off.requests[0][-1]["content"])
+
 
 if __name__ == "__main__":
     unittest.main()

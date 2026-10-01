@@ -1,0 +1,9 @@
+question,comparison,model,thinking,prompt,seconds,output_tokens,correct,answer
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),1,deepseek-v4-pro,True,bare-mode brief + answer format,265.0,33232,,
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),1,deepseek-v4-pro,True,plain question,201.9,24832,,
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),1,deepseek-v4-pro,False,plain question,10.2,1011,,
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),1,deepseek-flash,True,plain question,61.4,13151,,
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),2,deepseek-v4-pro,True,plain question,95.1,11647,True,C24H36O3
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),2,deepseek-v4-pro,False,plain question,9.6,964,False,C25H40O3
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),2,deepseek-flash,True,plain question,40.5,8746,True,C24H36O3
+What is the molecular formula of CCCCCCC(C)(C)c1cc(O)c2c(c1)OC(C)(C)C1CCC(=O)CC21? (C24H36O3),2,deepseek-flash,False,plain question,12.6,2211,True,C24H36O3

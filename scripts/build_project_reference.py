@@ -87,7 +87,8 @@ def verify_saved_evidence():
             # This historical log describes earlier locations, not the current contract.
             if path.name != "renaming_manifest.json":
                 walk(read_json(path))
-    for path in (ROOT / "notebooks").glob("*.ipynb"):
+    notebook_paths = sorted((ROOT / "notebooks").glob("*.ipynb")) + sorted((ROOT / "llm_assistant").glob("*.ipynb"))
+    for path in notebook_paths:
         for cell in read_json(path)["cells"]:
             if cell["cell_type"] == "code":
                 ast.parse("".join(cell["source"]), filename=str(path))
@@ -135,7 +136,7 @@ def verify_saved_evidence():
                 assert math.isclose(float(metric[key]), value, rel_tol=1e-9, abs_tol=1e-10), (path, key)
             metric_rows += 1
     return {"checksum_references": checked, "recomputed_metric_rows": metric_rows,
-            "active_notebooks": len(list((ROOT / "notebooks").glob("*.ipynb")))}
+            "active_notebooks": len(notebook_paths)}
 
 
 def build_measurement_tables(accepted):
@@ -333,6 +334,15 @@ DESCRIPTIONS.update({
     "research_assistant.py": "LLM research assistant: data-query, RDKit and SVR-prediction tools, their descriptions, and the DeepSeek tool-calling loop.",
     "assistant_app.py": "Streamlit chat interface for the research assistant; shows every tool call behind each answer.",
     "assistant_evaluation.py": "Known-answer evaluation of the research assistant: the question set, its independently computed answers, scoring and runner.",
+    "chemistry_evaluation.py": "Chemistry-knowledge evaluation: whether DeepSeek, alone and inside the assistant, needs a chemistry-specialist model alongside it.",
+    "test_chemistry_evaluation.py": "Checks the chemistry evaluation's known answers, its scoring of SMILES, names, numbers and letters, and both modes with a fake LLM.",
+    "chemistry_evaluation.csv": "Accepted chemistry-knowledge evaluation of the assistant on the final design: 55 questions scored individually (varies between runs).",
+    "assistant_design_stages.csv": "The assistant re-run as it stood at each design stage (original, + pre-fetch, + R/S tool), side by side at the same time.",
+    "assistant_development_runs.csv": "Every exploratory run made while refining the assistant, labelled: pre-fetch and thinking tests, R/S before and after, DeepSeek alone.",
+    "stereo_note_ab_test.py": "A/B test of the note explaining unspecified stereocentres, run after the final design was seen to slow down and err on them.",
+    "stereo_note_ab_test.csv": "Answers from the unspecified-stereocentre A/B test: 10 questions, each asked twice with and without the note.",
+    "design_stages.py": "Recreates the assistant at each design stage without changing the app, and scores each stage on the same questions.",
+    "deepseek_reasoning_length.csv": "One chemistry question asked to DeepSeek several ways (prompt, thinking, model), with time, output tokens and answer.",
     "project_knowledge.py": "Research assistant's read-only project library (every text file except secrets; the API key is never readable) and bootstrap model comparison.",
     "test_research_assistant.py": "Checks the assistant's tools, test-set refusal, file allowlist, key redaction, model comparison and chat loop with a fake LLM.",
     "assistant_evaluation.csv": "Latest known-answer evaluation of the LLM research assistant from notebook 12 (varies between runs).",
@@ -504,7 +514,8 @@ def build_master_reference():
              "Git internals, environments, caches, and Windows download tags are excluded.", "", "## Folders", "",
              "| Folder | Purpose |", "| --- | --- |"]
     directories = sorted({parent.as_posix() for name in names for parent in Path(name).parents if parent.as_posix() != "."})
-    purpose = {"notebooks": "Thirteen ordered scientific pipeline notebooks.", "scripts": "Storage helpers, evidence checks, Markdown reference updates, and the LLM research assistant.",
+    purpose = {"notebooks": "Twelve ordered scientific pipeline notebooks.",
+               "llm_assistant": "The optional LLM research assistant: notebook 12 and the benchmark showing how it was designed and tested.", "scripts": "Storage helpers, evidence checks, Markdown reference updates, and the LLM research assistant.",
                "tests": "Dataset handoff and review-record checks without downloads or model training.",
                "results": "Current headline comparison; supporting evidence is under provenance/models/.", "provenance": "All source and supporting evidence, plus data and model summary workbooks.",
                "raw": "Original ChEMBL downloads, unchanged.", "selection": "Selected measurements and exclusion records.",

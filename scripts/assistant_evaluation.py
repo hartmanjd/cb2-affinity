@@ -121,7 +121,8 @@ def is_correct(answer, expected, kind):
     return abs(value - float(expected)) <= TOLERANCE[kind]
 
 
-def run_evaluation(client, data, model=None, thinking=None, questions=None, progress=print, compact=None):
+def run_evaluation(client, data, model=None, thinking=None, questions=None, progress=print, compact=None,
+                   prefetch_tools=True):
     """Ask every question in a fresh conversation and score the answers. Returns a DataFrame."""
     model = model or assistant.DEFAULT_MODEL
     thinking = assistant.DEFAULT_THINKING if thinking is None else thinking
@@ -136,7 +137,8 @@ def run_evaluation(client, data, model=None, thinking=None, questions=None, prog
         started = time.time()
         try:
             reply = assistant.chat_turn(client, data, messages, model=model, thinking=thinking, usage=usage,
-                                        compact=compact, on_tool=lambda name, *rest: tools_used.append(name))
+                                        compact=compact, prefetch_tools=prefetch_tools,
+                                        on_tool=lambda name, *rest: tools_used.append(name))
         except Exception as error:   # A failed call is scored as wrong rather than stopping the run.
             reply = f"ERROR {type(error).__name__}: {error}"
             failure = f"{type(error).__name__}: {str(error)[:200]}"
@@ -144,7 +146,10 @@ def run_evaluation(client, data, model=None, thinking=None, questions=None, prog
         rows.append({"number": number, "question": question, "kind": kind, "expected": expected, "answer": answer,
                      "error": failure,
                      "correct": is_correct(answer, expected, kind), "tools": ", ".join(tools_used),
-                     "n_tool_calls": len(tools_used), "seconds": round(time.time() - started, 1),
+                     # Tool calls the LLM asked for, and look-ups the code ran before it saw the question.
+                     "n_tool_calls": sum("(pre-fetched)" not in name for name in tools_used),
+                     "n_prefetched": sum("(pre-fetched)" in name for name in tools_used),
+                     "prefetch": prefetch_tools, "seconds": round(time.time() - started, 1),
                      "cost_usd": usage.get("cost_usd", 0.0), "model": model, "thinking": thinking,
                      "profile": "compact" if profile_compact else "full"})
         progress(f"{number:>2}/{len(questions)} {'correct' if rows[-1]['correct'] else 'WRONG  '} "
@@ -163,6 +168,7 @@ def summarise(frame, label=""):
     return ((f"{failed} of {len(frame)} questions failed with an error. " if failed else "") + (f"{label + ': ' if label else ''}{frame['correct'].sum()}/{len(frame)} correct "
             f"({frame['correct'].mean():.0%}); {frame['seconds'].mean():.1f} s per question "
             f"(total {frame['seconds'].sum():.0f} s); {frame['n_tool_calls'].mean():.1f} tool calls; "
+            f"{frame['n_prefetched'].sum() if 'n_prefetched' in frame else 0} pre-fetched look-ups; "
             f"${frame['cost_usd'].sum():.3f} total"))
 
 
@@ -175,6 +181,8 @@ def main():
                              "evaluate a model on this machine, e.g. http://localhost:11434/v1")
     parser.add_argument("--no-thinking", action="store_true", help="Answer without the model's private reasoning step.")
     parser.add_argument("--thinking", action="store_true", help="Force thinking on.")
+    parser.add_argument("--no-prefetch", action="store_true",
+                        help="Do not look up molecules named in the question before the LLM sees it.")
     parser.add_argument("--label", default="", help="Name for this run, printed with the summary.")
     parser.add_argument("--full-prompt", action="store_true",
                         help="Give a local model the full prompt and all 21 tools instead of the compact profile.")
@@ -191,7 +199,8 @@ def main():
     print(f"Endpoint {client.base_url} | model {arguments.model or assistant.DEFAULT_MODEL} | "
           f"{'compact' if prompt is assistant.COMPACT_SYSTEM_PROMPT else 'full'} profile "
           f"({len(prompt) // 4} prompt tokens, {len(tools)} tools)")
-    frame = run_evaluation(client, data, model=arguments.model, thinking=thinking, compact=compact)
+    frame = run_evaluation(client, data, model=arguments.model, thinking=thinking, compact=compact,
+                           prefetch_tools=not arguments.no_prefetch)
     output = Path(arguments.out)
     output = output if output.is_absolute() else ROOT / output
     output.parent.mkdir(parents=True, exist_ok=True)

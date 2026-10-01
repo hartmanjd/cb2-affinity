@@ -16,7 +16,8 @@ supporting data and model artifacts remain under `provenance/`.
 
 | Folder | Purpose |
 | --- | --- |
-| `notebooks/` | The thirteen scientific notebooks, in execution order |
+| `notebooks/` | The twelve scientific notebooks, in execution order |
+| `llm_assistant/` | Optional LLM research assistant: notebook 12 and the benchmark showing how it was designed and tested |
 | `provenance/` | Data provenance workbook, model summaries, and all supporting files |
 | `results/` | A readable headline model comparison |
 | `scripts/` | Shared storage helpers, evidence checks, Markdown reference updates, and the LLM research assistant |
@@ -100,7 +101,7 @@ Run each notebook top to bottom, in order:
 10. `09_mlp_tuning.ipynb` — bounded MLP search and refits.
 11. `10_noise_ceiling.ipynb` — how close each model gets to the measurement-noise floor (no training).
 12. `11_fine_tuned_chemberta.ipynb` — optional: fine-tunes a pretrained transformer in PyTorch and compares it with the tuned SVR (needs extra packages; see below).
-13. `12_llm_research_assistant.ipynb` — optional: an LLM that answers questions about the data by calling pandas, RDKit and SVR tools, with a known-answer evaluation (needs extra packages and a DeepSeek API key; see below).
+13. `llm_assistant/12_llm_research_assistant.ipynb` — optional, in its own folder: an LLM that answers questions about the data by calling pandas, RDKit and SVR tools, with a known-answer evaluation (needs extra packages and a DeepSeek API key; see below).
 
 Each notebook finds the completed upstream stage for the current acquisition.
 No manual edits to an old run number are needed. Missing or incompatible stages
@@ -154,9 +155,21 @@ the project: READMEs, notebooks, scripts, tests, run manifests and result tables
 only thing it can never read is the API key: `.env` and other secret-looking files are
 excluded, any file containing the key is skipped, and the key is redacted from every
 tool result (`scripts/project_knowledge.py`).
-Every number comes from a tool, and the app shows each tool call. Linker SAR and the
-composition of any group of molecules are computed in RDKit rather than left to the
-model, because reviewing real answers showed it guessing both.
+Every number comes from a tool, and the app shows each tool call. Linker SAR, the
+composition of any group of molecules, and R/S stereochemistry are computed in RDKit
+rather than left to the model, because testing showed it guessing the first two and
+taking minutes over the third. Before DeepSeek sees a question, plain code (not another
+model) looks up any SMILES, ChEMBL ID or compound name in it and attaches the results,
+which roughly halves the time for questions about a named molecule.
+
+[llm_assistant/assistant_benchmark.ipynb](llm_assistant/assistant_benchmark.ipynb) shows
+how the assistant was designed and tested, including whether DeepSeek needs a
+chemistry-specialist model alongside it (it does not, on 55 chemistry questions with
+independently known answers). The chemistry evaluation can be rerun:
+
+```bash
+python scripts/chemistry_evaluation.py --mode assistant
+```
 
 A known-answer evaluation measures whether the answers are right, and can be rerun to
 check whether a change helped:
