@@ -153,7 +153,35 @@ def summary(frame):
             round(float(frame["cost_usd"].sum()), 3))
 
 
-def render(root=ROOT):
+def overview(root=ROOT):
+    """The headline: run conditions, scores per question set, and the verdict."""
+    dataset = read("assistant_evaluation.csv")
+    chemistry = read("chemistry_evaluation.csv")
+    chemistry = chemistry[chemistry["mode"] == "assistant"]
+    scores = pd.DataFrame([(name,) + summary(frame) for name, frame in
+                           [("Dataset questions", dataset), ("Chemistry questions", chemistry)]],
+                          columns=["Question set", "Correct", "Asked", "Mean s", "Median s", "Slowest s", "Cost $"])
+    scores["Correct"] = scores["Correct"].astype(str) + "/" + scores["Asked"].astype(str)
+    return {
+        "title": "Affinity, Audited: the research assistant's audit",
+        "conditions": f"Accepted runs recorded {RUN_DATE}. Model {dataset['model'].iloc[0]}, thinking "
+                      f"{'on' if dataset['thinking'].iloc[0] else 'off'}, deployed design (full prompt, all tools, pre-fetch).",
+        "method": "Every question has a true answer computed independently of the assistant: from the project's files "
+                  "with pandas and RDKit, from ChEMBL's records, or from a cited paper. The assistant answered each in a "
+                  "fresh conversation and its final answer was scored automatically. See Controls for every condition "
+                  "held fixed.",
+        "scores": scores,
+        "verdict": "Every chemistry category cleared the 90% bar set before the runs, so no chemistry-specialist model "
+                   "is needed alongside DeepSeek; where it was slow or wrong, the fix was a tool, not a model.",
+    }
+
+
+def audit_sheets(root=ROOT):
+    """Every sheet after the overview: name, what it holds, and its tables.
+
+    Each table is (title or None, DataFrame, column widths for Excel, name of the outcome column or None).
+    The workbook and the app's audit section are both drawn from this, so they always agree.
+    """
     dataset = read("assistant_evaluation.csv")
     chemistry = read("chemistry_evaluation.csv")
     chemistry = chemistry[chemistry["mode"] == "assistant"]
@@ -162,120 +190,124 @@ def render(root=ROOT):
     development = read("assistant_development_runs.csv")
     history = read("assistant_model_trials.csv")
     assert set(dataset["number"]) == set(DATASET_QUESTIONS), "a dataset question has no description"
+    sheets = []
 
-    book = Workbook()
-    overview = book.active
-    overview.title = "Overview"
-    overview.column_dimensions["A"].width = 34
-    for letter in "BCDEFG":
-        overview.column_dimensions[letter].width = 16
-    lines = [
-        ("Affinity, Audited: the research assistant's audit", Font(bold=True, size=16)),
-        (f"Accepted runs recorded {RUN_DATE}. Model {dataset['model'].iloc[0]}, thinking "
-         f"{'on' if dataset['thinking'].iloc[0] else 'off'}, deployed design (full prompt, all tools, pre-fetch).", None),
-        ("Every question below has a true answer computed independently of the assistant: from the project's files with "
-         "pandas and RDKit, from ChEMBL's records, or from a cited paper. The assistant answered each in a fresh "
-         "conversation and its final answer was scored automatically. See the Controls sheet for every condition held "
-         "fixed.", None),
-        ("", None),
-    ]
-    for row, (text, font) in enumerate(lines, 1):
-        cell = overview.cell(row=row, column=1, value=text)
-        cell.alignment = Alignment(wrap_text=False, vertical="top")
-        if font:
-            cell.font = font
-    rows = [("Dataset questions",) + summary(dataset), ("Chemistry questions",) + summary(chemistry)]
-    next_row = add_table(overview, ["Question set", "Correct", "Asked", "Mean s", "Median s", "Slowest s", "Cost $"],
-                         [(name, f"{c}/{n}", n, mean, median, slowest, cost) for name, c, n, mean, median, slowest, cost in rows],
-                         [34, 12, 10, 10, 10, 12, 10], start_row=5)
-    overview.freeze_panes = None
-    guide = [
-        ("Sheet", "What it holds"),
-        ("Controls", "Every condition held fixed during testing, how, and why."),
-        ("Dataset questions", "The 18 questions about the data: what each tests, how its answer was computed, the answer given."),
-        ("Chemistry questions", "The 55 chemistry questions: category, source of the true answer, the answer given."),
-        ("Refinement stages", "The assistant re-run as it stood at each design stage, side by side: faster and more correct."),
-        ("Stereo note A-B test", "The targeted test behind the note on unspecified stereocentres (wrong answers fixed)."),
-        ("Model history", "Earlier runs that chose DeepSeek: before and after the speed work, and two local models."),
-        ("Development runs", "Every exploratory run made while refining the assistant, labelled."),
-    ]
-    for offset, (sheet, text) in enumerate(guide):
-        a, b = overview.cell(row=next_row + offset, column=1, value=sheet), overview.cell(row=next_row + offset, column=2, value=text)
-        if offset == 0:
-            for cell in (a, b):
-                cell.fill, cell.font = HEADER_FILL, HEADER_FONT
-    verdict_row = next_row + len(guide) + 1
-    overview.cell(row=verdict_row, column=1, value="Verdict").font = Font(bold=True)
-    overview.cell(row=verdict_row + 1, column=1,
-                  value="Every chemistry category cleared the 90% bar set before the runs, so no chemistry-specialist model "
-                        "is needed alongside DeepSeek; where it was slow or wrong, the fix was a tool, not a model.")
+    controls = pd.DataFrame(CONTROLS, columns=["Condition", "How it was controlled", "Why it matters"])
+    sheets.append({"name": "Controls", "about": "Every condition held fixed during testing, how, and why.",
+                   "tables": [(None, controls, [30, 70, 55], None)]})
 
-    sheet = book.create_sheet("Controls")
-    add_table(sheet, ["Condition", "How it was controlled", "Why it matters"], CONTROLS, [30, 70, 55])
-
-    sheet = book.create_sheet("Dataset questions")
     rows = []
     for row in dataset.sort_values("number").to_dict("records"):
         tests, source = DATASET_QUESTIONS[row["number"]]
         rows.append((row["number"], tests, row["question"], row["expected"], source, row["answer"],
                      "correct" if row["correct"] else "wrong", row["seconds"], row["n_tool_calls"],
                      row["n_prefetched"], tools_used(row["tools"]), round(row["cost_usd"], 4)))
-    add_table(sheet, ["#", "What it tests", "Question", "True answer", "How the true answer was computed",
-                      "Assistant's answer", "Outcome", "Seconds", "Tool calls", "Pre-fetched", "Tools used", "Cost $"],
-              rows, [5, 22, 50, 16, 50, 18, 10, 9, 9, 10, 40, 9], outcome_column=6)
+    table = pd.DataFrame(rows, columns=["#", "What it tests", "Question", "True answer", "How the true answer was computed",
+                                        "Assistant's answer", "Outcome", "Seconds", "Tool calls", "Pre-fetched",
+                                        "Tools used", "Cost $"])
+    sheets.append({"name": "Dataset questions",
+                   "about": "The 18 questions about the data: what each tests, how its answer was computed, the answer given.",
+                   "tables": [(None, table, [5, 22, 50, 16, 50, 18, 10, 9, 9, 10, 40, 9], "Outcome")]})
 
-    sheet = book.create_sheet("Chemistry questions")
     rows = [(row["number"], CHEMISTRY_CATEGORIES.get(row["category"], row["category"]), row["question"], row["expected"],
              row["source"], row["answer"], outcome_of(row), "yes" if row["forced_by_time_limit"] else "no",
              row["seconds"], row["n_tool_calls"], row["n_prefetched"], tools_used(row["tools"]), round(row["cost_usd"], 4))
             for row in chemistry.sort_values("number").to_dict("records")]
-    add_table(sheet, ["#", "Category", "Question", "True answer", "Source of the true answer", "Assistant's answer",
-                      "Outcome", "Forced by time limit", "Seconds", "Tool calls", "Pre-fetched", "Tools used", "Cost $"],
-              rows, [5, 34, 55, 22, 34, 22, 10, 10, 9, 9, 10, 36, 9], outcome_column=6)
+    table = pd.DataFrame(rows, columns=["#", "Category", "Question", "True answer", "Source of the true answer",
+                                        "Assistant's answer", "Outcome", "Forced by time limit", "Seconds", "Tool calls",
+                                        "Pre-fetched", "Tools used", "Cost $"])
+    sheets.append({"name": "Chemistry questions",
+                   "about": "The 55 chemistry questions: category, source of the true answer, the answer given.",
+                   "tables": [(None, table, [5, 34, 55, 22, 34, 22, 10, 10, 9, 9, 10, 36, 9], "Outcome")]})
 
-    sheet = book.create_sheet("Refinement stages")
     labels = {"1-original": "1. Original design", "2-prefetch": "2. + pre-fetch", "3-final": "3. + R/S labels"}
     rows = []
     for (question_set, stage), group in stages.groupby(["question_set", "stage"]):
         c, n, mean, median, slowest, cost = summary(group)
-        unknown = int((group.get("outcome") == "unknown").sum()) if "outcome" in group else 0
+        unknown = int((group["outcome"] == "unknown").sum())
         rows.append((question_set, labels.get(stage, stage), f"{c}/{n}", unknown, mean, median, slowest, cost))
-    next_row = add_table(sheet, ["Question set", "Stage", "Correct", "Unknown", "Mean s", "Median s", "Slowest s", "Cost $"],
-                         rows, [14, 22, 10, 10, 10, 10, 10, 10])
-    sheet.cell(row=next_row, column=1, value="Each stage was recreated by scripts/design_stages.py and run at the same "
-               "time as the others, on a fixed 20-question chemistry subset and all 18 dataset questions. Stage 4 (the "
-               "note on unspecified stereocentres) was measured by the A/B test on its own sheet.")
-    detail = [(labels.get(r["stage"], r["stage"]), r["question_set"], r["number"], r["question"], r["expected"], r["answer"],
-               outcome_of(r), r["seconds"], tools_used(r["tools"]))
-              for r in stages.sort_values(["question_set", "number", "stage"]).to_dict("records")]
-    add_table(sheet, ["Stage", "Set", "#", "Question", "True answer", "Answer", "Outcome", "Seconds", "Tools used"],
-              detail, [22, 12, 5, 55, 18, 18, 10, 9, 40], outcome_column=6, start_row=next_row + 2)
+    totals = pd.DataFrame(rows, columns=["Question set", "Stage", "Correct", "Unknown", "Mean s", "Median s", "Slowest s", "Cost $"])
+    detail = pd.DataFrame([(labels.get(r["stage"], r["stage"]), r["question_set"], r["number"], r["question"], r["expected"],
+                            r["answer"], outcome_of(r), r["seconds"], tools_used(r["tools"]))
+                           for r in stages.sort_values(["question_set", "number", "stage"]).to_dict("records")],
+                          columns=["Stage", "Set", "#", "Question", "True answer", "Answer", "Outcome", "Seconds", "Tools used"])
+    sheets.append({"name": "Refinement stages",
+                   "about": "The assistant re-run as it stood at each design stage, side by side (scripts/design_stages.py), "
+                            "on a fixed 20-question chemistry subset and all 18 dataset questions. Stage 4, the note on "
+                            "unspecified stereocentres, was measured by the A-B test.",
+                   "tables": [("By stage", totals, [14, 22, 10, 10, 10, 10, 10, 10], None),
+                              ("Every answer", detail, [22, 12, 5, 55, 18, 18, 10, 9, 40], "Outcome")]})
 
-    sheet = book.create_sheet("Stereo note A-B test")
-    rows = [(variant,) + summary(group)[:2] + summary(group)[2:5] for variant, group in ab.groupby("variant")]
-    next_row = add_table(sheet, ["Variant", "Correct", "Asked", "Mean s", "Median s", "Slowest s"],
-                         [(("A: without the note" if v == "A" else "B: with the note"), f"{c}/{n}", n, m, md, s)
-                          for v, c, n, m, md, s in rows], [24, 10, 10, 10, 10, 10])
-    sheet.cell(row=next_row, column=1, value="Ten questions about molecules whose stereocentres are recorded as "
-               "unspecified, each asked twice per variant, side by side. Bar set in advance: at least 30% faster and no "
-               "fewer correct. B was adopted.")
-    detail = [(r["variant"], r["repeat"], r["number"], r["question"], r["expected"], r["answer"], outcome_of(r),
-               "yes" if r["forced_by_time_limit"] else "no", r["seconds"], r["n_tool_calls"])
-              for r in ab.sort_values(["number", "variant", "repeat"]).to_dict("records")]
-    add_table(sheet, ["Variant", "Pass", "#", "Question", "True answer", "Answer", "Outcome", "Forced", "Seconds", "Tool calls"],
-              detail, [9, 6, 5, 55, 22, 22, 10, 8, 9, 9], outcome_column=6, start_row=next_row + 2)
+    totals = pd.DataFrame([(("A: without the note" if variant == "A" else "B: with the note"),) + summary(group)[:2] + summary(group)[2:5]
+                           for variant, group in ab.groupby("variant")],
+                          columns=["Variant", "Correct", "Asked", "Mean s", "Median s", "Slowest s"])
+    totals["Correct"] = totals["Correct"].astype(str) + "/" + totals["Asked"].astype(str)
+    detail = pd.DataFrame([(r["variant"], r["repeat"], r["number"], r["question"], r["expected"], r["answer"], outcome_of(r),
+                            "yes" if r["forced_by_time_limit"] else "no", r["seconds"], r["n_tool_calls"])
+                           for r in ab.sort_values(["number", "variant", "repeat"]).to_dict("records")],
+                          columns=["Variant", "Pass", "#", "Question", "True answer", "Answer", "Outcome", "Forced", "Seconds",
+                                   "Tool calls"])
+    sheets.append({"name": "Stereo note A-B test",
+                   "about": "Ten questions about molecules whose stereocentres are recorded as unspecified, each asked twice "
+                            "per variant, side by side. Bar set in advance: at least 30% faster and no fewer correct. B was "
+                            "adopted: without the note, nabilone's structure came back wrong in both passes.",
+                   "tables": [("By variant", totals, [24, 10, 10, 10, 10, 10], None),
+                              ("Every answer", detail, [9, 6, 5, 55, 22, 22, 10, 8, 9, 9], "Outcome")]})
 
-    sheet = book.create_sheet("Model history")
-    rows = [(run, group["model"].iloc[0], group["runs_on"].iloc[0], group["profile"].iloc[0]) + summary(group)
-            for run, group in history.groupby("run", sort=False)]
-    add_table(sheet, ["Run", "Model", "Runs on", "Prompt profile", "Correct", "Asked", "Mean s", "Median s", "Slowest s", "Cost $"],
-              rows, [48, 18, 10, 12, 9, 8, 9, 9, 10, 9])
+    table = pd.DataFrame([(run, group["model"].iloc[0], group["runs_on"].iloc[0], group["profile"].iloc[0]) + summary(group)
+                          for run, group in history.groupby("run", sort=False)],
+                         columns=["Run", "Model", "Runs on", "Prompt profile", "Correct", "Asked", "Mean s", "Median s",
+                                  "Slowest s", "Cost $"])
+    sheets.append({"name": "Model history",
+                   "about": "Earlier runs that chose DeepSeek: before and after the speed work, and two local models.",
+                   "tables": [(None, table, [48, 18, 10, 12, 9, 8, 9, 9, 10, 9], None)]})
 
-    sheet = book.create_sheet("Development runs")
-    rows = [(run, group["question_set"].iloc[0], group["time_of_day"].iloc[0]) + summary(group)
-            for run, group in development.groupby("run", sort=False)]
-    add_table(sheet, ["Run", "Question set", "Time of day", "Correct", "Asked", "Mean s", "Median s", "Slowest s", "Cost $"],
-              rows, [62, 12, 11, 9, 8, 9, 9, 10, 9])
+    table = pd.DataFrame([(run, group["question_set"].iloc[0], group["time_of_day"].iloc[0]) + summary(group)
+                          for run, group in development.groupby("run", sort=False)],
+                         columns=["Run", "Question set", "Time of day", "Correct", "Asked", "Mean s", "Median s",
+                                  "Slowest s", "Cost $"])
+    sheets.append({"name": "Development runs", "about": "Every exploratory run made while refining the assistant, labelled.",
+                   "tables": [(None, table, [62, 12, 11, 9, 8, 9, 9, 10, 9], None)]})
+    return sheets
+
+
+def render(root=ROOT):
+    """The workbook's bytes: an Overview sheet, then one sheet per audit_sheets() entry."""
+    head, sheets = overview(root), audit_sheets(root)
+    book = Workbook()
+    sheet = book.active
+    sheet.title = "Overview"
+    sheet.column_dimensions["A"].width = 34
+    for row, (text, font) in enumerate([(head["title"], Font(bold=True, size=16)), (head["conditions"], None),
+                                        (head["method"], None)], 1):
+        cell = sheet.cell(row=row, column=1, value=text)
+        if font:
+            cell.font = font
+    scores = head["scores"]
+    next_row = add_table(sheet, list(scores.columns), list(scores.itertuples(index=False)), [34, 12, 10, 10, 10, 12, 10], start_row=5)
+    sheet.freeze_panes = None
+    guide = [("Sheet", "What it holds")] + [(s["name"], s["about"]) for s in sheets]
+    for offset, (name, text) in enumerate(guide):
+        a, b = sheet.cell(row=next_row + offset, column=1, value=name), sheet.cell(row=next_row + offset, column=2, value=text)
+        if offset == 0:
+            for cell in (a, b):
+                cell.fill, cell.font = HEADER_FILL, HEADER_FONT
+    verdict_row = next_row + len(guide) + 1
+    sheet.cell(row=verdict_row, column=1, value="Verdict").font = Font(bold=True)
+    sheet.cell(row=verdict_row + 1, column=1, value=head["verdict"])
+
+    for spec in sheets:
+        sheet = book.create_sheet(spec["name"])
+        row = 1
+        if len(spec["tables"]) > 1 or spec["name"] in ("Refinement stages", "Stereo note A-B test"):
+            sheet.cell(row=row, column=1, value=spec["about"])
+            row += 2
+        for title, table, widths, outcome in spec["tables"]:
+            if title:
+                sheet.cell(row=row, column=1, value=title).font = Font(bold=True)
+                row += 1
+            outcome_column = list(table.columns).index(outcome) if outcome else None
+            row = add_table(sheet, list(table.columns), list(table.itertuples(index=False)), widths, outcome_column, start_row=row)
 
     output = io.BytesIO()
     book.save(output)

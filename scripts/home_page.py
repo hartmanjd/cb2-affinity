@@ -93,51 +93,70 @@ def facts(data, root):
 
 
 # Six steps of one blue, light (everything) to dark (what survives), from the reference palette's
-# sequential ramp; no lighter than step 250, so even the outer ring stands out from the page.
-RING_BLUES = ["#86b6ef", "#6da7ec", "#3987e5", "#2a78d6", "#1c5cab", "#104281"]
+# sequential ramp; no lighter than step 250, so even the top layer stands out from the page.
+LAYER_BLUES = ["#86b6ef", "#6da7ec", "#3987e5", "#2a78d6", "#1c5cab", "#104281"]
 
 
-def rings_chart(funnel, colours, size=340):
-    """The clean-up as nested circles: each circle's area is the records left after that step.
+def layer_widths(counts, narrowest=0.32):
+    """Pyramid layer widths: readable first, faithful second.
 
-    Drawn largest first, so every smaller circle sits inside the one before it and the visible ring
-    between two circles is what that step removed. A thin page-coloured outline separates the rings.
+    Widths in strict proportion to the counts would make the last five layers (5,825 down to 3,576)
+    nearly identical slivers under a huge first one. So each width blends two scales half and half:
+    the count's position on a log scale (keeps the big first cut big) and its rank (gives every step
+    a visible narrowing). The widest layer is 1; the narrowest is `narrowest`.
+    """
+    import math
+    logs = [math.log(c) for c in counts]
+    span = (logs[0] - logs[-1]) or 1
+    steps = len(counts) - 1 or 1
+    blended = [0.5 * (value - logs[-1]) / span + 0.5 * (steps - i) / steps for i, value in enumerate(logs)]
+    return [narrowest + (1 - narrowest) * b for b in blended]
+
+
+def pyramid_chart(funnel, colours, row=64):
+    """The clean-up as an upside-down pyramid: one trapezoid layer per step, count inside, story beside.
+
+    Each layer runs from its own width at the top to the next layer's width at the bottom, so the sides
+    slope like a funnel; the last layer tapers to a point. Layers are equal height for readability.
+    Returned as a Vega-Lite spec.
     """
     import altair as alt
-    largest = funnel[0][1]
-    full_area = 3.14159 * (size / 2 - 4) ** 2   # Circle marks are sized by area in square pixels.
-    frame = pd.DataFrame([{"order": i, "stage": stage, "count": count, "area": full_area * count / largest,
-                           "removed": (funnel[i - 1][1] - count) if i else 0, "colour": RING_BLUES[i]}
-                          for i, (stage, count, _) in enumerate(funnel)])
-    return alt.Chart(frame).mark_circle(opacity=1, stroke=colours["page"], strokeWidth=2).encode(
-        x=alt.value(size / 2), y=alt.value(size / 2),
-        size=alt.Size("area:Q", scale=None, legend=None),
-        color=alt.Color("colour:N", scale=None, legend=None),
-        order=alt.Order("order:Q"),
-        tooltip=[alt.Tooltip("stage:N", title="Step"), alt.Tooltip("count:Q", title="Left", format=","),
-                 alt.Tooltip("removed:Q", title="Removed by this step", format=",")],
-    ).properties(width=size, height=size).configure_view(strokeWidth=0)
-
-
-def rings_legend(funnel, colours):
-    """The key beside the rings: each step's colour, what is left, and what it removed."""
-    rows = []
+    counts = [count for _, count, _ in funnel]
+    widths = layer_widths(counts) + [0.12]
+    gap = 0.12   # Fraction of each row left empty between layers.
+    outline, labels = [], []
     for i, (stage, count, removed) in enumerate(funnel):
-        taken = f"<div style='margin-left:22px;color:{colours['secondary']};font-size:0.85rem'>" \
-                f"−{funnel[i - 1][1] - count:,}: {removed}</div>" if i else ""
-        rows.append(f"<div style='margin:0 0 10px 0'><span style='display:inline-block;width:14px;height:14px;"
-                    f"border-radius:50%;background:{RING_BLUES[i]};vertical-align:-2px;margin-right:8px'></span>"
-                    f"<b>{count:,}</b> &nbsp;{stage}{taken}</div>")
-    return "".join(rows)
+        removed_text = f"−{funnel[i - 1][1] - count:,}: {removed}" if i else "The full download"
+        for y, width in [(i, widths[i]), (i + 1 - gap, widths[i + 1])]:
+            outline.append({"layer": i, "y": y, "left": -width / 2, "right": width / 2, "colour": LAYER_BLUES[i],
+                            "stage": stage, "count": count, "removed": removed_text})
+        labels.append({"layer": i, "y": i + (1 - gap) / 2, "count": f"{count:,}", "stage": stage,
+                       "removed": removed_text, "ink": "#ffffff" if i >= 2 else "#0b0b0b"})
+    outline, labels = pd.DataFrame(outline), pd.DataFrame(labels)
+    y = alt.Y("y:Q", scale=alt.Scale(domain=[0, len(funnel)], reverse=True), axis=None)
+    x_scale = alt.Scale(domain=[-0.55, 2.6])   # The pyramid on the left, room for the words on the right.
+    layers = alt.Chart(outline).mark_area(orient="horizontal", interpolate="linear").encode(
+        y=y, x=alt.X("left:Q", scale=x_scale, axis=None), x2="right:Q", detail="layer:N",
+        color=alt.Color("colour:N", scale=None, legend=None),
+        tooltip=[alt.Tooltip("stage:N", title="Step"), alt.Tooltip("count:Q", title="Left", format=","),
+                 alt.Tooltip("removed:N", title="Removed")])
+    inside = alt.Chart(labels).mark_text(fontWeight="bold", fontSize=15, baseline="middle").encode(
+        y=y, x=alt.XDatum(0, scale=x_scale), text="count:N", color=alt.Color("ink:N", scale=None, legend=None))
+    stage_text = alt.Chart(labels).mark_text(align="left", baseline="bottom", dy=-1, fontSize=14, fontWeight="bold",
+                                             color=colours["ink"]).encode(y=y, x=alt.XDatum(0.6, scale=x_scale), text="stage:N")
+    removed_text = alt.Chart(labels).mark_text(align="left", baseline="top", dy=3, fontSize=12.5,
+                                               color=colours["secondary"]).encode(y=y, x=alt.XDatum(0.6, scale=x_scale),
+                                                                                  text="removed:N")
+    chart = (layers + inside + stage_text + removed_text).properties(height=len(funnel) * row)
+    return chart.configure_view(strokeWidth=0).to_dict()
 
 
-def neighbour_chart(molecule, colours, gutter=190):
+def neighbour_chart(molecule, colours):
     """Its five nearest neighbours' pKi as bars, with the molecule's own pKi as a dashed line (a Vega-Lite spec).
 
-    Bars and names can both be clicked: both carry the point selection "pick" on chembl_id, which
-    Streamlit reports back so the page can show that neighbour (see picked_neighbour). Axis labels
-    cannot be clicked, so the names are drawn as text in a left-hand gutter of `gutter` pixels
-    instead, and the bars' scale starts after it.
+    A whole row can be clicked, name included: a transparent strip over each row carries the point
+    selection "pick" on chembl_id, which Streamlit reports back (see picked_neighbour). Vega-Lite allows
+    a selection on one layer only, so the strips are that layer; the bars and names change with it.
     """
     import altair as alt
     frame = pd.DataFrame(molecule["neighbours"])
@@ -145,34 +164,33 @@ def neighbour_chart(molecule, colours, gutter=190):
     frame["value"] = frame["pki"].map("{:.2f}".format) + "  ·  " + (frame["similarity"] * 100).round().astype(int).astype(str) + "% similar"
     pick = alt.selection_point(name="pick", fields=["chembl_id"], on="click")
     # A fixed 40 px per row with 40% of it left as a gap, so all five rows fit and bars never touch.
-    y = alt.Y("chembl_id:N", sort=alt.SortField("order"), title=None, axis=None, scale=alt.Scale(paddingInner=0.4))
-    scale = alt.Scale(domain=[0, 12], range=[gutter, {"expr": "width"}])   # Bars start after the name gutter.
-    x = alt.X("pki:Q", title="pKi of its 5 nearest neighbours (click a name or bar to see it)", scale=scale,
+    # Names are the axis labels, in the accent colour to show they can be clicked.
+    y = alt.Y("label:N", sort=alt.SortField("order"), title=None, scale=alt.Scale(paddingInner=0.4),
+              axis=alt.Axis(labelLimit=220, labelPadding=10, labelColor=colours["accent"], labelFontWeight="bold",
+                            labelFontSize=12, ticks=False, domain=False))
+    x = alt.X("pki:Q", title="pKi of its 5 nearest neighbours (click one to see it)", scale=alt.Scale(domain=[0, 12]),
               axis=alt.Axis(grid=False, values=[0, 2, 4, 6, 8, 10, 12]))
-    # Thin darker outline on every bar; a clicked one gets a bold outline and the others fade.
-    bars = alt.Chart(frame).mark_bar(color=colours["accent"], cornerRadiusEnd=4, cursor="pointer").encode(
+    bars = alt.Chart(frame).mark_bar(color=colours["accent"], cornerRadiusEnd=4).encode(
         x=x, y=y, stroke=alt.value(colours["outline"]),
         strokeWidth=alt.condition(pick, alt.value(2.5), alt.value(1), empty=False),
-        opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35)),
-        tooltip=[alt.Tooltip("label:N", title="Molecule"), alt.Tooltip("similarity:Q", title="Similarity", format=".0%"),
-                 alt.Tooltip("pki:Q", title="pKi", format=".2f")]).add_params(pick)
-    names = alt.Chart(frame).mark_text(align="right", baseline="middle", dx=-10, cursor="pointer",
-                                       color=colours["accent"], fontWeight="bold").encode(
-        x=alt.value(gutter), y=y, text="label:N",
-        opacity=alt.condition(pick, alt.value(1.0), alt.value(0.45)))
+        opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35)))
     values = alt.Chart(frame).mark_text(align="left", baseline="middle", dx=5, color=colours["secondary"]).encode(
         x=x, y=y, text="value:N")
     own = pd.DataFrame([{"x": molecule["pki"], "text": f"itself {molecule['pki']:.2f}"}])
-    rule = alt.Chart(own).mark_rule(strokeDash=[4, 4], color=colours["secondary"]).encode(x=alt.X("x:Q", scale=scale))
-    rule_label = alt.Chart(own).mark_text(align="center", dy=-6, baseline="bottom", fontSize=11,
-                                          color=colours["secondary"]).encode(x=alt.X("x:Q", scale=scale),
-                                                                             y=alt.value(0), text="text:N")
-    spec = (bars + names + values + rule + rule_label).properties(height=len(frame) * 40 + 10) \
-        .configure_view(strokeWidth=0).to_dict()
-    # Altair attaches a selection to one layer only; Vega-Lite allows several. Register the names layer as
-    # a second view of "pick", so a click on a name selects that molecule just like a click on its bar.
-    spec["layer"][1]["name"] = "neighbour_names"
-    spec["params"][0]["views"].append("neighbour_names")
+    rule = alt.Chart(own).mark_rule(strokeDash=[4, 4], color=colours["secondary"]).encode(x=alt.X("x:Q", scale=alt.Scale(domain=[0, 12])))
+    rule_label = alt.Chart(own).mark_text(align="center", dy=-6, baseline="bottom", fontSize=11, color=colours["secondary"]) \
+        .encode(x=alt.X("x:Q", scale=alt.Scale(domain=[0, 12])), y=alt.value(0), text="text:N")
+    # The click layer, drawn last so it is on top: one nearly invisible strip per row, from the left edge of
+    # the names (negative pixels reach into the label area) to the right edge of the chart.
+    strips = alt.Chart(frame).mark_bar(color=colours["accent"], opacity=0.001, cursor="pointer").encode(
+        y=y, x=alt.value(-170), x2=alt.value(0),
+        tooltip=[alt.Tooltip("label:N", title="Molecule"), alt.Tooltip("similarity:Q", title="Similarity", format=".0%"),
+                 alt.Tooltip("pki:Q", title="pKi", format=".2f")]).add_params(pick)
+    chart = (bars + values + rule + rule_label + strips).properties(height=len(frame) * 40 + 10)
+    spec = chart.configure_view(strokeWidth=0).to_dict()
+    # Strips end exactly at the chart's right edge, whatever width the page gives it (a fixed large
+    # number would stretch the chart to fit it).
+    spec["layer"][-1]["encoding"]["x2"] = {"value": {"expr": "width"}}
     return spec
 
 
@@ -213,8 +231,9 @@ def model_chart(models, noise_floor, dummy_rmse, colours):
     return (bars + labels + rules + rule_labels).properties(height=len(frame) * 38 + 24).configure_view(strokeWidth=0)
 
 
-# The audit workbook (scripts/build_assistant_audit.py) on GitHub, as a direct download.
-AUDIT_URL = "https://github.com/hartmanjd/cb2-affinity/raw/dev/results/assistant_audit.xlsx"
+# The audit opens in the page itself (render_audit); this is the anchor of its heading.
+AUDIT_ANCHOR = "the-audit"
+OUTCOME_COLOURS = {"correct": "#dff2df", "wrong": "#f9dedc", "unknown": "#fdf0cc"}
 
 ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh"]
 
@@ -270,11 +289,7 @@ def render(st, data, root, draw_png):
                "molecule fills half the receptors; the project uses **pKi**, where every +1 means ten times tighter.")
 
     st.subheader(f"Whittling {f['funnel'][0][1]:,} records down to {f['funnel'][-1][1]:,} molecules")
-    rings, key_column = st.columns([2, 3], gap="large", vertical_alignment="center")
-    with rings:
-        st.altair_chart(rings_chart(f["funnel"], colours), width="content")
-    with key_column:
-        st.html(rings_legend(f["funnel"], colours))
+    st.vega_lite_chart(pyramid_chart(f["funnel"], colours), width="stretch")
 
     # The two ends of the scale, side by side: each molecule, then its closest relatives in the data.
     for column, title, key in zip(st.columns(2, gap="large"), ["The strongest binder", "The weakest binder"],
@@ -340,11 +355,51 @@ def render(st, data, root, draw_png):
         "RDKit, because testing showed language models guessing them confidently and wrongly.\n"
         "- **Held-back test molecules are never predicted**, so the project's final test stays honest.\n"
         f"- **It is tested against answers it could not have guessed**: [{chemistry[0]}/{chemistry[1]} chemistry "
-        f"questions and {dataset[0]}/{dataset[1]} questions about the data]({AUDIT_URL}) correct, and every change "
-        "to the assistant was measured before it was kept. The linked workbook shows every question, how its true "
-        "answer was computed, the answer given, and every condition held fixed.")
+        f"questions and {dataset[0]}/{dataset[1]} questions about the data](#{AUDIT_ANCHOR}) correct, and every change "
+        "to the assistant was measured before it was kept. Follow the link to the full audit below: every question, "
+        "how its true answer was computed, the answer given, and every condition held fixed.")
     st.markdown(
         "Language models still make mistakes. The point is not that this one cannot, but that when it does, you "
         "can see exactly where.")
+    render_audit(st)
     st.markdown("**Try one of the questions in the sidebar, or ask your own below.** The full project, notebooks "
                 "and data are on [GitHub](https://github.com/hartmanjd/cb2-affinity).")
+
+
+_AUDIT = {}   # The audit tables, read once per server.
+
+
+def render_audit(st):
+    """The audit workbook inside the page: one tab per sheet, each table sortable, searchable and expandable.
+
+    Built from the same tables as results/assistant_audit.xlsx (build_assistant_audit), so the two always
+    agree; the Excel file is offered as an optional download, never forced.
+    """
+    import build_assistant_audit as audit
+    if not _AUDIT:
+        _AUDIT.update(head=audit.overview(), sheets=audit.audit_sheets(),
+                      workbook=(audit.ROOT / audit.WORKBOOK).read_bytes())
+    head, sheets = _AUDIT["head"], _AUDIT["sheets"]
+
+    def coloured(table, outcome):
+        # Green for right, red for wrong, amber for "unknown", with dark text so it reads in either theme.
+        if outcome is None:
+            return table
+        return table.style.apply(lambda row: [f"background-color: {OUTCOME_COLOURS.get(str(row[outcome]).lower(), '')};"
+                                              f"color: #0b0b0b" if str(row[outcome]).lower() in OUTCOME_COLOURS else ""
+                                              for _ in row], axis=1)
+
+    st.subheader("The audit", anchor=AUDIT_ANCHOR)
+    st.caption(head["conditions"] + " " + head["method"])
+    st.dataframe(head["scores"], hide_index=True, width="stretch")
+    tabs = st.tabs([spec["name"] for spec in sheets])
+    for tab, spec in zip(tabs, sheets):
+        with tab:
+            st.caption(spec["about"] + " Click a column to sort; hover a table for search and full-screen.")
+            for title, table, _, outcome in spec["tables"]:
+                if title:
+                    st.markdown(f"**{title}**")
+                st.dataframe(coloured(table, outcome), hide_index=True, width="stretch",
+                             height=min(420, 38 + 35 * len(table)))
+    st.download_button("Download the audit as an Excel workbook", _AUDIT["workbook"], file_name="assistant_audit.xlsx",
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

@@ -38,6 +38,38 @@ class FactTests(unittest.TestCase):
         self.assertGreater(facts["dummy_rmse"], facts["models"][-1]["rmse_pki"])
 
 
+class ChartTests(unittest.TestCase):
+    def charts(self):
+        facts = home_page.facts(DATA, ROOT)
+        colours = home_page.COLOURS["light"]
+        return {"pyramid": home_page.pyramid_chart(facts["funnel"], colours),
+                "strongest": home_page.neighbour_chart(facts["strongest"], colours),
+                "weakest": home_page.neighbour_chart(facts["weakest"], colours)}
+
+    def test_each_selection_lives_on_one_layer(self):
+        # Vega-Lite rejects a selection shared by two layers ("Duplicate signal name"), and the browser then
+        # draws nothing at all, silently. That is how the neighbour chart once vanished.
+        for name, spec in self.charts().items():
+            for parameter in spec.get("params", []):
+                self.assertEqual(len(parameter.get("views", [])), 1, name)
+
+    def test_charts_render(self):
+        # A full render with the Vega-Lite engine, when it is installed (it is not a project dependency).
+        try:
+            import vl_convert
+        except ImportError:
+            self.skipTest("vl-convert not installed")
+        for name, spec in self.charts().items():
+            self.assertTrue(vl_convert.vegalite_to_svg({**spec, "width": 600}).startswith("<svg"), name)
+
+    def test_pyramid_layers_narrow_steadily_and_readably(self):
+        widths = home_page.layer_widths([22523, 5825, 4576, 4081, 3905, 3576])
+        self.assertEqual(widths, sorted(widths, reverse=True))
+        self.assertAlmostEqual(widths[0], 1.0)
+        self.assertGreaterEqual(min(widths), 0.3)                       # Even the last layer has room for its count.
+        self.assertTrue(all(a - b > 0.04 for a, b in zip(widths, widths[1:])))   # Every step visibly narrows.
+
+
 class NeighbourClickTests(unittest.TestCase):
     def test_a_click_picks_that_neighbour_and_no_click_picks_none(self):
         molecule = home_page.facts(DATA, ROOT)["strongest"]
@@ -51,7 +83,7 @@ class NeighbourClickTests(unittest.TestCase):
         molecule = home_page.facts(DATA, ROOT)["strongest"]
         spec = home_page.neighbour_chart(molecule, home_page.COLOURS["light"])
         self.assertEqual([p["name"] for p in spec["params"]], ["pick"])
-        self.assertEqual(len(spec["params"][0]["views"]), 2)   # Bars and names are both clickable.
+        self.assertEqual(spec["layer"][-1]["mark"]["opacity"], 0.001)   # The near-invisible click strips, on top.
         self.assertIs(spec["layer"][0]["encoding"]["strokeWidth"]["condition"]["empty"], False)
 
 
@@ -72,6 +104,10 @@ class PageTests(unittest.TestCase):
             self.assertEqual(len(app.exception), 0)
             self.assertIn("Can a model support the lab?", [s.value for s in app.subheader])
             self.assertIn("The weakest binder", [s.value for s in app.subheader])
+            # The audit opens in the page: a tab per workbook sheet, and the scores link to it.
+            self.assertIn("The audit", [s.value for s in app.subheader])
+            self.assertEqual([tab.label for tab in app.tabs][:3], ["Controls", "Dataset questions", "Chemistry questions"])
+            self.assertTrue(any(f"](#{home_page.AUDIT_ANCHOR})" in m.value for m in app.markdown))
             self.assertEqual([m.label for m in app.metric][0], "Molecules")
             self.assertEqual(len(app.expander), 0)      # The tour is shown open on arrival.
             self.assertEqual(app.title[0].value, "Affinity, Audited")
