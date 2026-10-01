@@ -168,7 +168,7 @@ def render(st, data, root, draw_png):
                     "of it, roughly a grain of rice, dissolved in an Olympic swimming pool would still reach that "
                     "concentration.")
 
-    st.subheader("Can a model beat the lab?")
+    st.subheader("Can a model support the lab?")
     st.altair_chart(model_chart(f["models"], f["noise_floor"], f["dummy_rmse"], colours), width="stretch")
     best = f["models"][0]
     st.caption(f"Each model was tested on chemical families it never saw in training, the honest test of predicting "
@@ -178,8 +178,14 @@ def render(st, data, root, draw_png):
                f"molecules fall between pKi {f['pki_5th']:.1f} and {f['pki_95th']:.1f}, a "
                f"{10 ** (f['pki_95th'] - f['pki_5th']):,.0f}-fold span in binding strength; a miss of "
                f"{best['rmse_pki']:.2f} means a predicted Ki is typically within about "
-               f"{10 ** best['rmse_pki']:.0f}-fold of the measured one. A fine-tuned chemistry transformer "
-               "(ChemBERTa) did not beat the simpler model.")
+               f"{10 ** best['rmse_pki']:.0f}-fold of the measured one. "
+               + (f"Interestingly, the most sophisticated model came last: ChemBERTa, a chemistry transformer "
+                  f"pretrained on 77 million molecules and then fine-tuned on this project's data, was the least "
+                  f"accurate on new chemical families. It learned its training molecules too well and carried less "
+                  f"of that over to unfamiliar chemistry."
+                  if f["models"][-1]["model"] == "Fine-tuned ChemBERTa" else
+                  "A fine-tuned chemistry transformer (ChemBERTa), pretrained on 77 million molecules, did not beat "
+                  "the simpler model."))
 
     chemistry, dataset = f["chemistry_score"], f["dataset_score"]
     st.subheader("How the assistant works")

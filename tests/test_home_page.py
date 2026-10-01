@@ -49,7 +49,7 @@ class PageTests(unittest.TestCase):
             app = AppTest.from_file(str(ROOT / "scripts" / "assistant_app.py"), default_timeout=120)
             app.run()
             self.assertEqual(len(app.exception), 0)
-            self.assertIn("Can a model beat the lab?", [s.value for s in app.subheader])
+            self.assertIn("Can a model support the lab?", [s.value for s in app.subheader])
             self.assertEqual([m.label for m in app.metric][0], "Molecules")
             self.assertEqual(len(app.expander), 0)      # The tour is shown open on arrival.
             self.assertEqual(app.title[0].value, "Affinity, Audited")

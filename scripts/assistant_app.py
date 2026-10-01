@@ -59,9 +59,9 @@ EXAMPLE_QUESTIONS = [
 ]
 
 st.set_page_config(page_title="Affinity, Audited", page_icon="🧪", layout="wide")
-# Small print (captions) a little darker than Streamlit's default grey, so it is easier to read while
-# staying distinct from the main text. Colours are the secondary ink of the chart palette per theme.
-_caption_ink = "#c3c2b7" if getattr(st.context.theme, "type", "light") == "dark" else "#52514e"
+# Small print (captions) much darker than Streamlit's default grey so it reads easily: 90% black on
+# the light theme (and 90% white on the dark one), still a shade softer than the main text.
+_caption_ink = "#e6e6e6" if getattr(st.context.theme, "type", "light") == "dark" else "#1a1a1a"
 st.html(f"<style>[data-testid='stCaptionContainer'], [data-testid='stCaptionContainer'] p "
         f"{{color: {_caption_ink} !important;}}</style>")
 
