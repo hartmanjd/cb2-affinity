@@ -2,7 +2,7 @@
 
 [model_comparison.md](model_comparison.md) provides the readable comparison, and
 [noise_ceiling.png](noise_ceiling.png) shows how close each model gets to the measurement-noise floor (notebook 10).
-Notebook 11 adds three figures comparing a fine-tuned ChemBERTa transformer with the tuned SVR:
+Notebook 11 adds three figures comparing a ChemBERTa transformer, fine-tuned and frozen, with the tuned SVR:
 [chemberta_vs_svr.png](chemberta_vs_svr.png) (scores), [chemberta_training.png](chemberta_training.png)
 (training curves) and [chemberta_chemical_space.png](chemberta_chemical_space.png) (chemical space before and after fine-tuning).
 Notebook 12 writes `assistant_evaluation.csv`, the latest known-answer evaluation of the LLM research assistant

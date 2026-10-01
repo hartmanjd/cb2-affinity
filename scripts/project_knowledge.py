@@ -350,8 +350,25 @@ def build_model_comparison(root=ROOT, resamples=2000, seed=42):
             tables[index] = (errors ** 2).to_frame("squared_error")
             # Cross-check against the score notebook 11 saved for the same averaged predictions.
             saved = json.loads((chemberta_folder / "configuration.json").read_text(encoding="utf-8"))["validation_scores"]
-            saved_rmse = next(s["rmse"] for s in saved if s["split_strategy"] == split and "ChemBERTa" in s["model"])
+            saved_rmse = next(s["rmse"] for s in saved if s["split_strategy"] == split and s["model"] == "Fine-tuned ChemBERTa")
             assert np.isclose(rows.loc[index, "rmse_pki"], saved_rmse), "ChemBERTa RMSE differs from notebook 11"
+
+    # The same pretrained ChemBERTa without fine-tuning (notebook 11, section 6): its molecule vectors,
+    # never retrained, with an SVR tuned exactly like the fingerprint SVR. One prediction per molecule.
+    if (chemberta_folder / "frozen_svr_predictions.csv").is_file():
+        frozen = pd.read_csv(chemberta_folder / "frozen_svr_predictions.csv")
+        saved = json.loads((chemberta_folder / "configuration.json").read_text(encoding="utf-8"))["validation_scores"]
+        for split, part in frozen.groupby("split_strategy"):
+            errors = (part["predicted_pki"] - part["observed_pki"]).to_numpy()
+            index = len(rows)
+            rows.loc[index] = {"model": "Frozen ChemBERTa + SVR", "variant": "tuned SVR on pretrained vectors",
+                               "split_strategy": split, "n_structures": len(part), "n_seeds": 1,
+                               "mae_pki": float(np.abs(errors).mean()), "rmse_pki": math.sqrt((errors ** 2).mean()),
+                               "r2": 1 - (errors ** 2).sum() / ((part["observed_pki"] - part["observed_pki"].mean()) ** 2).sum(),
+                               "source_metrics": "provenance/models/fine_tuned_chemberta/configuration.json"}
+            tables[index] = pd.DataFrame({"squared_error": errors ** 2}, index=part["rdkit_smiles"].to_numpy())
+            saved_rmse = next(s["rmse"] for s in saved if s["split_strategy"] == split and s["model"] == "Frozen ChemBERTa + SVR")
+            assert np.isclose(rows.loc[index, "rmse_pki"], saved_rmse), "Frozen ChemBERTa RMSE differs from notebook 11"
 
     rng = np.random.default_rng(seed)
     samples, records = {}, []

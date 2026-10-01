@@ -164,6 +164,7 @@ class ToolTests(unittest.TestCase):
         metrics = pd.read_csv(assistant.SVR_FOLDER / "metrics.csv").set_index(["split_strategy", "subset"])
         self.assertAlmostEqual(best["rmse_pki"], metrics.loc[("scaffold", "validation"), "rmse_pki"], places=3)
         self.assertIn(("Fine-tuned ChemBERTa", "fixed settings"), models)
+        self.assertIn(("Frozen ChemBERTa + SVR", "tuned SVR on pretrained vectors"), models)
         for model in result["models"]:
             self.assertLessEqual(model["rmse_ci95_low"], model["rmse_pki"])
             self.assertGreaterEqual(model["rmse_ci95_high"], model["rmse_pki"])

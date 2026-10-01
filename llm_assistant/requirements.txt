@@ -1,0 +1,14 @@
+# Packages for the hosted research assistant (Streamlit Community Cloud reads this file because
+# it sits beside streamlit_app.py). Versions match the project's pinned environment
+# (requirements.txt and requirements-llm.txt at the repository root, Python 3.14), so the hosted
+# SVR is the same model the notebooks evaluated. XGBoost, openpyxl and Jupyter are not needed here.
+numpy==2.5.0
+pandas==3.0.3
+rdkit==2026.3.6
+scikit-learn==1.9.0
+scipy==1.18.1
+joblib==1.5.3
+matplotlib==3.11.0
+openai==3.22.1
+streamlit==1.64.0
+python-dotenv==1.2.3

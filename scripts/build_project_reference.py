@@ -313,6 +313,8 @@ DESCRIPTIONS = {
 
 def description(name):
     base = Path(name).name
+    if name in DESCRIPTIONS:          # A full path, for files that share a name (e.g. requirements.txt).
+        return DESCRIPTIONS[name]
     if base in DESCRIPTIONS:
         return DESCRIPTIONS[base]
     if base.endswith(".ipynb"):
@@ -329,6 +331,7 @@ def description(name):
 DESCRIPTIONS.update({
     "requirements.txt": "Exact package versions for running the notebooks; they match every run manifest.",
     "requirements-deep-learning.txt": "Extra PyTorch packages for notebook 11 (fine-tuned ChemBERTa), installed on top of requirements.txt.",
+    "frozen_svr_predictions.csv": "Validation predictions of frozen (not fine-tuned) ChemBERTa vectors with an SVR tuned like notebook 07's (notebook 11, section 6).",
     "epoch_history.csv": "Training and held-out fold RMSE for every epoch of every fine-tuned ChemBERTa fold model.",
     "requirements-llm.txt": "Extra packages for notebook 12 and the research assistant app (OpenAI client for DeepSeek, Streamlit, python-dotenv).",
     "research_assistant.py": "LLM research assistant: data-query, RDKit and SVR-prediction tools, their descriptions, and the DeepSeek tool-calling loop.",
@@ -341,6 +344,16 @@ DESCRIPTIONS.update({
     "assistant_development_runs.csv": "Every exploratory run made while refining the assistant, labelled: pre-fetch and thinking tests, R/S before and after, DeepSeek alone.",
     "stereo_note_ab_test.py": "A/B test of the note explaining unspecified stereocentres, run after the final design was seen to slow down and err on them.",
     "stereo_note_ab_test.csv": "Answers from the unspecified-stereocentre A/B test: 10 questions, each asked twice with and without the note.",
+    "packages.txt": "System libraries Streamlit Community Cloud installs for the hosted app: the X11 rendering libraries RDKit's molecule drawing needs.",
+    "home_page.py": "The research assistant's home page: a quick tour of the data, its cleaning, the models and the assistant, every number computed live from the project's files.",
+    "test_home_page.py": "Checks that the home page's numbers match the project's files and that the page draws and folds away once a question is asked.",
+    "build_assistant_audit.py": "Builds results/assistant_audit.xlsx, the assistant's audit workbook, from the saved test results; deterministic bytes.",
+    "assistant_audit.xlsx": "The research assistant's audit: every benchmark question, its independently computed answer, the answer given, the controls held fixed, and each refinement measured.",
+    "test_assistant_audit.py": "Checks the audit workbook is current with the saved results and that its scores match them.",
+    "free_credit.py": "Free DeepSeek credit for the hosted demo: $0.25 per visitor shown as a falling balance, a daily cap for all visitors, and anonymous visitor keys.",
+    "test_free_credit.py": "Checks the free credit (per visitor, daily cap, anonymous keys) and drives the real app page with a stand-in for DeepSeek.",
+    "streamlit_app.py": "Entry point for hosting the research assistant on Streamlit Community Cloud; runs scripts/assistant_app.py.",
+    "llm_assistant/requirements.txt": "Packages for the hosted research assistant only (read by Streamlit Community Cloud), pinned to the project's versions.",
     "design_stages.py": "Recreates the assistant at each design stage without changing the app, and scores each stage on the same questions.",
     "deepseek_reasoning_length.csv": "One chemistry question asked to DeepSeek several ways (prompt, thinking, model), with time, output tokens and answer.",
     "project_knowledge.py": "Research assistant's read-only project library (every text file except secrets; the API key is never readable) and bootstrap model comparison.",
