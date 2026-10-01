@@ -38,12 +38,13 @@ def sha256(name):
 
 
 def project_files():
-    excluded = {".git", ".agents", ".codex", "__pycache__", ".ipynb_checkpoints", ".venv"}
+    excluded = {".git", ".agents", ".codex", "__pycache__", ".ipynb_checkpoints", ".venv", "tensorboard"}
     names = []
     for directory, subdirs, files in os.walk(ROOT):
         subdirs[:] = sorted(d for d in subdirs if d not in excluded and not d.startswith(('.pending-', '.previous-')))
         for name in sorted(files):
-            if name in excluded or name.endswith(":Zone.Identifier") or name.startswith((".~", ".pending-", ".previous-")):
+            # .env holds private API keys; it is git-ignored and must never be listed.
+            if name in excluded or name == ".env" or name.endswith(":Zone.Identifier") or name.startswith((".~", ".pending-", ".previous-")):
                 continue
             names.append((Path(directory) / name).relative_to(ROOT).as_posix())
     return sorted(names)
@@ -326,6 +327,16 @@ def description(name):
 
 DESCRIPTIONS.update({
     "requirements.txt": "Exact package versions for running the notebooks; they match every run manifest.",
+    "requirements-deep-learning.txt": "Extra PyTorch packages for notebook 11 (fine-tuned ChemBERTa), installed on top of requirements.txt.",
+    "epoch_history.csv": "Training and held-out fold RMSE for every epoch of every fine-tuned ChemBERTa fold model.",
+    "requirements-llm.txt": "Extra packages for notebook 12 and the research assistant app (OpenAI client for DeepSeek, Streamlit, python-dotenv).",
+    "research_assistant.py": "LLM research assistant: data-query, RDKit and SVR-prediction tools, their descriptions, and the DeepSeek tool-calling loop.",
+    "assistant_app.py": "Streamlit chat interface for the research assistant; shows every tool call behind each answer.",
+    "assistant_evaluation.py": "Known-answer evaluation of the research assistant: the question set, its independently computed answers, scoring and runner.",
+    "project_knowledge.py": "Research assistant's read-only project library (every text file except secrets; the API key is never readable) and bootstrap model comparison.",
+    "test_research_assistant.py": "Checks the assistant's tools, test-set refusal, file allowlist, key redaction, model comparison and chat loop with a fake LLM.",
+    "assistant_evaluation.csv": "Latest known-answer evaluation of the LLM research assistant from notebook 12 (varies between runs).",
+    "assistant_model_trials.csv": "Every scored evaluation run behind the assistant's model choice: DeepSeek before and after the speed work, DeepSeek on the compact profile, and two local models.",
     ".python-version": "Python version (3.14.6) used by the pinned environment; read by uv.",
     "build_dummy_summary.py": "Builds a combined dummy-baseline workbook with exact scores, strategy explanations, diagnostics and evidence links.",
     "dummy_artifacts.py": "Publishes baseline and tuned dummy results together with rollback if reporting fails.",
@@ -493,7 +504,7 @@ def build_master_reference():
              "Git internals, environments, caches, and Windows download tags are excluded.", "", "## Folders", "",
              "| Folder | Purpose |", "| --- | --- |"]
     directories = sorted({parent.as_posix() for name in names for parent in Path(name).parents if parent.as_posix() != "."})
-    purpose = {"notebooks": "Eleven ordered scientific pipeline notebooks.", "scripts": "Storage helpers, evidence checks, and Markdown reference updates.",
+    purpose = {"notebooks": "Thirteen ordered scientific pipeline notebooks.", "scripts": "Storage helpers, evidence checks, Markdown reference updates, and the LLM research assistant.",
                "tests": "Dataset handoff and review-record checks without downloads or model training.",
                "results": "Current headline comparison; supporting evidence is under provenance/models/.", "provenance": "All source and supporting evidence, plus data and model summary workbooks.",
                "raw": "Original ChEMBL downloads, unchanged.", "selection": "Selected measurements and exclusion records.",

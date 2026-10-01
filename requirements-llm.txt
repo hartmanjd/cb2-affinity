@@ -1,0 +1,6 @@
+# Extra packages for notebook 12 and the CB2 research assistant app only. Install them
+# on top of requirements.txt; the -c line keeps every pinned package in that file unchanged.
+-c requirements.txt
+openai==3.22.1
+streamlit==1.64.0
+python-dotenv==1.2.3

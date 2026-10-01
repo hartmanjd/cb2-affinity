@@ -1,0 +1,19 @@
+number,question,kind,expected,answer,correct,tools,n_tool_calls,seconds,cost_usd,model,thinking
+1,How many unique molecules are in the curated modeling dataset?,count,3576,3576,True,dataset_overview,1,3.1,0.0125158,deepseek-v4-pro,True
+2,How many molecules have a curated pKi of 9 or higher?,count,210,210,True,query_table,1,3.6,0.010843712,deepseek-v4-pro,True
+3,What is the curated pKi of nabilone?,pki,7.977228986470857,7.977,True,lookup_compound,1,3.7,0.002684,deepseek-v4-pro,True
+4,What is the highest curated pKi in the dataset?,pki,10.721132141090864,10.721,True,query_table,1,4.0,0.0018457999999999999,deepseek-v4-pro,True
+5,Give the ChEMBL molecule ID of the molecule with the highest curated pKi.,text,CHEMBL600647,CHEMBL600647,True,query_table,1,3.4,0.00178508,deepseek-v4-pro,True
+6,How many measurements were removed because repeat measurements disagreed by 1 pKi or more?,count,142,142,True,query_table,1,3.7,0.00280016,deepseek-v4-pro,True
+7,How many distinct Bemis-Murcko scaffolds are there among the curated molecules?,count,1358,1358,True,aggregate_table,1,5.3,0.0021167520000000004,deepseek-v4-pro,True
+8,"How many molecules share the most common Bemis-Murcko scaffold (count every scaffold, including plain benzene)?",count,93,93,True,aggregate_table,1,4.8,0.00232364,deepseek-v4-pro,True
+9,"How many different source papers (documents) do the molecules with the most common Bemis-Murcko scaffold come from (count every scaffold, including plain benzene)?",count,15,15,True,aggregate_table,1,8.1,0.0045960639999999995,deepseek-v4-pro,True
+10,Which source document (ChEMBL document ID) contributed the most retained measurements?,text,CHEMBL1156767,CHEMBL1156767,True,aggregate_table,1,4.7,0.003211032,deepseek-v4-pro,True
+11,What is the median curated pKi of molecules containing a sulfonamide group?,pki,7.036212172654444,7.036,True,"compare_substructure, query_table",2,12.4,0.009839192,deepseek-v4-pro,True
+12,What is the mean molecular weight of molecules with a curated pKi of at least 8? Round to one decimal.,decimal,426.1681693582865,426.2,True,aggregate_table,1,13.0,0.00648472,deepseek-v4-pro,True
+13,Predict the CB2 pKi of Brc1ccc2c(c1)c(OCc1ccc3ccccc3c1)nn2CCN1CCCCC1 with the project's model.,text,WITHHELD,WITHHELD,True,predict_pki,1,3.7,0.0018009200000000001,deepseek-v4-pro,True
+14,"According to this dataset, how selective is nabilone for CB2 over CB1?",text,NOT IN DATA,NOT IN DATA,True,"lookup_compound, dataset_overview",2,5.5,0.005969832,deepseek-v4-pro,True
+15,Which model family has the lowest validation RMSE on the scaffold split?,text,"('SUPPORT VECTOR', 'SVR')",SUPPORT VECTOR REGRESSION,True,compare_models,1,4.2,0.005233888,deepseek-v4-pro,True
+16,What value of the SVR regularisation parameter C was selected for the scaffold split?,decimal,10.0,10.0,True,"search_project, search_project, list_project_documents, read_project_document, read_project_document",5,9.2,0.012334784,deepseek-v4-pro,True
+17,"What measurement-noise floor, in pKi, does the project use when judging model error?",pki,0.54,0.54,True,"search_project, search_project, read_project_document",3,6.2,0.010301368,deepseek-v4-pro,True
+18,"How many molecules have a genuine three-carbon chain, not part of any ring, joining an aromatic ring to a phenyl group?",count,1,1,True,find_linkers,1,7.4,0.0037905120000000002,deepseek-v4-pro,True

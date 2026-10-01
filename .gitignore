@@ -249,3 +249,6 @@ provenance/models/xgboost/.~*
 # every version of these large binaries forever. Their checksums stay in the
 # committed run manifests. Get them with: python scripts/fetch_models.py
 provenance/models/**/models.joblib.gz
+
+# TensorBoard training logs from notebook 11 are large binaries; rerunning recreates them.
+provenance/models/fine_tuned_chemberta/tensorboard/

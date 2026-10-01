@@ -1,0 +1,146 @@
+"""Streamlit chat interface for the CB2 research assistant.
+
+Run from the project root:
+
+    streamlit run scripts/assistant_app.py
+
+The tools, the system prompt and the DeepSeek chat loop live in research_assistant.py;
+this file only draws the page. Every tool call is shown in an expandable box so a
+researcher can check exactly what was computed behind each answer.
+"""
+from pathlib import Path
+import json
+import sys
+
+import streamlit as st
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import research_assistant as assistant  # noqa: E402
+
+EXAMPLE_QUESTIONS = [
+    "Give me an overview of this dataset. What can it tell me, and what can't it?",
+    "Which scaffolds have the most compounds, and how potent is each series?",
+    "Do compounds containing a morpholine bind CB2 more strongly? Is that a fair comparison?",
+    "Show me the five largest activity cliffs and suggest what structural change drives each.",
+    "Predict the CB2 pKi of delta-9-THC and tell me how much to trust the number.",
+    "Plot pKi against cLogP and highlight the indoles. Is lipophilicity driving potency here?",
+    "Which model predicts best, is its lead real, and how close does it get to the measurement-noise floor?",
+    "How does affinity change as the chain between an aromatic core and a phenyl gets longer?",
+    "Why does the project use a scaffold split as well as a random one, and how much harder is it?",
+]
+
+st.set_page_config(page_title="CB2 research assistant", page_icon="🧪", layout="wide")
+
+
+@st.cache_resource(show_spinner="Loading the dataset, fingerprints and SVR model...")
+def load_data():
+    # Loaded once per server process and shared by every browser tab.
+    return assistant.ResearchData()
+
+
+def start_conversation():
+    st.session_state.messages = assistant.new_conversation()   # What the LLM sees.
+    st.session_state.display = []                              # What the page shows.
+    st.session_state.usage = {}
+
+
+def show_tool(call):
+    """One tool call: a collapsed box with inputs and raw result, plus any image."""
+    with st.expander(f"🔧 {call['name']}", expanded=False):
+        st.caption("Inputs")
+        st.code(json.dumps(json.loads(call["arguments"] or "{}"), indent=2), language="json")
+        st.caption("Result sent to the model")
+        st.code(call["result"][:6000], language="json")
+    for png in call["images"]:
+        st.image(png)
+
+
+def show_entry(entry):
+    with st.chat_message(entry["role"]):
+        for call in entry.get("tools", []):
+            show_tool(call)
+        if entry.get("text"):
+            st.markdown(entry["text"])
+
+
+if "messages" not in st.session_state:
+    start_conversation()
+data = load_data()
+
+# ---------------------------------------------------------------- Sidebar
+with st.sidebar:
+    st.header("CB2 research assistant")
+    st.caption(f"{len(data.compounds):,} molecules · {data.acquisition.get('chembl_version', 'ChEMBL')} · "
+               "human CB2 Ki · predictions from the tuned SVR · reads the project's docs and notebooks")
+    if not assistant.is_hosted():
+        st.info(f"Local model at {assistant.BASE_URL}", icon="💻")
+        typed_key = None
+    elif assistant.has_api_key():
+        st.success("DeepSeek API key found", icon="🔑")
+        typed_key = None
+    else:
+        typed_key = st.text_input("DeepSeek API key", type="password",
+                                  help="Used for this browser session only. To keep it, add DEEPSEEK_API_KEY=... "
+                                       "to a .env file in the project root (git ignores it).")
+    if assistant.is_hosted():
+        default = assistant.AVAILABLE_MODELS.index(assistant.DEFAULT_MODEL) if assistant.DEFAULT_MODEL in assistant.AVAILABLE_MODELS else 0
+        model = st.selectbox("Model", assistant.AVAILABLE_MODELS, index=default,
+                             help="deepseek-v4-pro handles multi-step tool use better; deepseek-flash is about 4x cheaper.")
+    else:
+        # A local server has its own model names, so the name is typed rather than chosen from a list.
+        model = st.text_input("Model", value=assistant.DEFAULT_MODEL, help="The name your local server uses.")
+    thinking = st.toggle("Thinking mode", value=assistant.DEFAULT_THINKING,
+                         help="The model plans before acting. Measured on the evaluation set it costs about a second "
+                              "per question and uses fewer tool calls, so it is on by default.")
+    usage = st.session_state.usage
+    st.metric("Approximate cost this conversation", f"${usage.get('cost_usd', 0):.4f}",
+              help="Peak-hour DeepSeek prices; off-peak is half.")
+    st.caption(f"{usage.get('input_tokens', 0):,} input · {usage.get('output_tokens', 0):,} output tokens")
+    if st.button("New conversation", use_container_width=True):
+        start_conversation()
+        st.rerun()
+    st.divider()
+    st.caption("Try asking")
+    clicked = None
+    for question in EXAMPLE_QUESTIONS:
+        if st.button(question, use_container_width=True):
+            clicked = question
+
+# ---------------------------------------------------------------- Conversation
+st.title("Ask the CB2 dataset")
+st.caption("Answers are built from tool calls on the curated data, RDKit and the saved SVR. Open any 🔧 box to "
+           "see exactly what was computed. Statements marked as general knowledge come from the language model "
+           "itself and should be checked.")
+for entry in st.session_state.display:
+    show_entry(entry)
+
+question = st.chat_input("Ask about compounds, scaffolds, SAR, predictions, papers...") or clicked
+if question:
+    show_entry({"role": "user", "text": question})
+    st.session_state.display.append({"role": "user", "text": question})
+    st.session_state.messages.append({"role": "user", "content": question})
+    saved_length = len(st.session_state.messages)
+    entry = {"role": "assistant", "text": "", "tools": []}
+    with st.chat_message("assistant"):
+        status = st.status("Working...", expanded=True)
+
+        def on_tool(name, arguments, result, images):
+            # Called by the chat loop after every tool, so progress appears live.
+            call = {"name": name, "arguments": arguments, "result": result, "images": images}
+            entry["tools"].append(call)
+            with status:
+                show_tool(call)
+
+        try:
+            client = assistant.make_client(typed_key)
+            entry["text"] = assistant.chat_turn(client, data, st.session_state.messages, model=model,
+                                                thinking=thinking, on_tool=on_tool, usage=st.session_state.usage)
+            status.update(label=f"Done · {len(entry['tools'])} tool call(s)", state="complete", expanded=False)
+        except Exception as error:   # Missing key, network or API errors: show them and keep the chat usable.
+            status.update(label="Failed", state="error")
+            entry["text"] = f"⚠️ {type(error).__name__}: {error}"
+            # Drop the half-finished turn so the next request starts from a valid conversation.
+            del st.session_state.messages[saved_length - 1:]
+        st.markdown(entry["text"])
+    st.session_state.display.append(entry)
+    st.rerun()

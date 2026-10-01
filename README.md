@@ -16,10 +16,10 @@ supporting data and model artifacts remain under `provenance/`.
 
 | Folder | Purpose |
 | --- | --- |
-| `notebooks/` | The eleven scientific notebooks, in execution order |
+| `notebooks/` | The thirteen scientific notebooks, in execution order |
 | `provenance/` | Data provenance workbook, model summaries, and all supporting files |
 | `results/` | A readable headline model comparison |
-| `scripts/` | Shared storage helpers, evidence checks, and Markdown reference updates |
+| `scripts/` | Shared storage helpers, evidence checks, Markdown reference updates, and the LLM research assistant |
 | `tests/` | Automated checks for dataset handoffs, publication, rollback, and model downloads |
 
 There are no archive folders. The old `curation/run_05` folder is removed; the
@@ -99,6 +99,8 @@ Run each notebook top to bottom, in order:
 9. `08_mlp_baseline.ipynb` — corrected internal stopping and full-training refits.
 10. `09_mlp_tuning.ipynb` — bounded MLP search and refits.
 11. `10_noise_ceiling.ipynb` — how close each model gets to the measurement-noise floor (no training).
+12. `11_fine_tuned_chemberta.ipynb` — optional: fine-tunes a pretrained transformer in PyTorch and compares it with the tuned SVR (needs extra packages; see below).
+13. `12_llm_research_assistant.ipynb` — optional: an LLM that answers questions about the data by calling pandas, RDKit and SVR tools, with a known-answer evaluation (needs extra packages and a DeepSeek API key; see below).
 
 Each notebook finds the completed upstream stage for the current acquisition.
 No manual edits to an old run number are needed. Missing or incompatible stages
@@ -123,6 +125,95 @@ Repeat lab measurements of the same molecule disagree, so no model can reliably
 beat that measurement noise. Notebook 10 uses a published estimate for ChEMBL Ki
 data (about 0.54 pKi) and plots every model between "no skill" and that floor:
 [results/noise_ceiling.png](results/noise_ceiling.png).
+
+## Does a more advanced model help?
+
+Notebook 11 fine-tunes ChemBERTa, a transformer pretrained on 77 million molecules,
+on the same splits and folds as the tuned SVR, and shows its training curves live.
+It needs PyTorch and an NVIDIA GPU (about 10 minutes; hours on a CPU). Install the
+extra packages once, on top of the pinned environment:
+
+```bash
+uv pip install --python .venv/bin/python --index-strategy unsafe-best-match -r requirements-deep-learning.txt
+```
+
+Results: [results/chemberta_vs_svr.png](results/chemberta_vs_svr.png),
+[results/chemberta_training.png](results/chemberta_training.png) and
+[results/chemberta_chemical_space.png](results/chemberta_chemical_space.png).
+
+## Ask the data questions in plain English
+
+Notebook 12 and a Streamlit chat app let a researcher ask questions such as "which
+scaffolds are most potent?" or "predict this molecule and tell me how far to trust it".
+A large language model (DeepSeek) answers by calling 21 tools in
+`scripts/research_assistant.py`, which cover filtering and grouping, substructure
+comparisons, similarity search, activity cliffs, source papers, structure drawings,
+plots and SVR predictions. For questions about the project itself, it can compare
+every trained model (with bootstrap intervals) and search and read every text file in
+the project: READMEs, notebooks, scripts, tests, run manifests and result tables. The
+only thing it can never read is the API key: `.env` and other secret-looking files are
+excluded, any file containing the key is skipped, and the key is redacted from every
+tool result (`scripts/project_knowledge.py`).
+Every number comes from a tool, and the app shows each tool call. Linker SAR and the
+composition of any group of molecules are computed in RDKit rather than left to the
+model, because reviewing real answers showed it guessing both.
+
+A known-answer evaluation measures whether the answers are right, and can be rerun to
+check whether a change helped:
+
+```bash
+python scripts/assistant_evaluation.py --label "my change"
+```
+
+That evaluation also chose the model. Five runs are recorded in
+[results/assistant_model_trials.csv](results/assistant_model_trials.csv): DeepSeek
+answered 18/18, two locally run models (Gemma 4 26B and Qwen3 14B) reached 9/18 and
+6/18 on the same brief and tools, and notebook 12 tells the story of how each run led
+to the next. Every number also carries its uncertainty: 95% confidence intervals for group
+means, differences and correlations; split-conformal 95% prediction intervals for
+predictions; and measurement-noise ranges for measured values. Scaffold names come
+from RDKit ring-system matching rather than the LLM, and each series reports how many
+papers it comes from. The prediction tool refuses reserved test molecules, so
+the test sets stay unevaluated.
+
+Install the extra packages once, on top of the pinned environment:
+
+```bash
+uv pip install --python .venv/bin/python -r requirements-llm.txt
+```
+
+Put your key in a `.env` file in the project root (git ignores it) as
+`DEEPSEEK_API_KEY=your-key`, then start the app and open the address it prints:
+
+```bash
+.venv/bin/streamlit run scripts/assistant_app.py
+```
+
+### Running a model on your own machine instead
+
+Any server speaking the OpenAI chat-completions format works, so a local model keeps every
+question on your machine and costs nothing per token. Point the assistant at it with
+`ASSISTANT_BASE_URL`, and name the model it serves:
+
+```bash
+ASSISTANT_BASE_URL=http://localhost:11434/v1 python scripts/assistant_evaluation.py --model gemma4:26b --label "local"
+```
+
+The same evaluation then says whether the local model matches DeepSeek's 18/18 on this
+project's questions, which is the only comparison that matters here. The model must support
+tool calling; a chemistry-tuned model that cannot call tools is not usable for this app,
+because every number comes from a tool rather than from the model's knowledge.
+
+From WSL, a server running on Windows is not on `localhost`. Start it listening on all
+interfaces (for Ollama, set `OLLAMA_HOST=0.0.0.0`) and use the Windows host address:
+
+```bash
+ASSISTANT_BASE_URL=http://$(ip route show default | awk '{print $3}'):11434/v1 .venv/bin/streamlit run scripts/assistant_app.py
+```
+
+Questions and tool results are sent to DeepSeek's servers unless you run a local model.
+That is fine for this public ChEMBL data; don't enter unpublished structures. Notebook 12's tool demonstrations
+run without a key. The latest evaluation run is saved to `results/assistant_evaluation.csv`.
 
 ## Refresh the generated references
 

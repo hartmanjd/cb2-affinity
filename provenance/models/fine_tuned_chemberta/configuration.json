@@ -1,0 +1,169 @@
+{
+  "model": "DeepChem/ChemBERTa-77M-MLM",
+  "parameters": 3427825,
+  "settings": {
+    "encoder_learning_rate": 5e-05,
+    "head_learning_rate": 0.001,
+    "weight_decay": 0.01,
+    "batch_size": 32,
+    "dropout": 0.1,
+    "max_epochs": 50,
+    "patience": 10,
+    "seed": 42
+  },
+  "device": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "software_versions": {
+    "python": "3.14.6",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.18.0",
+    "numpy": "2.5.0",
+    "pandas": "3.0.3"
+  },
+  "source_preparation": "provenance/preparation/manifest.json",
+  "source_cv_folds": "provenance/models/support_vector_regression/files/tuning/cv_folds.csv",
+  "fold_models": [
+    {
+      "split_strategy": "random",
+      "fold": 1,
+      "best_epoch": 29,
+      "epochs_run": 39,
+      "best_held_out_rmse": 0.7420799506311357,
+      "seconds": 43.61454677581787
+    },
+    {
+      "split_strategy": "random",
+      "fold": 2,
+      "best_epoch": 21,
+      "epochs_run": 31,
+      "best_held_out_rmse": 0.822572487941904,
+      "seconds": 33.89239048957825
+    },
+    {
+      "split_strategy": "random",
+      "fold": 3,
+      "best_epoch": 30,
+      "epochs_run": 40,
+      "best_held_out_rmse": 0.7895056303895587,
+      "seconds": 42.98990488052368
+    },
+    {
+      "split_strategy": "random",
+      "fold": 4,
+      "best_epoch": 27,
+      "epochs_run": 37,
+      "best_held_out_rmse": 0.7953242634196019,
+      "seconds": 39.33134984970093
+    },
+    {
+      "split_strategy": "random",
+      "fold": 5,
+      "best_epoch": 13,
+      "epochs_run": 23,
+      "best_held_out_rmse": 0.7914201621240563,
+      "seconds": 24.97181797027588
+    },
+    {
+      "split_strategy": "scaffold",
+      "fold": 1,
+      "best_epoch": 11,
+      "epochs_run": 21,
+      "best_held_out_rmse": 0.9135719281260191,
+      "seconds": 22.316765785217285
+    },
+    {
+      "split_strategy": "scaffold",
+      "fold": 2,
+      "best_epoch": 41,
+      "epochs_run": 50,
+      "best_held_out_rmse": 0.9447297188829303,
+      "seconds": 53.69800662994385
+    },
+    {
+      "split_strategy": "scaffold",
+      "fold": 3,
+      "best_epoch": 14,
+      "epochs_run": 24,
+      "best_held_out_rmse": 0.9130265826935341,
+      "seconds": 25.45480442047119
+    },
+    {
+      "split_strategy": "scaffold",
+      "fold": 4,
+      "best_epoch": 20,
+      "epochs_run": 30,
+      "best_held_out_rmse": 0.8920233591952966,
+      "seconds": 32.21367168426514
+    },
+    {
+      "split_strategy": "scaffold",
+      "fold": 5,
+      "best_epoch": 18,
+      "epochs_run": 28,
+      "best_held_out_rmse": 0.8241771082182854,
+      "seconds": 30.33411455154419
+    }
+  ],
+  "validation_scores": [
+    {
+      "split_strategy": "random",
+      "model": "Dummy (no skill)",
+      "rmse": 1.189047231090542,
+      "mae": 0.9724890831044309,
+      "r2": -0.0014744721263555416,
+      "rmse_low": 1.1098794015013032,
+      "rmse_high": 1.2633309859380641,
+      "gap_closed": 0.0
+    },
+    {
+      "split_strategy": "random",
+      "model": "Tuned SVR",
+      "rmse": 0.6849685704955553,
+      "mae": 0.5225060493107833,
+      "r2": 0.6676597358687848,
+      "rmse_low": 0.6305303485911953,
+      "rmse_high": 0.7395392272266974,
+      "gap_closed": 0.7766440352083835
+    },
+    {
+      "split_strategy": "random",
+      "model": "Fine-tuned ChemBERTa",
+      "rmse": 0.7697388271964336,
+      "mae": 0.6077106798235166,
+      "r2": 0.5803101566352147,
+      "rmse_low": 0.7162571360078912,
+      "rmse_high": 0.8245764607646084,
+      "gap_closed": 0.6460368118196547
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "Dummy (no skill)",
+      "rmse": 1.1473377023825877,
+      "mae": 0.9558406645740102,
+      "r2": -0.0041386395337841275,
+      "rmse_low": 1.0875224454504167,
+      "rmse_high": 1.2095249071999445,
+      "gap_closed": 0.0
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "Tuned SVR",
+      "rmse": 0.76408732347025,
+      "mae": 0.6006833125751474,
+      "r2": 0.5546544282851933,
+      "rmse_low": 0.7170001555691164,
+      "rmse_high": 0.8136510080435736,
+      "gap_closed": 0.6310334059763544
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "Fine-tuned ChemBERTa",
+      "rmse": 0.9217026702690766,
+      "mae": 0.7275422176137477,
+      "r2": 0.3519733889648292,
+      "rmse_low": 0.862031113276421,
+      "rmse_high": 0.980804031273547,
+      "gap_closed": 0.3715149433805018
+    }
+  ],
+  "noise_floor": 0.54
+}
