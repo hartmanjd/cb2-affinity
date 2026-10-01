@@ -197,7 +197,16 @@ st.caption("Questions are sent to DeepSeek's servers, so data privacy is non-exi
 for entry in st.session_state.display:
     show_entry(entry)
 
-question = st.chat_input("Ask about compounds, scaffolds, SAR, predictions, papers...") or clicked
+# A chat box pinned to the bottom of the page makes Streamlit keep the page scrolled to the bottom,
+# which is right for a conversation but would skip past the home page on arrival. So on the home
+# page the box sits inline at the end of the tour, and once a conversation starts it is pinned.
+PROMPT = "Ask about compounds, scaffolds, SAR, predictions, papers..."
+if st.session_state.display:
+    question = st.chat_input(PROMPT)
+else:
+    with st.container():
+        question = st.chat_input(PROMPT)
+question = question or clicked
 # Free credit applies only to the public demo's own key; a visitor's pasted key is never limited.
 on_free_credit = PUBLIC_DEMO and assistant.is_hosted() and not typed_key
 if question and on_free_credit:
