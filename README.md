@@ -202,6 +202,31 @@ Put your key in a `.env` file in the project root (git ignores it) as
 .venv/bin/streamlit run scripts/assistant_app.py
 ```
 
+### The hosted demo
+
+The app can be shared as a public web page on [Streamlit Community Cloud](https://streamlit.io/cloud)
+(free). Visitors use the project's DeepSeek key within a small free credit: each visitor gets
+$0.25, about 50 questions, shown as a balance that goes down with each answer, and every answer
+shows its token count, cost and time. All visitors together are limited to $3 a day, and visitors
+can paste their own DeepSeek key to keep going. See `scripts/free_credit.py`. Run locally, the app
+has no limits.
+
+To deploy it: sign in at [share.streamlit.io](https://share.streamlit.io) with GitHub, create an
+app from this repository with the main file `llm_assistant/streamlit_app.py` (its own
+`llm_assistant/requirements.txt` is used), choose Python 3.14 under advanced settings, and add
+these secrets:
+
+```toml
+DEEPSEEK_API_KEY = "your-key"
+ASSISTANT_PUBLIC_DEMO = "1"
+FREE_CREDIT_USD = "0.25"
+DAILY_FREE_CREDIT_CAP_USD = "3.00"
+```
+
+Keep only a small prepaid balance on the DeepSeek account: it is the true limit on what the demo
+can ever spend, since telling anonymous visitors apart is approximate. The fitted models are
+downloaded from the GitHub release on first start, so the first load takes about a minute.
+
 ### Running a model on your own machine instead
 
 Any server speaking the OpenAI chat-completions format works, so a local model keeps every
