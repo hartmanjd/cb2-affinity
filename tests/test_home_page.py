@@ -51,7 +51,8 @@ class PageTests(unittest.TestCase):
             self.assertEqual(len(app.exception), 0)
             self.assertIn("Can a model beat the lab?", [s.value for s in app.subheader])
             self.assertEqual([m.label for m in app.metric][0], "Molecules")
-            self.assertEqual(len(app.expander), 1)      # Only "Show the numbers" on the tour itself.
+            self.assertEqual(len(app.expander), 0)      # The tour is shown open on arrival.
+            self.assertEqual(app.title[0].value, "Affinity, Audited")
             app.chat_input[0].set_value("How many molecules?").run()
             self.assertEqual(len(app.exception), 0)
             self.assertIn("About this project", [e.label for e in app.expander])

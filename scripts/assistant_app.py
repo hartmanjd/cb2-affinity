@@ -58,7 +58,12 @@ EXAMPLE_QUESTIONS = [
     "Why does the project use a scaffold split as well as a random one, and how much harder is it?",
 ]
 
-st.set_page_config(page_title="CB2 research assistant", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="Affinity, Audited", page_icon="🧪", layout="wide")
+# Small print (captions) a little darker than Streamlit's default grey, so it is easier to read while
+# staying distinct from the main text. Colours are the secondary ink of the chart palette per theme.
+_caption_ink = "#c3c2b7" if getattr(st.context.theme, "type", "light") == "dark" else "#52514e"
+st.html(f"<style>[data-testid='stCaptionContainer'], [data-testid='stCaptionContainer'] p "
+        f"{{color: {_caption_ink} !important;}}</style>")
 
 
 @st.cache_resource(show_spinner="Loading the dataset, fingerprints and SVR model (about a minute on a fresh server)...")
@@ -173,7 +178,8 @@ def draw_png(smiles, legend):
     return assistant.run_tool(data, "draw_molecules", {"smiles_list": [smiles], "legends": [legend]})[1][0]
 
 
-st.title("Ask the CB2 dataset")
+st.title("Affinity, Audited")
+st.markdown("#### Every molecule traced, every claim tested. What it takes to trust an AI smarter than you.")
 if not st.session_state.display:
     # First visit or a new conversation: the tour. Once a question is asked it folds away below.
     home_page.render(st, data, assistant.ROOT, draw_png)
@@ -183,8 +189,11 @@ else:
         home_page.render(st, data, assistant.ROOT, draw_png)
 st.caption("Answers are built from tool calls on the curated data, RDKit and the saved SVR. Open any 🔧 box to "
            "see exactly what was computed. Statements marked as general knowledge come from the language model "
-           "itself and should be checked. Questions are sent to DeepSeek's servers, so do not enter unpublished "
-           "structures.")
+           "itself and may need to be verified.")
+st.caption("Questions are sent to DeepSeek's servers, so data privacy is non-existent. If that is a concern, you "
+           "can [run this app on your own computer with a local model]"
+           "(https://github.com/hartmanjd/cb2-affinity/blob/dev/README.md#running-a-model-on-your-own-machine-instead), "
+           "though answers may be slower and less accurate.")
 for entry in st.session_state.display:
     show_entry(entry)
 

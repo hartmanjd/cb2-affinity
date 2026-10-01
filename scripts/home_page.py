@@ -70,6 +70,8 @@ def facts(data, root):
         "top_journal": retained["journal"].value_counts().index[0],
         "top_journal_share": float(retained["journal"].value_counts(normalize=True).iloc[0]),
         "series": int(compounds["scaffold"].nunique()),
+        "pki_5th": float(compounds["pki"].quantile(0.05)), "pki_95th": float(compounds["pki"].quantile(0.95)),
+        "chembl_target_url": f"https://www.ebi.ac.uk/chembl/explore/target/{acquisition['target_chembl_id']}",
         "models": families[["model", "variant", "rmse_pki"]].to_dict("records"),
         "noise_floor": assistant.NOISE_FLOOR_PKI, "dummy_rmse": float(dummy_rmse),
         "chemistry_score": (int(chemistry["correct"].sum()), len(chemistry)),
@@ -127,6 +129,14 @@ def render(st, data, root, draw_png):
     colours = COLOURS[theme]
 
     st.markdown(
+        "AI is improving faster than almost anyone predicted. Models that stumbled over arithmetic a few years ago "
+        "now plan multi-step analyses, write their own code and reason about chemistry. The open question is no "
+        "longer whether they are capable, but when we can trust them. An old rule may be the answer: **trust, but "
+        "verify**. Let the AI do the thinking, but make every number it reports traceable and every claim testable. "
+        "Built that way, a tool like this lets someone like me take on research well beyond my own training, "
+        "because nothing has to be taken on faith. This project is a study of that idea, using how tightly "
+        "molecules bind to the cannabinoid receptor CB2 as the test case.")
+    st.markdown(
         "**CB2** is one of the body's two main cannabinoid receptors, the same family that THC acts on. Unlike "
         "CB1 in the brain, CB2 sits mostly on immune cells, which makes it a target for treating pain and "
         "inflammation without the high. This project asks: **can a computer predict how tightly a new "
@@ -139,7 +149,7 @@ def render(st, data, root, draw_png):
             ("Research papers", f"{f['papers']:,}"), ("Years", f"{f['first_year']}–{f['last_year']}"),
             ("Chemical families", f"{f['series']:,}")]):
         column.metric(label, value)
-    st.caption(f"Human CB2 binding data from {f['chembl_version']}, a free public database of bioactive molecules "
+    st.caption(f"Human CB2 binding data from [{f['chembl_version']}]({f['chembl_target_url']}), a free public database of bioactive molecules "
                f"(downloaded {f['retrieved']}). Binding strength is measured as **Ki**, the concentration at which a "
                "molecule fills half the receptors; the project uses **pKi**, where every +1 means ten times tighter.")
 
@@ -164,20 +174,38 @@ def render(st, data, root, draw_png):
     st.caption(f"Each model was tested on chemical families it never saw in training, the honest test of predicting "
                f"new chemistry. The winner, a tuned **{best['model'].lower()}**, misses by about {best['rmse_pki']:.2f} "
                f"pKi on a typical molecule. The same molecule measured in two different labs already differs by about "
-               f"{f['noise_floor']:.2f}, so no model can be expected to do much better. A fine-tuned chemistry "
-               "transformer (ChemBERTa) did not beat the simpler model.")
-    with st.expander("Show the numbers"):
-        st.dataframe(pd.DataFrame(f["models"]).rename(columns={"model": "Model", "variant": "Variant",
-                                                               "rmse_pki": "RMSE (pKi)"}),
-                     hide_index=True, width="stretch")
+               f"{f['noise_floor']:.2f}, so no model can be expected to do much better. For scale, 90% of the "
+               f"molecules fall between pKi {f['pki_5th']:.1f} and {f['pki_95th']:.1f}, a "
+               f"{10 ** (f['pki_95th'] - f['pki_5th']):,.0f}-fold span in binding strength; a miss of "
+               f"{best['rmse_pki']:.2f} means a predicted Ki is typically within about "
+               f"{10 ** best['rmse_pki']:.0f}-fold of the measured one. A fine-tuned chemistry transformer "
+               "(ChemBERTa) did not beat the simpler model.")
 
     chemistry, dataset = f["chemistry_score"], f["dataset_score"]
     st.subheader("How the assistant works")
     st.markdown(
-        f"A language model (DeepSeek) reads your question and plans; **every number comes from code**: pandas for "
-        f"the data, RDKit for chemistry, the tuned model for predictions. Open any 🔧 box under an answer to see "
-        f"exactly what was computed. Tested against answers it could not have guessed, it got "
-        f"**{chemistry[0]}/{chemistry[1]}** chemistry questions and **{dataset[0]}/{dataset[1]}** questions about "
-        f"the data right.")
+        "Most people still would not trust a chatbot with hard numbers, and for good reason: language models can "
+        "state a wrong figure as confidently as a right one. So this assistant is built so that the language model "
+        "(DeepSeek) **never produces a number itself**. It reads your question, decides what to look up and "
+        "explains the results. Everything it reports comes from ordinary, checkable code: pandas for the data, "
+        "RDKit for chemistry, the tuned model for predictions. Very little of any answer is actually generated; "
+        "the language model writes the sentences around numbers it was handed.")
+    st.markdown(
+        "The guard rails behind that:\n"
+        "- **Every number comes from a tool, and you can see it.** Open any 🔧 box under an answer for the exact "
+        "inputs and raw result.\n"
+        "- **Every claim is labelled** as measured (from the data), predicted (from the model) or general "
+        "knowledge (from the language model, worth checking).\n"
+        "- **Every number carries its uncertainty**: confidence intervals, prediction intervals and the range lab "
+        "measurements themselves vary over.\n"
+        "- **The model is never asked to read a structure.** Formulas, ring names and stereochemistry come from "
+        "RDKit, because testing showed language models guessing them confidently and wrongly.\n"
+        "- **Held-back test molecules are never predicted**, so the project's final test stays honest.\n"
+        f"- **It is tested against answers it could not have guessed**: {chemistry[0]}/{chemistry[1]} chemistry "
+        f"questions and {dataset[0]}/{dataset[1]} questions about the data correct, and every change to the "
+        "assistant was measured before it was kept.")
+    st.markdown(
+        "Language models still make mistakes. The point is not that this one cannot, but that when it does, you "
+        "can see exactly where.")
     st.markdown("**Try one of the questions in the sidebar, or ask your own below.** The full project, notebooks "
                 "and data are on [GitHub](https://github.com/hartmanjd/cb2-affinity).")
