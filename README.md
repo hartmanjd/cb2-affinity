@@ -223,6 +223,9 @@ FREE_CREDIT_USD = "0.25"
 DAILY_FREE_CREDIT_CAP_USD = "3.00"
 ```
 
+`packages.txt` at the repository root lists the Linux system libraries the server must install
+(RDKit's molecule drawing needs X11's libXrender, libXext and libX11, which its package does not bundle).
+
 Keep only a small prepaid balance on the DeepSeek account: it is the true limit on what the demo
 can ever spend, since telling anonymous visitors apart is approximate. The fitted models are
 downloaded from the GitHub release on first start, so the first load takes about a minute.
