@@ -42,6 +42,7 @@ secrets_to_environment()
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import research_assistant as assistant  # noqa: E402
 import free_credit  # noqa: E402
+import home_page  # noqa: E402
 
 PUBLIC_DEMO = os.environ.get("ASSISTANT_PUBLIC_DEMO", "").lower() in ("1", "true", "yes")
 
@@ -156,18 +157,30 @@ with st.sidebar:
     st.metric("Approximate cost this conversation", f"${usage.get('cost_usd', 0):.4f}",
               help="Peak-hour DeepSeek prices; off-peak is half.")
     st.caption(f"{usage.get('input_tokens', 0):,} input · {usage.get('output_tokens', 0):,} output tokens")
-    if st.button("New conversation", use_container_width=True):
+    if st.button("New conversation", width="stretch"):
         start_conversation()
         st.rerun()
     st.divider()
     st.caption("Try asking")
     clicked = None
     for question in EXAMPLE_QUESTIONS:
-        if st.button(question, use_container_width=True):
+        if st.button(question, width="stretch"):
             clicked = question
 
-# ---------------------------------------------------------------- Conversation
+# ---------------------------------------------------------------- Home page and conversation
+def draw_png(smiles, legend):
+    # The same drawing tool the assistant uses; it returns (text for the model, [PNG images]).
+    return assistant.run_tool(data, "draw_molecules", {"smiles_list": [smiles], "legends": [legend]})[1][0]
+
+
 st.title("Ask the CB2 dataset")
+if not st.session_state.display:
+    # First visit or a new conversation: the tour. Once a question is asked it folds away below.
+    home_page.render(st, data, assistant.ROOT, draw_png)
+    st.divider()
+else:
+    with st.expander("About this project"):
+        home_page.render(st, data, assistant.ROOT, draw_png)
 st.caption("Answers are built from tool calls on the curated data, RDKit and the saved SVR. Open any 🔧 box to "
            "see exactly what was computed. Statements marked as general knowledge come from the language model "
            "itself and should be checked. Questions are sent to DeepSeek's servers, so do not enter unpublished "

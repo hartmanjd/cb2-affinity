@@ -344,6 +344,8 @@ DESCRIPTIONS.update({
     "stereo_note_ab_test.py": "A/B test of the note explaining unspecified stereocentres, run after the final design was seen to slow down and err on them.",
     "stereo_note_ab_test.csv": "Answers from the unspecified-stereocentre A/B test: 10 questions, each asked twice with and without the note.",
     "packages.txt": "System libraries Streamlit Community Cloud installs for the hosted app: the X11 rendering libraries RDKit's molecule drawing needs.",
+    "home_page.py": "The research assistant's home page: a quick tour of the data, its cleaning, the models and the assistant, every number computed live from the project's files.",
+    "test_home_page.py": "Checks that the home page's numbers match the project's files and that the page draws and folds away once a question is asked.",
     "free_credit.py": "Free DeepSeek credit for the hosted demo: $0.25 per visitor shown as a falling balance, a daily cap for all visitors, and anonymous visitor keys.",
     "test_free_credit.py": "Checks the free credit (per visitor, daily cap, anonymous keys) and drives the real app page with a stand-in for DeepSeek.",
     "streamlit_app.py": "Entry point for hosting the research assistant on Streamlit Community Cloud; runs scripts/assistant_app.py.",
