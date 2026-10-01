@@ -100,7 +100,7 @@ Run each notebook top to bottom, in order:
 9. `08_mlp_baseline.ipynb` — corrected internal stopping and full-training refits.
 10. `09_mlp_tuning.ipynb` — bounded MLP search and refits.
 11. `10_noise_ceiling.ipynb` — how close each model gets to the measurement-noise floor (no training).
-12. `11_fine_tuned_chemberta.ipynb` — optional: fine-tunes a pretrained transformer in PyTorch and compares it with the tuned SVR (needs extra packages; see below).
+12. `11_fine_tuned_chemberta.ipynb` — optional: a pretrained transformer, fine-tuned in PyTorch and also used frozen with an SVR, compared with the tuned SVR (needs extra packages; see below).
 13. `llm_assistant/12_llm_research_assistant.ipynb` — optional, in its own folder: an LLM that answers questions about the data by calling pandas, RDKit and SVR tools, with a known-answer evaluation (needs extra packages and a DeepSeek API key; see below).
 
 Each notebook finds the completed upstream stage for the current acquisition.
@@ -131,6 +131,10 @@ data (about 0.54 pKi) and plots every model between "no skill" and that floor:
 
 Notebook 11 fine-tunes ChemBERTa, a transformer pretrained on 77 million molecules,
 on the same splits and folds as the tuned SVR, and shows its training curves live.
+It then uses the same pretrained ChemBERTa frozen, as a reader whose molecule vectors
+feed an SVR tuned exactly like the fingerprint SVR. Neither beats the fingerprint SVR,
+and the frozen version beats the fine-tuned one, which memorizes its training molecules
+(scaffold split RMSE: fingerprint SVR 0.764, frozen ChemBERTa + SVR 0.805, fine-tuned 0.922).
 It needs PyTorch and an NVIDIA GPU (about 10 minutes; hours on a CPU). Install the
 extra packages once, on top of the pinned environment:
 

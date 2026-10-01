@@ -331,6 +331,7 @@ def description(name):
 DESCRIPTIONS.update({
     "requirements.txt": "Exact package versions for running the notebooks; they match every run manifest.",
     "requirements-deep-learning.txt": "Extra PyTorch packages for notebook 11 (fine-tuned ChemBERTa), installed on top of requirements.txt.",
+    "frozen_svr_predictions.csv": "Validation predictions of frozen (not fine-tuned) ChemBERTa vectors with an SVR tuned like notebook 07's (notebook 11, section 6).",
     "epoch_history.csv": "Training and held-out fold RMSE for every epoch of every fine-tuned ChemBERTa fold model.",
     "requirements-llm.txt": "Extra packages for notebook 12 and the research assistant app (OpenAI client for DeepSeek, Streamlit, python-dotenv).",
     "research_assistant.py": "LLM research assistant: data-query, RDKit and SVR-prediction tools, their descriptions, and the DeepSeek tool-calling loop.",

@@ -27,80 +27,80 @@
       "fold": 1,
       "best_epoch": 29,
       "epochs_run": 39,
-      "best_held_out_rmse": 0.7420799506311357,
-      "seconds": 43.61454677581787
+      "best_held_out_rmse": 0.7420799615011505,
+      "seconds": 43.554961919784546
     },
     {
       "split_strategy": "random",
       "fold": 2,
       "best_epoch": 21,
       "epochs_run": 31,
-      "best_held_out_rmse": 0.822572487941904,
-      "seconds": 33.89239048957825
+      "best_held_out_rmse": 0.8225725141904173,
+      "seconds": 33.174659729003906
     },
     {
       "split_strategy": "random",
       "fold": 3,
       "best_epoch": 30,
       "epochs_run": 40,
-      "best_held_out_rmse": 0.7895056303895587,
-      "seconds": 42.98990488052368
+      "best_held_out_rmse": 0.7895056150693651,
+      "seconds": 43.0720112323761
     },
     {
       "split_strategy": "random",
       "fold": 4,
       "best_epoch": 27,
       "epochs_run": 37,
-      "best_held_out_rmse": 0.7953242634196019,
-      "seconds": 39.33134984970093
+      "best_held_out_rmse": 0.7953242427787403,
+      "seconds": 39.91324734687805
     },
     {
       "split_strategy": "random",
       "fold": 5,
       "best_epoch": 13,
       "epochs_run": 23,
-      "best_held_out_rmse": 0.7914201621240563,
-      "seconds": 24.97181797027588
+      "best_held_out_rmse": 0.7914201778767312,
+      "seconds": 24.99503445625305
     },
     {
       "split_strategy": "scaffold",
       "fold": 1,
       "best_epoch": 11,
       "epochs_run": 21,
-      "best_held_out_rmse": 0.9135719281260191,
-      "seconds": 22.316765785217285
+      "best_held_out_rmse": 0.9135719303472127,
+      "seconds": 22.546795129776
     },
     {
       "split_strategy": "scaffold",
       "fold": 2,
       "best_epoch": 41,
       "epochs_run": 50,
-      "best_held_out_rmse": 0.9447297188829303,
-      "seconds": 53.69800662994385
+      "best_held_out_rmse": 0.9447297743948907,
+      "seconds": 53.21906852722168
     },
     {
       "split_strategy": "scaffold",
       "fold": 3,
       "best_epoch": 14,
       "epochs_run": 24,
-      "best_held_out_rmse": 0.9130265826935341,
-      "seconds": 25.45480442047119
+      "best_held_out_rmse": 0.9130265649066571,
+      "seconds": 25.544979333877563
     },
     {
       "split_strategy": "scaffold",
       "fold": 4,
       "best_epoch": 20,
       "epochs_run": 30,
-      "best_held_out_rmse": 0.8920233591952966,
-      "seconds": 32.21367168426514
+      "best_held_out_rmse": 0.8920233305882456,
+      "seconds": 31.85019540786743
     },
     {
       "split_strategy": "scaffold",
       "fold": 5,
       "best_epoch": 18,
       "epochs_run": 28,
-      "best_held_out_rmse": 0.8241771082182854,
-      "seconds": 30.33411455154419
+      "best_held_out_rmse": 0.8241771008395832,
+      "seconds": 29.993001222610474
     }
   ],
   "validation_scores": [
@@ -127,12 +127,12 @@
     {
       "split_strategy": "random",
       "model": "Fine-tuned ChemBERTa",
-      "rmse": 0.7697388271964336,
-      "mae": 0.6077106798235166,
-      "r2": 0.5803101566352147,
-      "rmse_low": 0.7162571360078912,
-      "rmse_high": 0.8245764607646084,
-      "gap_closed": 0.6460368118196547
+      "rmse": 0.7697388322690265,
+      "mae": 0.60771069525787,
+      "r2": 0.5803101511036872,
+      "rmse_low": 0.7162571392639391,
+      "rmse_high": 0.8245764877771812,
+      "gap_closed": 0.6460368040042097
     },
     {
       "split_strategy": "scaffold",
@@ -157,13 +157,73 @@
     {
       "split_strategy": "scaffold",
       "model": "Fine-tuned ChemBERTa",
-      "rmse": 0.9217026702690766,
-      "mae": 0.7275422176137477,
-      "r2": 0.3519733889648292,
-      "rmse_low": 0.862031113276421,
-      "rmse_high": 0.980804031273547,
-      "gap_closed": 0.3715149433805018
+      "rmse": 0.9217026810569898,
+      "mae": 0.7275422226901187,
+      "r2": 0.35197337379539295,
+      "rmse_low": 0.8620311255534566,
+      "rmse_high": 0.9808040355991837,
+      "gap_closed": 0.3715149256178745
+    },
+    {
+      "split_strategy": "random",
+      "model": "Frozen ChemBERTa + SVR",
+      "rmse": 0.7160656741794834,
+      "mae": 0.5446174297913356,
+      "r2": 0.6367987096199348,
+      "rmse_low": 0.659823384751554,
+      "rmse_high": 0.7719777292631769,
+      "gap_closed": 0.7287321080106075
+    },
+    {
+      "split_strategy": "scaffold",
+      "model": "Frozen ChemBERTa + SVR",
+      "rmse": 0.8050053946999315,
+      "mae": 0.6283020663071963,
+      "r2": 0.5056793758093021,
+      "rmse_low": 0.7519676302897751,
+      "rmse_high": 0.8569438204845526,
+      "gap_closed": 0.563660557116223
     }
   ],
+  "frozen_svr": {
+    "features": "pretrained ChemBERTa molecule vectors (mean of piece vectors), never fine-tuned",
+    "scaling": "StandardScaler fitted on training molecules within each fold",
+    "parameter_grid": {
+      "C": [
+        1.0,
+        10.0
+      ],
+      "epsilon": [
+        0.1,
+        0.3
+      ],
+      "gamma": [
+        "scale",
+        "auto"
+      ]
+    },
+    "scoring": "neg_mean_absolute_error",
+    "folds": "the tuned SVR's saved cv_folds.csv (PredefinedSplit)",
+    "selection": {
+      "random": {
+        "best_parameters": {
+          "C": 10.0,
+          "epsilon": 0.1,
+          "gamma": "auto"
+        },
+        "best_mean_cv_mae_pki": 0.5524756928877422,
+        "training_molecules": 2860
+      },
+      "scaffold": {
+        "best_parameters": {
+          "C": 10.0,
+          "epsilon": 0.3,
+          "gamma": "scale"
+        },
+        "best_mean_cv_mae_pki": 0.6650023712323623,
+        "training_molecules": 2778
+      }
+    }
+  },
   "noise_floor": 0.54
 }

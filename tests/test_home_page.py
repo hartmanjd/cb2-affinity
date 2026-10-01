@@ -24,10 +24,14 @@ class FactTests(unittest.TestCase):
         counts = [count for _, count in facts["funnel"]]
         self.assertEqual(counts, sorted(counts, reverse=True))   # A funnel only ever narrows.
         self.assertAlmostEqual(facts["strongest"]["pki"], curated["pki_target"].max())
-        # The swimming-pool fact: Ki (molar) x 2.5 million litres x molecular weight, in milligrams.
-        strongest = facts["strongest"]
-        weight = DATA.compounds.loc[DATA.compounds["pki"].idxmax(), "mol_weight"]
-        self.assertAlmostEqual(strongest["pool_mg"], 10 ** -strongest["pki"] * 2.5e6 * weight * 1000)
+        # The strongest and weakest binders, each with five neighbours that are not the molecule itself.
+        self.assertAlmostEqual(facts["weakest"]["pki"], curated["pki_target"].min())
+        for key in ["strongest", "weakest"]:
+            neighbours = facts[key]["neighbours"]
+            self.assertEqual(len(neighbours), 5)
+            self.assertNotIn(facts[key]["chembl_id"], [n["label"] for n in neighbours])
+            similarities = [n["similarity"] for n in neighbours]
+            self.assertEqual(similarities, sorted(similarities, reverse=True))
         # The best model and the noise floor agree with the saved model comparison.
         self.assertEqual(facts["models"][0]["model"], "Support vector regression")
         self.assertLess(facts["noise_floor"], facts["models"][0]["rmse_pki"])
@@ -50,6 +54,7 @@ class PageTests(unittest.TestCase):
             app.run()
             self.assertEqual(len(app.exception), 0)
             self.assertIn("Can a model support the lab?", [s.value for s in app.subheader])
+            self.assertIn("The weakest binder", [s.value for s in app.subheader])
             self.assertEqual([m.label for m in app.metric][0], "Molecules")
             self.assertEqual(len(app.expander), 0)      # The tour is shown open on arrival.
             self.assertEqual(app.title[0].value, "Affinity, Audited")

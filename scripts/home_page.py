@@ -10,9 +10,6 @@ import json
 
 import pandas as pd
 
-# A nominal Olympic swimming pool: 50 m x 25 m x 2 m = 2,500 cubic metres.
-OLYMPIC_POOL_LITRES = 2_500_000
-
 # Chart colours from the data-visualisation guide's validated reference palette: one accent
 # (blue) for the model the chart is about, its muted grey for the rest, and ink for each theme.
 COLOURS = {"light": {"accent": "#2a78d6", "muted": "#898781", "ink": "#0b0b0b", "secondary": "#52514e"},
@@ -40,10 +37,16 @@ def facts(data, root):
         ("Unique molecules (repeats combined)", len(compounds)),
     ]
 
-    # The strongest binder, and how little of it a swimming pool would need.
-    best = compounds.loc[compounds["pki"].idxmax()]
-    ki_molar = 10 ** -best["pki"]
-    pool_mg = ki_molar * OLYMPIC_POOL_LITRES * best["mol_weight"] * 1000
+    def binder(row):
+        # One molecule and its five nearest neighbours in the dataset, by fingerprint (Tanimoto) similarity,
+        # from the same find_similar tool the assistant uses. The molecule itself (similarity 1) is dropped.
+        found = json.loads(assistant.run_tool(data, "find_similar", {"smiles": row["smiles"], "top_k": 6})[0])
+        chembl_id = row["chembl_ids"].split(";")[0]
+        neighbours = [n for n in found["neighbours"] if n["chembl_ids"] != row["chembl_ids"]][:5]
+        return {"chembl_id": chembl_id, "name": row["name"] if isinstance(row["name"], str) else None,
+                "pki": float(row["pki"]), "smiles": row["smiles"],
+                "neighbours": [{"label": n["name"] or n["chembl_ids"].split(";")[0], "similarity": n["tanimoto"],
+                                "pki": n["pki"]} for n in neighbours]}
 
     models = pd.DataFrame(json.loads(assistant.run_tool(data, "compare_models", {"include_dummies": True})[0])["models"])
     scaffold = models[models["split_strategy"] == "scaffold"]
@@ -65,8 +68,8 @@ def facts(data, root):
         "disagreements": int((measurements["status"] == "measurement_conflict").sum()),
         "mixtures": int((measurements["status"] == "structure_review").sum()),
         "limits_dropped": selection["quarantine_sheets"]["Ki limits"],
-        "strongest": {"chembl_id": best["chembl_ids"].split(";")[0], "pki": float(best["pki"]),
-                      "ki_pm": ki_molar * 1e12, "smiles": best["smiles"], "pool_mg": pool_mg},
+        "strongest": binder(compounds.loc[compounds["pki"].idxmax()]),
+        "weakest": binder(compounds.loc[compounds["pki"].idxmin()]),
         "top_journal": retained["journal"].value_counts().index[0],
         "top_journal_share": float(retained["journal"].value_counts(normalize=True).iloc[0]),
         "series": int(compounds["scaffold"].nunique()),
@@ -93,6 +96,28 @@ def funnel_chart(funnel, colours):
     return (bars + labels).properties(height=len(frame) * 34).configure_view(strokeWidth=0)
 
 
+def neighbour_chart(molecule, colours):
+    """Its five nearest neighbours' pKi as bars, with the molecule's own pKi as a dashed line."""
+    import altair as alt
+    frame = pd.DataFrame(molecule["neighbours"])
+    frame["order"] = range(len(frame))
+    frame["row"] = frame["label"] + "  ·  " + (frame["similarity"] * 100).round().astype(int).astype(str) + "% similar"
+    frame["value"] = frame["pki"].map("{:.2f}".format)
+    base = alt.Chart(frame).encode(
+        y=alt.Y("row:N", sort=alt.SortField("order"), title=None, axis=alt.Axis(labelLimit=300, labelPadding=8)),
+        x=alt.X("pki:Q", title="pKi of its 5 nearest neighbours", scale=alt.Scale(domain=[0, 12]),
+                axis=alt.Axis(grid=False, tickCount=6)))
+    bars = base.mark_bar(size=16, color=colours["accent"], cornerRadiusEnd=4).encode(
+        tooltip=[alt.Tooltip("label:N", title="Molecule"), alt.Tooltip("similarity:Q", title="Similarity", format=".0%"),
+                 alt.Tooltip("pki:Q", title="pKi", format=".2f")])
+    labels = base.mark_text(align="left", dx=5, color=colours["secondary"]).encode(text="value:N")
+    own = pd.DataFrame([{"x": molecule["pki"], "text": f"itself {molecule['pki']:.2f}"}])
+    rule = alt.Chart(own).mark_rule(strokeDash=[4, 4], color=colours["secondary"]).encode(x="x:Q")
+    rule_label = alt.Chart(own).mark_text(align="center", dy=-6, baseline="bottom", fontSize=11,
+                                          color=colours["secondary"]).encode(x="x:Q", y=alt.value(0), text="text:N")
+    return (bars + labels + rule + rule_label).properties(height=len(frame) * 30 + 20).configure_view(strokeWidth=0)
+
+
 def model_chart(models, noise_floor, dummy_rmse, colours):
     import altair as alt
     frame = pd.DataFrame(models)
@@ -115,6 +140,23 @@ def model_chart(models, noise_floor, dummy_rmse, colours):
     rule_labels = alt.Chart(lines).mark_text(align="left", dx=4, dy=-6, baseline="bottom", fontSize=11,
                                              color=colours["secondary"]).encode(x="x:Q", y=alt.value(0), text="text:N")
     return (bars + labels + rules + rule_labels).properties(height=len(frame) * 38 + 24).configure_view(strokeWidth=0)
+
+
+ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh"]
+
+
+def frozen_sentence(models):
+    """One sentence on ChemBERTa without fine-tuning, worded from where it actually placed."""
+    names = [m["model"] for m in models]
+    if "Frozen ChemBERTa + SVR" not in names or "Fine-tuned ChemBERTa" not in names:
+        return ""
+    frozen = models[names.index("Frozen ChemBERTa + SVR")]["rmse_pki"]
+    fine_tuned = models[names.index("Fine-tuned ChemBERTa")]["rmse_pki"]
+    place = ORDINALS[names.index("Frozen ChemBERTa + SVR")]
+    if frozen < fine_tuned:
+        return (f" The very same ChemBERTa left frozen, used only to describe each molecule for a simpler model to "
+                f"learn from, did better ({frozen:.2f} against {fine_tuned:.2f}) and placed {place}.")
+    return f" Left frozen, used only to describe molecules for a simpler model, it placed {place} ({frozen:.2f})."
 
 
 _FACTS = {}   # facts() for each loaded dataset, computed once per server rather than on every click.
@@ -153,20 +195,21 @@ def render(st, data, root, draw_png):
                f"(downloaded {f['retrieved']}). Binding strength is measured as **Ki**, the concentration at which a "
                "molecule fills half the receptors; the project uses **pKi**, where every +1 means ten times tighter.")
 
-    left, right = st.columns([3, 2], gap="large")
-    with left:
-        st.subheader(f"From {f['funnel'][0][1]:,} records to a clean dataset")
-        st.altair_chart(funnel_chart(f["funnel"], colours), width="stretch")
-        st.caption(f"{f['limits_dropped']:,} values were only limits (such as \"Ki > 10 µM\"), not measurements. "
-                   f"{f['disagreements']:,} were dropped because labs measuring the same molecule disagreed by "
-                   f"ten times or more, and {f['mixtures']} because the sample was a mixture.")
-    with right:
-        strongest = f["strongest"]
-        st.subheader("The strongest binder")
-        st.image(draw_png(strongest["smiles"], f"{strongest['chembl_id']}  ·  pKi {strongest['pki']:.2f}"))
-        st.markdown(f"Ki of about **{strongest['ki_pm']:.0f} picomolar**. About **{strongest['pool_mg']:.0f} mg** "
-                    "of it, roughly a grain of rice, dissolved in an Olympic swimming pool would still reach that "
-                    "concentration.")
+    st.subheader(f"From {f['funnel'][0][1]:,} records to a clean dataset")
+    st.altair_chart(funnel_chart(f["funnel"], colours), width="stretch")
+    st.caption(f"{f['limits_dropped']:,} values were only limits (such as \"Ki > 10 µM\"), not measurements. "
+               f"{f['disagreements']:,} were dropped because labs measuring the same molecule disagreed by "
+               f"ten times or more, and {f['mixtures']} because the sample was a mixture.")
+
+    # The two ends of the scale, side by side: each molecule, then its closest relatives in the data.
+    for column, title, key in zip(st.columns(2, gap="large"), ["The strongest binder", "The weakest binder"],
+                                  ["strongest", "weakest"]):
+        molecule = f[key]
+        name = f"{molecule['name']} ({molecule['chembl_id']})" if molecule["name"] else molecule["chembl_id"]
+        with column:
+            st.subheader(title)
+            st.image(draw_png(molecule["smiles"], f"{name}  ·  pKi {molecule['pki']:.2f}"))
+            st.altair_chart(neighbour_chart(molecule, colours), width="stretch")
 
     st.subheader("Can a model support the lab?")
     st.altair_chart(model_chart(f["models"], f["noise_floor"], f["dummy_rmse"], colours), width="stretch")
@@ -185,7 +228,8 @@ def render(st, data, root, draw_png):
                   f"of that over to unfamiliar chemistry."
                   if f["models"][-1]["model"] == "Fine-tuned ChemBERTa" else
                   "A fine-tuned chemistry transformer (ChemBERTa), pretrained on 77 million molecules, did not beat "
-                  "the simpler model."))
+                  "the simpler model.")
+               + frozen_sentence(f["models"]))
 
     chemistry, dataset = f["chemistry_score"], f["dataset_score"]
     st.subheader("How the assistant works")
