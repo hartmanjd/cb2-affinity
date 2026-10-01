@@ -12,8 +12,8 @@ import pandas as pd
 
 # Chart colours from the data-visualisation guide's validated reference palette: one accent
 # (blue) for the model the chart is about, its muted grey for the rest, and ink for each theme.
-COLOURS = {"light": {"accent": "#2a78d6", "outline": "#184f95", "muted": "#898781", "ink": "#0b0b0b", "secondary": "#52514e"},
-           "dark": {"accent": "#3987e5", "outline": "#86b6ef", "muted": "#898781", "ink": "#ffffff", "secondary": "#c3c2b7"}}
+COLOURS = {"light": {"page": "#ffffff", "accent": "#2a78d6", "outline": "#184f95", "muted": "#898781", "ink": "#0b0b0b", "secondary": "#52514e"},
+           "dark": {"page": "#0e1117", "accent": "#3987e5", "outline": "#86b6ef", "muted": "#898781", "ink": "#ffffff", "secondary": "#c3c2b7"}}
 
 
 def facts(data, root):
@@ -28,14 +28,24 @@ def facts(data, root):
     retained = measurements[measurements["status"] == "retained"]
     compounds = data.compounds
 
+    quarantine = selection["quarantine_sheets"]
+    conflicts = int((measurements["status"] == "measurement_conflict").sum())
+    mixtures = int((measurements["status"] == "structure_review").sum())
+    # Each step of the clean-up: what is left, and what that step took away.
     funnel = [
-        ("Every CB2 activity record in ChEMBL", acquisition["activity_records"]),
-        ("Human binding Ki values", stages["Human binding Ki before cleaning"]),
-        ("Exact values, not just \"less than\"", stages["Exact Ki measurements"]),
-        ("After validity and duplicate checks", stages["Unique activity records"]),
-        ("After removing lab disagreements and mixtures", len(retained)),
-        ("Unique molecules (repeats combined)", len(compounds)),
+        ("Every CB2 activity record in ChEMBL", acquisition["activity_records"], ""),
+        ("Human binding Ki values", stages["Human binding Ki before cleaning"],
+         "other kinds of result, such as IC50 or functional assays, or not clearly human CB2"),
+        ("Exact values", stages["Exact Ki measurements"],
+         f"only limits such as \"Ki > 10 µM\" ({quarantine['Ki limits']:,}), or missing or invalid values"),
+        ("Passed validity and duplicate checks", stages["Unique activity records"],
+         f"flagged as possible duplicates ({quarantine['Potential duplicates']:,}) or invalid by ChEMBL"),
+        ("Labs agree, single compounds", len(retained),
+         f"labs disagreed tenfold or more ({conflicts}), or the sample was a mixture ({mixtures})"),
+        ("Molecules, one value each", len(compounds), "repeat measurements of the same molecule, merged"),
     ]
+    for (_, before, _), (_, after, _) in zip(funnel, funnel[1:]):
+        assert after <= before, "each clean-up step can only remove records"
 
     def binder(row):
         # One molecule and its five nearest neighbours in the dataset, by fingerprint (Tanimoto) similarity,
@@ -66,8 +76,7 @@ def facts(data, root):
         "chembl_version": acquisition["chembl_version"].replace("_", " "),
         "retrieved": acquisition["retrieved_at_utc"][:10],
         "funnel": funnel,
-        "disagreements": int((measurements["status"] == "measurement_conflict").sum()),
-        "mixtures": int((measurements["status"] == "structure_review").sum()),
+        "disagreements": conflicts, "mixtures": mixtures,
         "limits_dropped": selection["quarantine_sheets"]["Ki limits"],
         "strongest": binder(compounds.loc[compounds["pki"].idxmax()]),
         "weakest": binder(compounds.loc[compounds["pki"].idxmin()]),
@@ -83,52 +92,88 @@ def facts(data, root):
     }
 
 
-def funnel_chart(funnel, colours):
+# Six steps of one blue, light (everything) to dark (what survives), from the reference palette's
+# sequential ramp; no lighter than step 250, so even the outer ring stands out from the page.
+RING_BLUES = ["#86b6ef", "#6da7ec", "#3987e5", "#2a78d6", "#1c5cab", "#104281"]
+
+
+def rings_chart(funnel, colours, size=340):
+    """The clean-up as nested circles: each circle's area is the records left after that step.
+
+    Drawn largest first, so every smaller circle sits inside the one before it and the visible ring
+    between two circles is what that step removed. A thin page-coloured outline separates the rings.
+    """
     import altair as alt
-    frame = pd.DataFrame(funnel, columns=["stage", "count"])
-    frame["order"] = range(len(frame))
-    frame["label"] = frame["count"].map("{:,}".format)
-    base = alt.Chart(frame).encode(
-        y=alt.Y("stage:N", sort=alt.SortField("order"), title=None, axis=alt.Axis(labelLimit=320, labelPadding=8)),
-        x=alt.X("count:Q", title=None, axis=None, scale=alt.Scale(domainMax=frame["count"].max() * 1.15)))
-    bars = base.mark_bar(size=20, color=colours["accent"], cornerRadiusEnd=4).encode(
-        tooltip=[alt.Tooltip("stage:N", title="Stage"), alt.Tooltip("count:Q", title="Count", format=",")])
-    labels = base.mark_text(align="left", dx=6, color=colours["secondary"]).encode(text="label:N")
-    return (bars + labels).properties(height=len(frame) * 34).configure_view(strokeWidth=0)
+    largest = funnel[0][1]
+    full_area = 3.14159 * (size / 2 - 4) ** 2   # Circle marks are sized by area in square pixels.
+    frame = pd.DataFrame([{"order": i, "stage": stage, "count": count, "area": full_area * count / largest,
+                           "removed": (funnel[i - 1][1] - count) if i else 0, "colour": RING_BLUES[i]}
+                          for i, (stage, count, _) in enumerate(funnel)])
+    return alt.Chart(frame).mark_circle(opacity=1, stroke=colours["page"], strokeWidth=2).encode(
+        x=alt.value(size / 2), y=alt.value(size / 2),
+        size=alt.Size("area:Q", scale=None, legend=None),
+        color=alt.Color("colour:N", scale=None, legend=None),
+        order=alt.Order("order:Q"),
+        tooltip=[alt.Tooltip("stage:N", title="Step"), alt.Tooltip("count:Q", title="Left", format=","),
+                 alt.Tooltip("removed:Q", title="Removed by this step", format=",")],
+    ).properties(width=size, height=size).configure_view(strokeWidth=0)
 
 
-def neighbour_chart(molecule, colours):
-    """Its five nearest neighbours' pKi as bars, with the molecule's own pKi as a dashed line.
+def rings_legend(funnel, colours):
+    """The key beside the rings: each step's colour, what is left, and what it removed."""
+    rows = []
+    for i, (stage, count, removed) in enumerate(funnel):
+        taken = f"<div style='margin-left:22px;color:{colours['secondary']};font-size:0.85rem'>" \
+                f"−{funnel[i - 1][1] - count:,}: {removed}</div>" if i else ""
+        rows.append(f"<div style='margin:0 0 10px 0'><span style='display:inline-block;width:14px;height:14px;"
+                    f"border-radius:50%;background:{RING_BLUES[i]};vertical-align:-2px;margin-right:8px'></span>"
+                    f"<b>{count:,}</b> &nbsp;{stage}{taken}</div>")
+    return "".join(rows)
 
-    Each bar can be clicked: the chart carries a point selection named "pick" on chembl_id, which
-    Streamlit reports back so the page can show that neighbour (see picked_neighbour).
+
+def neighbour_chart(molecule, colours, gutter=190):
+    """Its five nearest neighbours' pKi as bars, with the molecule's own pKi as a dashed line (a Vega-Lite spec).
+
+    Bars and names can both be clicked: both carry the point selection "pick" on chembl_id, which
+    Streamlit reports back so the page can show that neighbour (see picked_neighbour). Axis labels
+    cannot be clicked, so the names are drawn as text in a left-hand gutter of `gutter` pixels
+    instead, and the bars' scale starts after it.
     """
     import altair as alt
     frame = pd.DataFrame(molecule["neighbours"])
     frame["order"] = range(len(frame))
-    frame["row"] = frame["label"] + "  ·  " + (frame["similarity"] * 100).round().astype(int).astype(str) + "% similar"
-    frame["value"] = frame["pki"].map("{:.2f}".format)
+    frame["value"] = frame["pki"].map("{:.2f}".format) + "  ·  " + (frame["similarity"] * 100).round().astype(int).astype(str) + "% similar"
     pick = alt.selection_point(name="pick", fields=["chembl_id"], on="click")
-    # A fixed 40 px per row with 40% of it left as a gap, so all five labels always fit and bars never touch.
-    base = alt.Chart(frame).encode(
-        y=alt.Y("row:N", sort=alt.SortField("order"), title=None, scale=alt.Scale(paddingInner=0.4),
-                axis=alt.Axis(labelLimit=300, labelPadding=8, labelOverlap=False)),
-        x=alt.X("pki:Q", title="pKi of its 5 nearest neighbours (click one to see it)", scale=alt.Scale(domain=[0, 12]),
-                axis=alt.Axis(grid=False, tickCount=6)))
-    # Thin darker outline on every bar; the clicked one gets a bold outline and the others fade.
-    bars = base.mark_bar(color=colours["accent"], cornerRadiusEnd=4, cursor="pointer").encode(
-        stroke=alt.value(colours["outline"]),
-        # empty=False: with nothing clicked, no bar counts as chosen, so none gets the bold outline.
+    # A fixed 40 px per row with 40% of it left as a gap, so all five rows fit and bars never touch.
+    y = alt.Y("chembl_id:N", sort=alt.SortField("order"), title=None, axis=None, scale=alt.Scale(paddingInner=0.4))
+    scale = alt.Scale(domain=[0, 12], range=[gutter, {"expr": "width"}])   # Bars start after the name gutter.
+    x = alt.X("pki:Q", title="pKi of its 5 nearest neighbours (click a name or bar to see it)", scale=scale,
+              axis=alt.Axis(grid=False, values=[0, 2, 4, 6, 8, 10, 12]))
+    # Thin darker outline on every bar; a clicked one gets a bold outline and the others fade.
+    bars = alt.Chart(frame).mark_bar(color=colours["accent"], cornerRadiusEnd=4, cursor="pointer").encode(
+        x=x, y=y, stroke=alt.value(colours["outline"]),
         strokeWidth=alt.condition(pick, alt.value(2.5), alt.value(1), empty=False),
         opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35)),
         tooltip=[alt.Tooltip("label:N", title="Molecule"), alt.Tooltip("similarity:Q", title="Similarity", format=".0%"),
                  alt.Tooltip("pki:Q", title="pKi", format=".2f")]).add_params(pick)
-    labels = base.mark_text(align="left", dx=5, color=colours["secondary"]).encode(text="value:N")
+    names = alt.Chart(frame).mark_text(align="right", baseline="middle", dx=-10, cursor="pointer",
+                                       color=colours["accent"], fontWeight="bold").encode(
+        x=alt.value(gutter), y=y, text="label:N",
+        opacity=alt.condition(pick, alt.value(1.0), alt.value(0.45)))
+    values = alt.Chart(frame).mark_text(align="left", baseline="middle", dx=5, color=colours["secondary"]).encode(
+        x=x, y=y, text="value:N")
     own = pd.DataFrame([{"x": molecule["pki"], "text": f"itself {molecule['pki']:.2f}"}])
-    rule = alt.Chart(own).mark_rule(strokeDash=[4, 4], color=colours["secondary"]).encode(x="x:Q")
+    rule = alt.Chart(own).mark_rule(strokeDash=[4, 4], color=colours["secondary"]).encode(x=alt.X("x:Q", scale=scale))
     rule_label = alt.Chart(own).mark_text(align="center", dy=-6, baseline="bottom", fontSize=11,
-                                          color=colours["secondary"]).encode(x="x:Q", y=alt.value(0), text="text:N")
-    return (bars + labels + rule + rule_label).properties(height=len(frame) * 40 + 10).configure_view(strokeWidth=0)
+                                          color=colours["secondary"]).encode(x=alt.X("x:Q", scale=scale),
+                                                                             y=alt.value(0), text="text:N")
+    spec = (bars + names + values + rule + rule_label).properties(height=len(frame) * 40 + 10) \
+        .configure_view(strokeWidth=0).to_dict()
+    # Altair attaches a selection to one layer only; Vega-Lite allows several. Register the names layer as
+    # a second view of "pick", so a click on a name selects that molecule just like a click on its bar.
+    spec["layer"][1]["name"] = "neighbour_names"
+    spec["params"][0]["views"].append("neighbour_names")
+    return spec
 
 
 def picked_neighbour(selection_state, molecule):
@@ -167,6 +212,9 @@ def model_chart(models, noise_floor, dummy_rmse, colours):
                                              color=colours["secondary"]).encode(x="x:Q", y=alt.value(0), text="text:N")
     return (bars + labels + rules + rule_labels).properties(height=len(frame) * 38 + 24).configure_view(strokeWidth=0)
 
+
+# The audit workbook (scripts/build_assistant_audit.py) on GitHub, as a direct download.
+AUDIT_URL = "https://github.com/hartmanjd/cb2-affinity/raw/dev/results/assistant_audit.xlsx"
 
 ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh"]
 
@@ -221,11 +269,12 @@ def render(st, data, root, draw_png):
                f"(downloaded {f['retrieved']}). Binding strength is measured as **Ki**, the concentration at which a "
                "molecule fills half the receptors; the project uses **pKi**, where every +1 means ten times tighter.")
 
-    st.subheader(f"From {f['funnel'][0][1]:,} records to a clean dataset")
-    st.altair_chart(funnel_chart(f["funnel"], colours), width="stretch")
-    st.caption(f"{f['limits_dropped']:,} values were only limits (such as \"Ki > 10 µM\"), not measurements. "
-               f"{f['disagreements']:,} were dropped because labs measuring the same molecule disagreed by "
-               f"ten times or more, and {f['mixtures']} because the sample was a mixture.")
+    st.subheader(f"Whittling {f['funnel'][0][1]:,} records down to {f['funnel'][-1][1]:,} molecules")
+    rings, key_column = st.columns([2, 3], gap="large", vertical_alignment="center")
+    with rings:
+        st.altair_chart(rings_chart(f["funnel"], colours), width="content")
+    with key_column:
+        st.html(rings_legend(f["funnel"], colours))
 
     # The two ends of the scale, side by side: each molecule, then its closest relatives in the data.
     for column, title, key in zip(st.columns(2, gap="large"), ["The strongest binder", "The weakest binder"],
@@ -245,11 +294,10 @@ def render(st, data, root, draw_png):
             else:
                 label = f"{shown['name']} ({shown['chembl_id']})" if shown["name"] else shown["chembl_id"]
                 st.image(draw_png(shown["smiles"], f"{label}  ·  pKi {shown['pki']:.2f}"))
-                st.caption(f"Showing a neighbour: {shown['similarity']:.0%} similar to {molecule['chembl_id']}, "
-                           f"pKi {shown['pki']:.2f} against its {molecule['pki']:.2f}.")
-                st.button(f"Back to {molecule['chembl_id']}", key=f"{key}_back",
-                          on_click=lambda k=key: st.session_state.update({f"{k}_resets": st.session_state[f"{k}_resets"] + 1}))
-            st.altair_chart(neighbour_chart(molecule, colours), width="stretch", on_select="rerun", key=chart_key)
+            # Always present (greyed out until a neighbour is shown), so the panel never changes height.
+            st.button(f"Back to {molecule['chembl_id']}", key=f"{key}_back", disabled=shown is None,
+                      on_click=lambda k=key: st.session_state.update({f"{k}_resets": st.session_state[f"{k}_resets"] + 1}))
+            st.vega_lite_chart(neighbour_chart(molecule, colours), width="stretch", on_select="rerun", key=chart_key)
 
     st.subheader("Can a model support the lab?")
     st.altair_chart(model_chart(f["models"], f["noise_floor"], f["dummy_rmse"], colours), width="stretch")
@@ -291,9 +339,10 @@ def render(st, data, root, draw_png):
         "- **The model is never asked to read a structure.** Formulas, ring names and stereochemistry come from "
         "RDKit, because testing showed language models guessing them confidently and wrongly.\n"
         "- **Held-back test molecules are never predicted**, so the project's final test stays honest.\n"
-        f"- **It is tested against answers it could not have guessed**: {chemistry[0]}/{chemistry[1]} chemistry "
-        f"questions and {dataset[0]}/{dataset[1]} questions about the data correct, and every change to the "
-        "assistant was measured before it was kept.")
+        f"- **It is tested against answers it could not have guessed**: [{chemistry[0]}/{chemistry[1]} chemistry "
+        f"questions and {dataset[0]}/{dataset[1]} questions about the data]({AUDIT_URL}) correct, and every change "
+        "to the assistant was measured before it was kept. The linked workbook shows every question, how its true "
+        "answer was computed, the answer given, and every condition held fixed.")
     st.markdown(
         "Language models still make mistakes. The point is not that this one cannot, but that when it does, you "
         "can see exactly where.")
