@@ -97,6 +97,21 @@ def facts(data, root):
 LAYER_BLUES = ["#86b6ef", "#6da7ec", "#3987e5", "#2a78d6", "#1c5cab", "#104281"]
 
 
+def without_tooltips(spec, keep=()):
+    """Switch off the hover pop-up on every layer except those indexed in `keep`.
+
+    Streamlit's chart theme shows a pop-up on every mark, so even a text label would show its raw
+    plotting fields (such as its y position). An explicit null tooltip on the mark overrides that.
+    """
+    for index, layer in enumerate(spec["layer"]):
+        if index in keep:
+            continue
+        layer["mark"] = layer["mark"] if isinstance(layer["mark"], dict) else {"type": layer["mark"]}
+        layer["mark"]["tooltip"] = None
+        layer.get("encoding", {}).pop("tooltip", None)
+    return spec
+
+
 def layer_widths(counts, narrowest=0.32):
     """Pyramid layer widths: readable first, faithful second.
 
@@ -137,9 +152,7 @@ def pyramid_chart(funnel, colours, row=64):
     x_scale = alt.Scale(domain=[-0.55, 2.6])   # The pyramid on the left, room for the words on the right.
     layers = alt.Chart(outline).mark_area(orient="horizontal", interpolate="linear").encode(
         y=y, x=alt.X("left:Q", scale=x_scale, axis=None), x2="right:Q", detail="layer:N",
-        color=alt.Color("colour:N", scale=None, legend=None),
-        tooltip=[alt.Tooltip("stage:N", title="Step"), alt.Tooltip("count:Q", title="Left", format=","),
-                 alt.Tooltip("removed:N", title="Removed")])
+        color=alt.Color("colour:N", scale=None, legend=None))
     inside = alt.Chart(labels).mark_text(fontWeight="bold", fontSize=15, baseline="middle").encode(
         y=y, x=alt.XDatum(0, scale=x_scale), text="count:N", color=alt.Color("ink:N", scale=None, legend=None))
     stage_text = alt.Chart(labels).mark_text(align="left", baseline="bottom", dy=-1, fontSize=14, fontWeight="bold",
@@ -148,7 +161,8 @@ def pyramid_chart(funnel, colours, row=64):
                                                color=colours["secondary"]).encode(y=y, x=alt.XDatum(0.6, scale=x_scale),
                                                                                   text="removed:N")
     chart = (layers + inside + stage_text + removed_text).properties(height=len(funnel) * row)
-    return chart.configure_view(strokeWidth=0).to_dict()
+    # No hover pop-ups: everything they could say is already written beside each layer.
+    return without_tooltips(chart.configure_view(strokeWidth=0).to_dict())
 
 
 def neighbour_chart(molecule, colours):
@@ -191,7 +205,8 @@ def neighbour_chart(molecule, colours):
     # Strips end exactly at the chart's right edge, whatever width the page gives it (a fixed large
     # number would stretch the chart to fit it).
     spec["layer"][-1]["encoding"]["x2"] = {"value": {"expr": "width"}}
-    return spec
+    # The only pop-up is the strips' own (molecule, similarity, pKi); the other layers show none.
+    return without_tooltips(spec, keep=(len(spec["layer"]) - 1,))
 
 
 def picked_neighbour(selection_state, molecule):

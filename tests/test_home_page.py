@@ -62,6 +62,15 @@ class ChartTests(unittest.TestCase):
         for name, spec in self.charts().items():
             self.assertTrue(vl_convert.vegalite_to_svg({**spec, "width": 600}).startswith("<svg"), name)
 
+    def test_no_raw_hover_pop_ups(self):
+        # Every layer's pop-up is switched off explicitly, except the neighbour charts' click strips.
+        for name, spec in self.charts().items():
+            for index, layer in enumerate(spec["layer"]):
+                if name != "pyramid" and index == len(spec["layer"]) - 1:
+                    self.assertIn("tooltip", layer["encoding"], name)
+                else:
+                    self.assertIsNone(layer["mark"]["tooltip"], f"{name} layer {index}")
+
     def test_pyramid_layers_narrow_steadily_and_readably(self):
         widths = home_page.layer_widths([22523, 5825, 4576, 4081, 3905, 3576])
         self.assertEqual(widths, sorted(widths, reverse=True))
