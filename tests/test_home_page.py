@@ -79,6 +79,15 @@ class ChartTests(unittest.TestCase):
         self.assertTrue(all(a - b > 0.04 for a, b in zip(widths, widths[1:])))   # Every step visibly narrows.
 
 
+class NameTests(unittest.TestCase):
+    def test_named_molecules_are_shown_by_name(self):
+        # A clicked neighbour is captioned with its ChEMBL name when it has one (EGCG, next to the weakest binder).
+        weakest = home_page.facts(DATA, ROOT)["weakest"]
+        egcg = next(n for n in weakest["neighbours"] if n["chembl_id"] == "CHEMBL297453")
+        self.assertEqual(home_page.display_name(egcg), "Epigalocatechin Gallate (CHEMBL297453)")
+        self.assertEqual(home_page.display_name({"name": None, "chembl_id": "CHEMBL600647"}), "CHEMBL600647")
+
+
 class NeighbourClickTests(unittest.TestCase):
     def test_a_click_picks_that_neighbour_and_no_click_picks_none(self):
         molecule = home_page.facts(DATA, ROOT)["strongest"]
@@ -93,7 +102,8 @@ class NeighbourClickTests(unittest.TestCase):
         spec = home_page.neighbour_chart(molecule, home_page.COLOURS["light"])
         self.assertEqual([p["name"] for p in spec["params"]], ["pick"])
         self.assertEqual(spec["layer"][-1]["mark"]["opacity"], 0.001)   # The near-invisible click strips, on top.
-        self.assertIs(spec["layer"][0]["encoding"]["strokeWidth"]["condition"]["empty"], False)
+        bars = next(layer for layer in spec["layer"] if "strokeWidth" in layer.get("encoding", {}))
+        self.assertIs(bars["encoding"]["strokeWidth"]["condition"]["empty"], False)
 
 
 class PageTests(unittest.TestCase):
