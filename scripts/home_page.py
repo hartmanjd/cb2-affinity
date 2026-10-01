@@ -12,8 +12,8 @@ import pandas as pd
 
 # Chart colours from the data-visualisation guide's validated reference palette: one accent
 # (blue) for the model the chart is about, its muted grey for the rest, and ink for each theme.
-COLOURS = {"light": {"accent": "#2a78d6", "muted": "#898781", "ink": "#0b0b0b", "secondary": "#52514e"},
-           "dark": {"accent": "#3987e5", "muted": "#898781", "ink": "#ffffff", "secondary": "#c3c2b7"}}
+COLOURS = {"light": {"accent": "#2a78d6", "outline": "#184f95", "muted": "#898781", "ink": "#0b0b0b", "secondary": "#52514e"},
+           "dark": {"accent": "#3987e5", "outline": "#86b6ef", "muted": "#898781", "ink": "#ffffff", "secondary": "#c3c2b7"}}
 
 
 def facts(data, root):
@@ -46,7 +46,8 @@ def facts(data, root):
         return {"chembl_id": chembl_id, "name": row["name"] if isinstance(row["name"], str) else None,
                 "pki": float(row["pki"]), "smiles": row["smiles"],
                 "neighbours": [{"label": n["name"] or n["chembl_ids"].split(";")[0], "similarity": n["tanimoto"],
-                                "pki": n["pki"]} for n in neighbours]}
+                                "pki": n["pki"], "chembl_id": n["chembl_ids"].split(";")[0], "name": n["name"],
+                                "smiles": n["smiles"]} for n in neighbours]}
 
     models = pd.DataFrame(json.loads(assistant.run_tool(data, "compare_models", {"include_dummies": True})[0])["models"])
     scaffold = models[models["split_strategy"] == "scaffold"]
@@ -97,25 +98,50 @@ def funnel_chart(funnel, colours):
 
 
 def neighbour_chart(molecule, colours):
-    """Its five nearest neighbours' pKi as bars, with the molecule's own pKi as a dashed line."""
+    """Its five nearest neighbours' pKi as bars, with the molecule's own pKi as a dashed line.
+
+    Each bar can be clicked: the chart carries a point selection named "pick" on chembl_id, which
+    Streamlit reports back so the page can show that neighbour (see picked_neighbour).
+    """
     import altair as alt
     frame = pd.DataFrame(molecule["neighbours"])
     frame["order"] = range(len(frame))
     frame["row"] = frame["label"] + "  ·  " + (frame["similarity"] * 100).round().astype(int).astype(str) + "% similar"
     frame["value"] = frame["pki"].map("{:.2f}".format)
+    pick = alt.selection_point(name="pick", fields=["chembl_id"], on="click")
+    # A fixed 40 px per row with 40% of it left as a gap, so all five labels always fit and bars never touch.
     base = alt.Chart(frame).encode(
-        y=alt.Y("row:N", sort=alt.SortField("order"), title=None, axis=alt.Axis(labelLimit=300, labelPadding=8)),
-        x=alt.X("pki:Q", title="pKi of its 5 nearest neighbours", scale=alt.Scale(domain=[0, 12]),
+        y=alt.Y("row:N", sort=alt.SortField("order"), title=None, scale=alt.Scale(paddingInner=0.4),
+                axis=alt.Axis(labelLimit=300, labelPadding=8, labelOverlap=False)),
+        x=alt.X("pki:Q", title="pKi of its 5 nearest neighbours (click one to see it)", scale=alt.Scale(domain=[0, 12]),
                 axis=alt.Axis(grid=False, tickCount=6)))
-    bars = base.mark_bar(size=16, color=colours["accent"], cornerRadiusEnd=4).encode(
+    # Thin darker outline on every bar; the clicked one gets a bold outline and the others fade.
+    bars = base.mark_bar(color=colours["accent"], cornerRadiusEnd=4, cursor="pointer").encode(
+        stroke=alt.value(colours["outline"]),
+        # empty=False: with nothing clicked, no bar counts as chosen, so none gets the bold outline.
+        strokeWidth=alt.condition(pick, alt.value(2.5), alt.value(1), empty=False),
+        opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35)),
         tooltip=[alt.Tooltip("label:N", title="Molecule"), alt.Tooltip("similarity:Q", title="Similarity", format=".0%"),
-                 alt.Tooltip("pki:Q", title="pKi", format=".2f")])
+                 alt.Tooltip("pki:Q", title="pKi", format=".2f")]).add_params(pick)
     labels = base.mark_text(align="left", dx=5, color=colours["secondary"]).encode(text="value:N")
     own = pd.DataFrame([{"x": molecule["pki"], "text": f"itself {molecule['pki']:.2f}"}])
     rule = alt.Chart(own).mark_rule(strokeDash=[4, 4], color=colours["secondary"]).encode(x="x:Q")
     rule_label = alt.Chart(own).mark_text(align="center", dy=-6, baseline="bottom", fontSize=11,
                                           color=colours["secondary"]).encode(x="x:Q", y=alt.value(0), text="text:N")
-    return (bars + labels + rule + rule_label).properties(height=len(frame) * 30 + 20).configure_view(strokeWidth=0)
+    return (bars + labels + rule + rule_label).properties(height=len(frame) * 40 + 10).configure_view(strokeWidth=0)
+
+
+def picked_neighbour(selection_state, molecule):
+    """The neighbour a visitor clicked in neighbour_chart, or None (nothing clicked, or click cleared).
+
+    `selection_state` is what Streamlit keeps for the chart: {"selection": {"pick": [{"chembl_id": ...}]}}.
+    """
+    try:
+        points = selection_state["selection"]["pick"]
+    except (KeyError, TypeError):
+        return None
+    chosen = {point.get("chembl_id") for point in points or []}
+    return next((n for n in molecule["neighbours"] if n["chembl_id"] in chosen), None)
 
 
 def model_chart(models, noise_floor, dummy_rmse, colours):
@@ -206,10 +232,24 @@ def render(st, data, root, draw_png):
                                   ["strongest", "weakest"]):
         molecule = f[key]
         name = f"{molecule['name']} ({molecule['chembl_id']})" if molecule["name"] else molecule["chembl_id"]
+        # Clicking a neighbour's bar reruns the page with the click stored under the chart's key, so the
+        # drawing above the chart can show that neighbour. "Back" swaps in a fresh chart (a new key),
+        # which clears the click.
+        resets = st.session_state.setdefault(f"{key}_resets", 0)
+        chart_key = f"{key}_neighbours_{resets}"
+        shown = picked_neighbour(st.session_state.get(chart_key), molecule)
         with column:
             st.subheader(title)
-            st.image(draw_png(molecule["smiles"], f"{name}  ·  pKi {molecule['pki']:.2f}"))
-            st.altair_chart(neighbour_chart(molecule, colours), width="stretch")
+            if shown is None:
+                st.image(draw_png(molecule["smiles"], f"{name}  ·  pKi {molecule['pki']:.2f}"))
+            else:
+                label = f"{shown['name']} ({shown['chembl_id']})" if shown["name"] else shown["chembl_id"]
+                st.image(draw_png(shown["smiles"], f"{label}  ·  pKi {shown['pki']:.2f}"))
+                st.caption(f"Showing a neighbour: {shown['similarity']:.0%} similar to {molecule['chembl_id']}, "
+                           f"pKi {shown['pki']:.2f} against its {molecule['pki']:.2f}.")
+                st.button(f"Back to {molecule['chembl_id']}", key=f"{key}_back",
+                          on_click=lambda k=key: st.session_state.update({f"{k}_resets": st.session_state[f"{k}_resets"] + 1}))
+            st.altair_chart(neighbour_chart(molecule, colours), width="stretch", on_select="rerun", key=chart_key)
 
     st.subheader("Can a model support the lab?")
     st.altair_chart(model_chart(f["models"], f["noise_floor"], f["dummy_rmse"], colours), width="stretch")

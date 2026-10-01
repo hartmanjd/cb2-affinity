@@ -38,6 +38,22 @@ class FactTests(unittest.TestCase):
         self.assertGreater(facts["dummy_rmse"], facts["models"][-1]["rmse_pki"])
 
 
+class NeighbourClickTests(unittest.TestCase):
+    def test_a_click_picks_that_neighbour_and_no_click_picks_none(self):
+        molecule = home_page.facts(DATA, ROOT)["strongest"]
+        first = molecule["neighbours"][0]
+        self.assertEqual(home_page.picked_neighbour({"selection": {"pick": [{"chembl_id": first["chembl_id"]}]}},
+                                                    molecule), first)
+        for nothing in [None, {}, {"selection": {}}, {"selection": {"pick": []}}]:
+            self.assertIsNone(home_page.picked_neighbour(nothing, molecule))
+
+    def test_bars_are_clickable_and_only_a_clicked_bar_is_outlined(self):
+        molecule = home_page.facts(DATA, ROOT)["strongest"]
+        spec = home_page.neighbour_chart(molecule, home_page.COLOURS["light"]).to_dict()
+        self.assertEqual([p["name"] for p in spec["params"]], ["pick"])
+        self.assertIs(spec["layer"][0]["encoding"]["strokeWidth"]["condition"]["empty"], False)
+
+
 class PageTests(unittest.TestCase):
     def test_home_page_draws_and_folds_away_after_a_question(self):
         from streamlit.testing.v1 import AppTest
@@ -58,6 +74,15 @@ class PageTests(unittest.TestCase):
             self.assertEqual([m.label for m in app.metric][0], "Molecules")
             self.assertEqual(len(app.expander), 0)      # The tour is shown open on arrival.
             self.assertEqual(app.title[0].value, "Affinity, Audited")
+            # A click on a neighbour's bar (simulated: the test runner cannot click charts) shows that
+            # neighbour; "Back" returns to the strongest binder.
+            neighbour = home_page.facts(DATA, ROOT)["strongest"]["neighbours"][0]
+            app.session_state["strongest_neighbours_0"] = {"selection": {"pick": [{"chembl_id": neighbour["chembl_id"]}]}}
+            app.run()
+            self.assertTrue(any(f"Showing a neighbour: {neighbour['similarity']:.0%}" in c.value for c in app.caption))
+            back = next(b for b in app.button if b.label.startswith("Back to"))
+            back.click().run()
+            self.assertFalse(any("Showing a neighbour" in c.value for c in app.caption))
             app.chat_input[0].set_value("How many molecules?").run()
             self.assertEqual(len(app.exception), 0)
             self.assertIn("About this project", [e.label for e in app.expander])

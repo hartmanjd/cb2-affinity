@@ -190,10 +190,9 @@ else:
 st.caption("Answers are built from tool calls on the curated data, RDKit and the saved SVR. Open any 🔧 box to "
            "see exactly what was computed. Statements marked as general knowledge come from the language model "
            "itself and may need to be verified.")
-st.caption("Questions are sent to DeepSeek's servers, so data privacy is non-existent. If that is a concern, you "
-           "can [run this app on your own computer with a local model]"
-           "(https://github.com/hartmanjd/cb2-affinity/blob/dev/README.md#running-a-model-on-your-own-machine-instead), "
-           "though answers may be slower and less accurate.")
+st.caption("Questions are sent to DeepSeek's servers. If you have data privacy concerns, you may find instructions "
+           "to run this app with your own local model "
+           "[here](https://github.com/hartmanjd/cb2-affinity/blob/dev/README.md#running-a-model-on-your-own-machine-instead).")
 for entry in st.session_state.display:
     show_entry(entry)
 
