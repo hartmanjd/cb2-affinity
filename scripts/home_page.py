@@ -181,9 +181,11 @@ def neighbour_chart(molecule, colours):
     pick = alt.selection_point(name="pick", fields=["chembl_id"], on="click")
     # 46 px per row, 28% of it a gap: thick bars that never touch. Names are the axis labels, in the
     # accent colour to show they can be clicked.
+    # The names are left-aligned in a fixed 200 px column (labelPadding is measured back from the bars), so
+    # they start at the chart's left edge, in line with the Back button above, whatever their length.
     y = alt.Y("label:N", sort=alt.SortField("order"), title=None, scale=alt.Scale(paddingInner=0.28),
-              axis=alt.Axis(labelLimit=200, labelPadding=10, labelColor=colours["accent"], labelFontWeight="bold",
-                            labelFontSize=13, ticks=False, domain=False))
+              axis=alt.Axis(labelLimit=190, labelAlign="left", labelPadding=NAME_COLUMN, labelColor=colours["accent"],
+                            labelFontWeight="bold", labelFontSize=13, ticks=False, domain=False))
     scale = alt.Scale(domain=[0, 14.6])   # pKi runs 0-12; the space beyond holds the similarity column.
     x = alt.X("pki:Q", title="pKi of its 5 nearest neighbours (click one to see it)", scale=scale,
               axis=alt.Axis(grid=False, values=[0, 2, 4, 6, 8, 10, 12], titleFontSize=12, labelFontSize=11,
@@ -192,8 +194,9 @@ def neighbour_chart(molecule, colours):
         x=x, y=y, stroke=alt.value(colours["outline"]),
         strokeWidth=alt.condition(pick, alt.value(2.5), alt.value(1), empty=False),
         opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35)))
-    inside = alt.Chart(frame).mark_text(align="right", baseline="middle", dx=-7, color="#ffffff", fontWeight="bold",
-                                        fontSize=13).encode(x=x, y=y, text="pki_text:N")
+    # White on a full-colour bar; dark blue on a faded one, where white would barely show.
+    inside = alt.Chart(frame).mark_text(align="right", baseline="middle", dx=-7, fontWeight="bold", fontSize=13).encode(
+        x=x, y=y, text="pki_text:N", color=alt.condition(pick, alt.value("#ffffff"), alt.value(colours["outline"])))
     similar = alt.Chart(frame).mark_text(align="right", baseline="middle", color=colours["secondary"], fontSize=12.5) \
         .encode(x=alt.XDatum(14.6, scale=scale), y=y, text="similar_text:N")
     own = pd.DataFrame([{"x": molecule["pki"], "text": f"itself {molecule['pki']:.2f}"}])
@@ -203,7 +206,7 @@ def neighbour_chart(molecule, colours):
     # The click layer, drawn last so it is on top: one nearly invisible strip per row, from the left edge of
     # the names (negative pixels reach into the label area) to the right edge of the chart.
     strips = alt.Chart(frame).mark_bar(color=colours["accent"], opacity=0.001, cursor="pointer").encode(
-        y=y, x=alt.value(-210), x2=alt.value(0),
+        y=y, x=alt.value(-NAME_COLUMN), x2=alt.value(0),
         tooltip=[alt.Tooltip("label:N", title="Molecule"), alt.Tooltip("similarity:Q", title="Similarity", format=".0%"),
                  alt.Tooltip("pki:Q", title="pKi", format=".2f")]).add_params(pick)
     # The dashed line is drawn first, so bars and their numbers sit on top of it: it shows between and beyond
@@ -215,6 +218,9 @@ def neighbour_chart(molecule, colours):
     spec["layer"][-1]["encoding"]["x2"] = {"value": {"expr": "width"}}
     # The only pop-up is the strips' own (molecule, similarity, pKi); the other layers show none.
     return without_tooltips(spec, keep=(len(spec["layer"]) - 1,))
+
+
+NAME_COLUMN = 200   # Width in pixels of the neighbour charts' name column.
 
 
 def display_name(molecule):
