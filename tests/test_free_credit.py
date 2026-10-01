@@ -86,9 +86,9 @@ class AppPageTests(unittest.TestCase):
 
     def test_public_demo_shows_a_balance_that_goes_down(self):
         app = self.start({"ASSISTANT_PUBLIC_DEMO": "1", "DEEPSEEK_API_KEY": "sk-test"}, answer_cost=0.004)
-        self.assertIn("$0.250 of $0.25 left", self.meter(app))
+        self.assertEqual("Balance: $0.250", self.meter(app))
         app.chat_input[0].set_value("How many molecules?").run()
-        self.assertIn("$0.246 of $0.25 left", self.meter(app))
+        self.assertEqual("Balance: $0.246", self.meter(app))
         self.assertTrue(any("3,400 tokens · $0.0040" in caption.value for caption in app.caption))
 
     def test_public_demo_stops_when_the_credit_is_used(self):
@@ -103,7 +103,7 @@ class AppPageTests(unittest.TestCase):
         app.chat_input[0].set_value("First question").run()
         app.chat_input[0].set_value("Second question").run()
         self.assertEqual(len(app.warning), 0)
-        self.assertIn("$0.250 of $0.25 left", self.meter(app))   # Their own key: nothing deducted.
+        self.assertEqual("Balance: $0.250", self.meter(app))   # Their own key: nothing deducted.
 
     def test_running_locally_is_not_limited(self):
         app = self.start({"ASSISTANT_PUBLIC_DEMO": "", "DEEPSEEK_API_KEY": "sk-test"}, answer_cost=0.30)

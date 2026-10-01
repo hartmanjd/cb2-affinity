@@ -125,12 +125,11 @@ with st.sidebar:
         typed_key = None
     elif assistant.has_api_key() and PUBLIC_DEMO:
         # The project's key pays, within the free credit, unless the visitor brings their own key.
+        # Kept deliberately plain: what each answer cost is revealed under the answer itself.
+        # Three decimals, because a typical answer costs about $0.004 and would not move a
+        # two-decimal balance at all.
         remaining = ledger.remaining(visitor)
-        st.progress(remaining / ledger.per_visitor,
-                    text=f"Free credit: **${remaining:.3f}** of ${ledger.per_visitor:.2f} left · "
-                         f"about {int(remaining / free_credit.TYPICAL_QUESTION_USD)} questions")
-        st.caption("Paid by the project's DeepSeek key so you can try it. A typical answer costs about half a cent "
-                   "(shown under each answer, at peak-hour prices).")
+        st.progress(remaining / ledger.per_visitor, text=f"Balance: ${remaining:.3f}")
         typed_key = st.text_input("Your own DeepSeek API key (optional)", type="password",
                                   help="Paste one to keep asking after the free credit runs out. It is used for "
                                        "this browser tab only and never stored.") or None
