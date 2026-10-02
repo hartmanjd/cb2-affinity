@@ -1,0 +1,152 @@
+round,variant,number,question,kind,expected,answer,correct,patterns,warned,tools,n_tool_calls,seconds,cost_usd,error,reply
+"1. All 20 questions, first version",A,1,How many molecules contain a carboxylic acid group?,count,50.0,50.0,True,carboxylic_acid,False,query_table,1,4.2,0.001837264,,FINAL ANSWER: 50
+"1. All 20 questions, first version",A,2,How many molecules contain an ester group?,count,203.0,203.0,True,ester,False,query_table,1,2.9,0.001649472,,FINAL ANSWER: 203
+"1. All 20 questions, first version",A,3,How many molecules contain a urea group?,count,88.0,88.0,True,urea,False,query_table,1,2.9,0.001485792,,"88 molecules in the dataset contain a urea group.
+
+FINAL ANSWER: 88"
+"1. All 20 questions, first version",A,4,How many molecules contain a carbamate group?,count,34.0,34.0,True,carbamate,False,query_table,1,2.6,0.001590072,,"34 molecules contain a carbamate group (measured, from the data).
+
+FINAL ANSWER: 34"
+"1. All 20 questions, first version",A,5,How many molecules contain a sulfone (not counting sulfonamides)?,count,89.0,15.0,False,sulfone | sulfonamide,False,query_table,1,4.7,0.002611136,,"Molecules containing a sulfone but no sulfonamide: 15.
+
+FINAL ANSWER: 15"
+"1. All 20 questions, first version",A,6,How many molecules contain a sulfonamide?,count,337.0,337.0,True,sulfonamide,False,query_table,1,3.2,0.001916464,,"337 molecules contain a sulfonamide.
+
+FINAL ANSWER: 337"
+"1. All 20 questions, first version",A,7,How many molecules contain a nitrile?,count,77.0,77.0,True,nitrile,False,query_table,1,3.0,0.001506912,,"77 molecules contain a nitrile.
+
+FINAL ANSWER: 77"
+"1. All 20 questions, first version",A,8,How many molecules contain a ketone?,count,423.0,423.0,True,ketone,False,query_table,1,3.0,0.001518792,,FINAL ANSWER: 423
+"1. All 20 questions, first version",A,9,How many molecules contain a phenol (an OH directly on an aromatic ring)?,count,528.0,528.0,True,phenol,False,query_table,1,3.1,0.0015729119999999,,FINAL ANSWER: 528
+"1. All 20 questions, first version",A,10,How many molecules contain an aliphatic alcohol (an OH on an sp3 carbon)?,count,393.0,393.0,True,[CX4][OX2H] | hydroxyl | phenol | hydroxyl | phenol,False,"query_table, query_table, query_table, query_table",4,19.3,0.010086296,,"The named ""hydroxyl"" substructure matches 393 molecules, and this agrees exactly with an explicit SMARTS for an OH on an sp³ carbon (`[CX4][OX2H]`), confirming it is the aliphatic-alcohol count. (Excluding ""phenol"" gives a lower number, 229, because that also drops molecules containing both an aliphatic OH and a phenol.)
+
+FINAL ANSWER: 393"
+"1. All 20 questions, first version",A,11,"How many molecules have an NH2 attached directly to an aromatic ring, as in aniline?",count,20.0,20.0,True,[NH2][a],False,query_table,1,6.4,0.004361808,,"Molecules where a primary amine (–NH₂) is bonded directly to an aromatic ring atom: **20**.
+
+FINAL ANSWER: 20"
+"1. All 20 questions, first version",A,12,"How many molecules have an aliphatic primary amine (an NH2 on an sp3 carbon, not an amide)?",count,16.0,16.0,True,"[NX3;H2;$(N[CX4]);!$(N[C,S]=[O,S])] | [NX3;H2][CX4]",False,"query_table, query_table",2,27.3,0.013608056,,"Both a precise SMARTS for an sp3-bound primary amine and a simpler check agree.
+
+FINAL ANSWER: 16"
+"1. All 20 questions, first version",A,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1693.0,False,[NX3;H1;$(NC=[OX1])],False,query_table,1,9.6,0.0055523599999999,,FINAL ANSWER: 1693
+"1. All 20 questions, first version",A,14,How many molecules have an alkyl aryl ether: an oxygen joining an aromatic ring to an sp3 carbon?,count,1186.0,1186.0,True,[a]-[O]-[CX4],False,query_table,1,6.2,0.0030427759999999,,FINAL ANSWER: 1186
+"1. All 20 questions, first version",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,amide | sulfonamide | [NX3][CX3](=[OX1]).[NX3][SX4](=[OX1])(=[OX1]) | [NX3][CX3](=[OX1]) | [NX3][SX4](=[OX1])(=[OX1]) | [NX3][CX3](=[OX1])[#6] | [NX3][CX3](=[OX1])[#6].[NX3][SX4](=[OX1])(=[OX1]),False,"query_table, query_table, query_table, query_table, query_table, query_table, query_table",7,35.6,0.0204915039999999,,"100 molecules in the compounds table contain both an amide and a sulfonamide (using the named substructure definitions: amide = 1,843 compounds, sulfonamide = 337 compounds, overlap = 100).
+
+FINAL ANSWER: 100"
+"1. All 20 questions, first version",A,16,How many molecules contain a carboxylic acid or an ester (either one)?,count,250.0,250.0,True,"carboxylic_acid | ester | [CX3](=O)[OX2H1].[CX3](=O)[OX2][#6] | [$([CX3](=O)[OX2H1]),$([CX3](=O)[OX2][#6])] | [CX3](=O)[OX2H1].[CX3](=O)[OX2][#6]",False,"query_table, query_table, query_table, query_table, query_table",5,55.9,0.028259088,,"Carboxylic acid: 50 molecules. Ester: 203 molecules. Both (overlap): 3 molecules. Union = 50 + 203 − 3 = 250.
+
+FINAL ANSWER: 250"
+"1. All 20 questions, first version",A,17,What is the median curated pKi of molecules with a carboxylic acid group?,pki,6.747174079384505,6.747,True,carboxylic_acid | carboxylic_acid,False,"aggregate_table, query_table",2,11.5,0.011334664,,"There are 50 molecules with a carboxylic acid group in the dataset (measured, from the data). Their sorted curated pKi values give a median of the 25th and 26th values: (6.742 + 6.752) / 2 = 6.747.
+
+FINAL ANSWER: 6.747"
+"1. All 20 questions, first version",A,18,What is the median curated pKi of molecules with an ester but no carboxylic acid?,pki,7.309807537614964,7.31,True,ester | ester | carboxylic_acid | ester | carboxylic_acid | ester | carboxylic_acid,False,"compare_substructure, query_table, aggregate_table, query_table",4,61.2,0.0422906,,"The median curated pKi for molecules with an ester but no carboxylic acid is 7.31 (from the 200 matching compounds: the 100th and 101st ranked values are 7.308 and 7.312).
+
+FINAL ANSWER: 7.31"
+"1. All 20 questions, first version",A,19,What is the median curated pKi of molecules containing a ketone?,pki,7.4089353929735005,7.409,True,ketone,False,compare_substructure,1,3.9,0.002356024,,"The median curated pKi of the 423 molecules containing a ketone is **7.409** (measured, from the data).
+
+FINAL ANSWER: 7.409"
+"1. All 20 questions, first version",A,20,What is the median curated pKi of molecules containing a urea group?,pki,6.417950030261713,6.418,True,urea,False,compare_substructure,1,3.9,0.002386384,,FINAL ANSWER: 6.418
+"1. All 20 questions, first version",B,1,How many molecules contain a carboxylic acid group?,count,50.0,50.0,True,carboxylic_acid,False,query_table,1,2.6,0.001542552,,"50 molecules contain a carboxylic acid group.
+
+FINAL ANSWER: 50"
+"1. All 20 questions, first version",B,2,How many molecules contain an ester group?,count,203.0,203.0,True,ester,False,query_table,1,3.1,0.001475232,,FINAL ANSWER: 203
+"1. All 20 questions, first version",B,3,How many molecules contain a urea group?,count,88.0,88.0,True,urea,False,query_table,1,2.9,0.001546512,,FINAL ANSWER: 88
+"1. All 20 questions, first version",B,4,How many molecules contain a carbamate group?,count,34.0,34.0,True,carbamate,False,query_table,1,3.2,0.001597992,,FINAL ANSWER: 34
+"1. All 20 questions, first version",B,5,How many molecules contain a sulfone (not counting sulfonamides)?,count,89.0,15.0,False,sulfone | sulfonamide,False,query_table,1,3.5,0.001784464,,FINAL ANSWER: 15
+"1. All 20 questions, first version",B,6,How many molecules contain a sulfonamide?,count,337.0,337.0,True,sulfonamide,False,query_table,1,2.5,0.001553112,,"337 molecules contain a sulfonamide.
+
+FINAL ANSWER: 337"
+"1. All 20 questions, first version",B,7,How many molecules contain a nitrile?,count,77.0,77.0,True,nitrile,False,query_table,1,2.9,0.001531992,,FINAL ANSWER: 77
+"1. All 20 questions, first version",B,8,How many molecules contain a ketone?,count,423.0,423.0,True,ketone,False,query_table,1,2.9,0.001473912,,"423 molecules in the dataset contain a ketone.
+
+FINAL ANSWER: 423"
+"1. All 20 questions, first version",B,9,How many molecules contain a phenol (an OH directly on an aromatic ring)?,count,528.0,528.0,True,phenol,False,query_table,1,2.6,0.001553112,,"528 molecules contain a phenol (an OH directly on an aromatic ring), measured from the data.
+
+FINAL ANSWER: 528"
+"1. All 20 questions, first version",B,10,How many molecules contain an aliphatic alcohol (an OH on an sp3 carbon)?,count,393.0,393.0,True,[OX2H][CX4],False,query_table,1,7.7,0.00403348,,"The SMARTS `[OX2H][CX4]` (an OH oxygen bonded to an sp3 carbon) matches **393** molecules in the compounds table.
+
+FINAL ANSWER: 393"
+"1. All 20 questions, first version",B,11,"How many molecules have an NH2 attached directly to an aromatic ring, as in aniline?",count,20.0,20.0,True,[NH2][a],False,query_table,1,10.3,0.005602696,,"The SMARTS pattern for an NH2 directly bonded to an aromatic atom matches 20 molecules in the dataset.
+
+FINAL ANSWER: 20"
+"1. All 20 questions, first version",B,12,"How many molecules have an aliphatic primary amine (an NH2 on an sp3 carbon, not an amide)?",count,16.0,16.0,True,[NX3;H2][CX4],False,query_table,1,9.5,0.004899752,,"The SMARTS pattern `[NX3;H2][CX4]` (an NH₂ nitrogen bonded to an sp³ carbon, which excludes amides and anilines) matches **16 molecules** in the dataset.
+
+FINAL ANSWER: 16"
+"1. All 20 questions, first version",B,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1477.0,False,"[CX3](=O)[NX3;H1] | [CX3](=O)[NX3;H1][#6] | [CX3](=O)([#6,#1])[NX3;H1][#6] | [CX3](=O)([#6,#1])[NX3;H1][#6;!$(C=O)] | [CX3](=O)([#6,#1])[NX3;H1][#6;$(C=O)]",True,"query_table, query_table, query_table, query_table, query_table",5,76.8,0.0403623439999999,,"I counted molecules containing a true secondary amide (an amide N with exactly one N–H and one carbon substituent, excluding ureas, carbamates, and imides). Using the SMARTS `[CX3](=O)([#6,#1])[NX3;H1][#6;!$(C=O)]`, the matching set is 1,477 molecules (the two extra N–H carbonyl matches are succinimide-type imides, which are not secondary amides).
+
+FINAL ANSWER: 1477"
+"1. All 20 questions, first version",B,14,How many molecules have an alkyl aryl ether: an oxygen joining an aromatic ring to an sp3 carbon?,count,1186.0,1186.0,True,[a]-O-[CX4],False,query_table,1,6.6,0.003427248,,"The SMARTS pattern `[a]-O-[CX4]` (an aromatic atom bonded to an oxygen bonded to an sp³ carbon) matches **1,186** molecules in the compounds table.
+
+FINAL ANSWER: 1186"
+"1. All 20 questions, first version",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,amide | sulfonamide | [CX3](=O)[NX3].[SX4](=O)(=O)[NX3] | [CX3](=O)[NX3] | [SX4](=O)(=O)[NX3] | [#6][CX3](=O)[NX3] | [CX3](=O)[NX3][#6] | [#6][CX3](=O)[NX3].[SX4](=O)(=O)[NX3] | [#6][CX3](=O)[NX3][SX4](=O)(=O),True,"query_table, query_table, query_table, query_table, query_table, query_table, query_table, query_table, query_table",9,96.1,0.051537112,,"Using the strict amide definition (carbonyl carbon bonded to a carbon, so ureas/carbamates are excluded, matching the named ""amide"" group), 100 molecules contain both an amide and a sulfonamide.
+
+FINAL ANSWER: 100"
+"1. All 20 questions, first version",B,16,How many molecules contain a carboxylic acid or an ester (either one)?,count,250.0,250.0,True,carboxylic_acid | ester | carboxylic_acid,False,"query_table, query_table",2,15.1,0.008187344,,"The union is 50 with a carboxylic acid + 200 with an ester but no carboxylic acid = 250 molecules.
+
+FINAL ANSWER: 250"
+"1. All 20 questions, first version",B,17,What is the median curated pKi of molecules with a carboxylic acid group?,pki,6.747174079384505,6.747,True,carboxylic_acid,False,compare_substructure,1,6.6,0.003724248,,"The median curated pKi of molecules containing a carboxylic acid group is 6.747 (n = 50 molecules; 95% bootstrap CI for the mean 6.55–7.04).
+
+FINAL ANSWER: 6.747"
+"1. All 20 questions, first version",B,18,What is the median curated pKi of molecules with an ester but no carboxylic acid?,pki,7.309807537614964,7.31,True,ester | carboxylic_acid | ester | carboxylic_acid,False,"aggregate_table, aggregate_table",2,11.6,0.0106258239999999,,"The median curated pKi of molecules with an ester but no carboxylic acid is **7.31** (n = 200 molecules, from 47 papers).
+
+FINAL ANSWER: 7.31"
+"1. All 20 questions, first version",B,19,What is the median curated pKi of molecules containing a ketone?,pki,7.4089353929735005,7.409,True,ketone,False,compare_substructure,1,6.2,0.0034694879999999,,"The median curated pKi of molecules containing a ketone is 7.409 (423 molecules).
+
+FINAL ANSWER: 7.409"
+"1. All 20 questions, first version",B,20,What is the median curated pKi of molecules containing a urea group?,pki,6.417950030261713,6.418,True,urea,False,compare_substructure,1,3.9,0.002543464,,"The median curated pKi of molecules containing a urea group is 6.418.
+
+FINAL ANSWER: 6.418"
+"2. Q13 and Q15 three times, with the 'Clean' status",A,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1572.0,True,[CX3](=O)[NX3;H1] | amide | [CX3](=O)([#6])[NX3;H1] | [CX3](=O)([#6])[NX3] | [CX3](=O)([#6])[NX3;H2] | [CX3](=O)([#6])[NX3;H0],False,"query_table, query_table, query_table, query_table, query_table, query_table",6,48.8,0.026844048,,"The dataset's own ""amide"" definition corresponds to a carbonyl carbon bonded to both a carbon substituent and a nitrogen (excluding carbamates/ureas, which are separate substructures). Restricting that amide to a nitrogen bearing one hydrogen (secondary amide, N–H) gives:
+
+- Molecules with any amide: 1,843
+- Molecules with a secondary amide (amide N–H): **1,572**
+
+FINAL ANSWER: 1572"
+"2. Q13 and Q15 three times, with the 'Clean' status",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,101.0,False,amide | sulfonamide | [CX3](=O)[NX3].[SX4](=O)(=O)[NX3],False,"query_table, query_table, query_table",3,27.2,0.0138423119999999,,"The dataset has 101 molecules that contain both an amide and a sulfonamide (measured data; 1,843 contain an amide, 337 contain a sulfonamide).
+
+FINAL ANSWER: 101"
+"2. Q13 and Q15 three times, with the 'Clean' status",A,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1693.0,False,[NX3;H1]C(=O),False,query_table,1,4.8,0.002663936,,FINAL ANSWER: 1693
+"2. Q13 and Q15 three times, with the 'Clean' status",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,132.0,False,[#7][#6](=[#8]).[#7][#16](=[#8])(=[#8]) | amide | sulfonamide,False,"query_table, query_table, query_table",3,39.0,0.018064464,,FINAL ANSWER: 132
+"2. Q13 and Q15 three times, with the 'Clean' status",A,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1693.0,False,[CX3](=[OX1])[NX3H1],False,query_table,1,7.6,0.003720288,,FINAL ANSWER: 1693
+"2. Q13 and Q15 three times, with the 'Clean' status",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,[NX3][CX3](=[OX1]).[NX3][SX4](=[OX1])(=[OX1]) | [NX3][CX3](=[OX1])[#6].[SX4](=[OX1])(=[OX1])[NX3],False,"query_table, search_project, dataset_overview, read_project_document, read_project_document, query_table",6,31.7,0.024693592,,"The dataset's amide SMARTS is `[NX3][CX3](=[OX1])[#6]` and sulfonamide SMARTS is `[SX4](=[OX1])(=[OX1])[NX3]`; combining them with a `.` (both must match) gives **100 molecules**.
+
+FINAL ANSWER: 100"
+"2. Q13 and Q15 three times, with the 'Clean' status",B,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1572.0,True,[NX3;H1;$(NC(=O))] | [#6][CX3](=O)[NX3;H1],True,"query_table, query_table",2,27.8,0.01371568,,"I searched the `compounds` table using a SMARTS pattern for a secondary amide — an amide nitrogen carrying one hydrogen, `[NX3;H1]`, bonded to a carbonyl carbon that is itself attached to a carbon (so it excludes urea and carbamate nitrogens). The tool confirmed the pattern matches only the amide reference group.
+
+Matching molecules: **1,572**.
+
+FINAL ANSWER: 1572"
+"2. Q13 and Q15 three times, with the 'Clean' status",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,101.0,False,[CX3](=[OX1])[NX3].[SX4](=[OX1])(=[OX1])[NX3] | amide | sulfonamide,False,"query_table, query_table, query_table",3,47.5,0.0237985439999999,,"The dataset contains 101 molecules that have both an amide (C(=O)N) and a sulfonamide (S(=O)(=O)N) group (measured data, from `compounds`).
+
+FINAL ANSWER: 101"
+"2. Q13 and Q15 three times, with the 'Clean' status",B,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1479.0,False,[#6][CX3](=O)[NX3;H1][#6] | [NX3;H1][CX3](=O)[#6],False,"query_table, query_table",2,32.5,0.01759956,,"Molecules were matched with the SMARTS for a secondary amide (carbonyl carbon bonded to a carbon on one side and to an N–H on the other): `[#6][CX3](=O)[NX3;H1][#6]`. The tool confirmed it matches only the amide reference group.
+
+**1,479** molecules contain a secondary amide (N–H amide).
+
+FINAL ANSWER: 1479"
+"2. Q13 and Q15 three times, with the 'Clean' status",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,[NX3][CX3](=[OX1])[#6].[SX4](=[OX1])(=[OX1])[NX3] | amide | sulfonamide,False,"query_table, query_table, query_table",3,15.8,0.008551136,,"The combined SMARTS query (requiring both an amide fragment `[NX3][CX3](=[OX1])[#6]` and a sulfonamide fragment `[SX4](=[OX1])(=[OX1])[NX3]`) matched 100 molecules. For context, 1,843 molecules contain an amide and 337 contain a sulfonamide in this dataset.
+
+FINAL ANSWER: 100"
+"2. Q13 and Q15 three times, with the 'Clean' status",B,13,"How many molecules contain a secondary amide, i.e. an amide with an N-H?",count,1572.0,1572.0,True,[NX3H1][CX3](=O)[#6],False,query_table,1,15.3,0.007221104,,FINAL ANSWER: 1572
+"2. Q13 and Q15 three times, with the 'Clean' status",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,amide | sulfonamide | [NX3][CX3](=[OX1]).[SX4](=[OX1])(=[OX1])[NX3] | [NX3][CX3](=[OX1])[#6].[SX4](=[OX1])(=[OX1])[NX3] | [NX3][CX3](=[OX1])[#6].[S](=[OX1])(=[OX1])[NX3] | [NX3][CX3](=[OX1])[#6].[#16X4](=[OX1])(=[OX1])[#7X3] | [NX3][CX3](=[OX1])[#6].[SX4](=[OX1])(=[OX1])[NX3],False,"query_table, query_table, query_table, dataset_overview, describe_molecule, describe_molecule, describe_molecule, describe_molecule, describe_molecule, query_table, describe_molecule, describe_molecule, describe_molecule, describe_molecule, describe_molecule, describe_molecule, describe_molecule, describe_molecule, query_table, query_table, describe_molecule, describe_molecule, describe_molecule, describe_molecule, query_table",25,108.8,0.068195336,,"The molecules table contains **100** compounds that have both an amide and a sulfonamide (verified with a combined SMARTS that matches the dataset's named-substructure definitions for amide and sulfonamide).
+
+FINAL ANSWER: 100"
+"3. Q15 three times, each part of an A.B pattern checked (adopted)",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,amide | sulfonamide | [NX3][CX3](=[OX1]).[NX3][SX4](=[OX1])(=[OX1]) | sulfonamide | amide | amide | sulfonamide,False,"query_table, query_table, query_table, query_table, query_table",5,40.9,0.021168576,,"Both cross-checks agree: 337 molecules contain a sulfonamide, of which 237 do **not** contain an amide, leaving 100. Equivalently, 1,843 molecules contain an amide, of which 1,743 lack a sulfonamide, again leaving 100.
+
+FINAL ANSWER: 100"
+"3. Q15 three times, each part of an A.B pattern checked (adopted)",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,[CX3](=O)[NX3].[SX4](=O)(=O)[NX3] | amide | sulfonamide | [NX3][CX3](=O)[#6] | [SX4](=O)(=O)[NX3] | [NX3][CX3](=O)[#6].[SX4](=O)(=O)[NX3],False,"query_table, query_table, query_table, dataset_overview, query_table, query_table, query_table",7,47.4,0.026071584,,"The dataset contains **100 unique molecules** that have both an amide and a sulfonamide.
+
+FINAL ANSWER: 100"
+"3. Q15 three times, each part of an A.B pattern checked (adopted)",A,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,95.0,False,amide | sulfonamide | [NX3][CX3](=[OX1])[#6].[#6][SX4](=[OX1])(=[OX1])[NX3],False,"query_table, query_table, query_table",3,18.8,0.010042384,,"The dataset contains 95 molecules that have both an amide and a sulfonamide.
+
+FINAL ANSWER: 95"
+"3. Q15 three times, each part of an A.B pattern checked (adopted)",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,95.0,False,[NX3][CX3](=[OX1]).[NX3][SX4](=[OX1])(=[OX1]) | [NX3][CX3](=O)[#6].[NX3][SX4](=[OX1])(=[OX1])[#6],True,"query_table, query_table",2,21.1,0.01143252,,"I queried the compounds table for molecules matching both a true amide (`[NX3][CX3](=O)[#6]`, which excludes ureas and carbamates) and a sulfonamide (`[NX3][SX4](=[OX1])(=[OX1])[#6]`).
+
+- Matches containing both: **95**
+
+FINAL ANSWER: 95"
+"3. Q15 three times, each part of an A.B pattern checked (adopted)",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,amide | sulfonamide | amide | sulfonamide | [CX3](=[OX1])[NX3].[SX4](=[OX1])(=[OX1])[NX3],True,"query_table, query_table, query_table, query_table",4,16.1,0.009087408,,"Using the named substructures: 1,843 molecules contain an amide; 1,743 of those contain no sulfonamide. So 1,843 − 1,743 = 100 molecules contain both an amide and a sulfonamide.
+
+FINAL ANSWER: 100"
+"3. Q15 three times, each part of an A.B pattern checked (adopted)",B,15,How many molecules contain both an amide and a sulfonamide?,count,100.0,100.0,True,[NX3][CX3](=[OX1]).[SX4](=[OX1])(=[OX1])[NX3] | amide | sulfonamide | [#6][CX3](=[OX1])[NX3].[SX4](=[OX1])(=[OX1])[NX3],True,"query_table, query_table, query_table, query_table",4,19.7,0.015676584,,"The stricter SMARTS that matches only an amide plus a sulfonamide (excluding urea and carbamate) returns 100 molecules.
+
+FINAL ANSWER: 100"

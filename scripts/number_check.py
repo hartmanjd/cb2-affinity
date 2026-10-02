@@ -7,7 +7,8 @@ written (7.43 matches 7.4318; 85% matches a similarity of 0.85). Then:
 - green:  the number matches a tool value; it was looked up or computed by code
 - yellow: it matches nothing; the model produced it itself (its own arithmetic, rounding or recollection)
 - none:   numbers the person typed in their question, small counts (below 10, written without decimals,
-          such as "2 pairs"), and anything inside an identifier or code (CHEMBL600647, `pki_range_ge_1.0`)
+          such as "2 pairs"), conventions (the 10 in "10^0.31", the 95% in "95% CI"), and anything inside an
+          identifier or code (CHEMBL600647, `pki_range_ge_1.0`)
 
 Green means "this value appears in a tool result", not "this sentence uses it correctly"; a model could quote
 a real number in the wrong place. Sentences the model itself labels as general knowledge are tinted yellow
@@ -24,7 +25,7 @@ SUPERSCRIPTS = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻", "0123456789-")
 # a Unicode minus, thousands separators, decimals, scientific notation written as "1.02×10⁻⁵", and a "%".
 NUMBER = re.compile(
     r"(?<![\w.])(?P<sign>[−-])?(?P<digits>\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)"
-    r"(?:\s*[×x]\s*10(?P<exponent>[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+))?(?P<percent>\s?%)?(?![\w])")
+    r"(?:\s*[×x]\s*10(?P<exponent>[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+))?(?P<percent>\s?%)?(?!(?!x\b)\w)")
 CODE = re.compile(r"```.*?```|`[^`\n]*`", re.S)
 
 
@@ -87,7 +88,11 @@ def classify(text, values, given=()):
         # A numbered-list marker ("10. " at the start of a line) is not a number in the answer.
         line_start = text.rfind("\n", 0, match.start()) + 1
         list_marker = not text[line_start:match.start()].strip() and text[match.end():match.end() + 2] in (". ", ".\n")
-        if small_count or list_marker or any(abs(value - g) <= 0.5 * 10 ** -max(decimals, 0) for g in given_values):
+        # Conventions, not results: the base of a power ("10^0.31") and a confidence level ("95% CI").
+        after = text[match.end():match.end() + 15].lower()
+        convention = after.startswith("^") or (match.group("percent") and value in (90, 95, 99)
+                                               and re.match(r"\W*(ci\b|conf|interval|level)", after))
+        if small_count or list_marker or convention or any(abs(value - g) <= 0.5 * 10 ** -max(decimals, 0) for g in given_values):
             kind = None
         else:
             kind = "tool" if matches(value, decimals, bool(match.group("percent")), values) else "model"

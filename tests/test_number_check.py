@@ -42,6 +42,11 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(counts, {"tool": 0, "model": 0})
         self.assertNotIn("<span", highlighted)
 
+    def test_conventions_are_left_plain_and_x_means_times(self):
+        found = kinds("the 95% CI, at the 95% level, 10^0.31 is 2.5x weaker; 95% of papers")
+        self.assertEqual(found, {"95%": "model", "10": None, "0.31": "model", "2.5": "model"})
+        self.assertEqual([kind for _, _, kind in number_check.classify("95% CI and 95% of papers", [])], [None, "model"])
+
     def test_highlight_marks_both_kinds_and_labelled_general_knowledge(self):
         highlighted, counts = number_check.highlight(
             "The median is 7.43. From general knowledge, CB2 has 360 amino acids. It is 2.5-fold.", TOOL)
