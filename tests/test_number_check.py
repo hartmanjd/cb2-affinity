@@ -1,4 +1,4 @@
-"""Check the green/yellow number highlighting: what counts as a tool number, a model number, or neither."""
+"""Check the yellow number highlighting: what counts as a tool number, a model number, or neither."""
 from pathlib import Path
 import json
 import os
@@ -47,12 +47,12 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(found, {"95%": "model", "10": None, "0.31": "model", "2.5": "model"})
         self.assertEqual([kind for _, _, kind in number_check.classify("95% CI and 95% of papers", [])], [None, "model"])
 
-    def test_highlight_marks_both_kinds_and_labelled_general_knowledge(self):
+    def test_only_the_models_own_numbers_and_labelled_general_knowledge_are_highlighted(self):
         highlighted, counts = number_check.highlight(
             "The median is 7.43. From general knowledge, CB2 has 360 amino acids. It is 2.5-fold.", TOOL)
         self.assertEqual(counts, {"tool": 1, "model": 2})
-        self.assertIn(f"background-color:{number_check.GREEN};border-radius:3px;padding:0 2px\">7.43</span>", highlighted)
-        self.assertIn("2.5</span>", highlighted)
+        self.assertIn("The median is 7.43.", highlighted)   # A tool number is left plain.
+        self.assertIn(f"background-color:{number_check.YELLOW};border-radius:3px;padding:0 2px\">2.5</span>", highlighted)
         # The labelled sentence is tinted as a whole, and the decimal point in 7.43 did not end a sentence.
         self.assertEqual(highlighted.count(f"background-color:{number_check.YELLOW};border-radius:3px\">"), 1)
         self.assertIn("From general knowledge, CB2 has", highlighted)
@@ -81,9 +81,9 @@ class AppTests(unittest.TestCase):
             app.chat_input[0].set_value("What is the pKi of nabilone?").run()
             self.assertEqual(len(app.exception), 0)
             answer = next(m.value for m in app.markdown if "7.43" in m.value and "<span" in m.value)
-            self.assertIn(f"{number_check.GREEN};border-radius:3px;padding:0 2px\">7.43", answer)
+            self.assertIn("Its pKi is 7.43,", answer)   # The tool's number is left plain.
             self.assertIn(f"{number_check.YELLOW};border-radius:3px;padding:0 2px\">2.5", answer)
-            self.assertTrue(any("numbers match a tool result" in c.value for c in app.caption))
+            self.assertFalse(any("written by the language model" in c.value for c in app.caption))   # No key.
 
 
 if __name__ == "__main__":

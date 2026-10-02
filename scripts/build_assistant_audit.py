@@ -296,6 +296,34 @@ def audit_sheets(root=ROOT):
                    "tables": [("By round and variant", totals, [58, 18, 9, 8, 8, 8], None),
                               ("Every answer", detail, [7, 8, 5, 60, 10, 10, 10, 8, 9, 70], "Outcome")]})
 
+    near = read("near_miss_ab_test.csv")
+    NEAR_MISS_ABOUT = (
+        "'What is the CB2 Ki of <ligand>?' for 20 standard cannabinoid ligands, answer key from PubChem's structure "
+        "for each name matched to the recorded measurements (stereo ignored): 14 in the dataset, 4 with every "
+        "measurement removed for disagreeing, 3 never measured (JWH-073 is JWH-018 with one carbon fewer). Without "
+        "the changes the assistant answered 'not in data' for compounds that are there: names are stored for few "
+        "molecules and with their punctuation ('Sr-144528'), and it gave up after a name search or wrote a SMILES "
+        "from memory with a substituent misplaced. B compares names on letters and digits only, asks for a SMILES "
+        "retry after an unknown name, and offers recorded molecules with the same formula or Tanimoto >= 0.9 when a "
+        "SMILES has no exact match. Round 2: 13/20 against 19/20, median 16.0 s against 11.3 s. The remaining miss "
+        "(L-759,656) is the model's own memory: it recalls L-759,656 as L-759,633's structure, and in one run chose "
+        "it after looking up the right one; both variants miss it. Near misses were offered for JWH-073 in every B "
+        "run and rejected each time. Adopted.")
+    totals = pd.DataFrame([(round_name, "A: as before" if v == "A" else "B: name matching and near misses",
+                            f"{int(g['correct'].sum())}/{len(g)}", int(g["near_miss_shown"].sum()),
+                            round(float(g["seconds"].median()), 1), round(float(g["seconds"].mean()), 1),
+                            round(float(g["cost_usd"].sum()), 3)) for (round_name, v), g in near.groupby(["round", "variant"])],
+                          columns=["Round", "Variant", "Correct", "Near misses shown", "Median s", "Mean s", "Cost $"])
+    detail = pd.DataFrame([(r["round"].split(".")[0], r["variant"], r["number"], r["question"], str(r["expected"]), r["answer"],
+                            "correct" if r["correct"] else "wrong", "yes" if r["near_miss_shown"] else "", r["seconds"],
+                            tools_used(r["tools"])) for r in near.to_dict("records")],
+                          columns=["Round", "Variant", "Q", "Question", "Expected", "Answer", "Outcome", "Near miss shown",
+                                   "Seconds", "Tools used"])
+    sheets.append({"name": "Near-miss A-B test",
+                   "about": NEAR_MISS_ABOUT,
+                   "tables": [("By round and variant", totals, [60, 30, 9, 10, 9, 8, 8], None),
+                              ("Every answer", detail, [7, 8, 5, 45, 22, 12, 10, 10, 9, 70], "Outcome")]})
+
     # The saved run names start with the order the runs were made in ("1. ...", "2. ..."). Here the rows are
     # listed best first instead (the run after the speed work leads), so the order numbers are dropped rather
     # than renumbered: a "1." on a run that came second would misstate the record.

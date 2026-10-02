@@ -1,23 +1,23 @@
-"""Mark which numbers in an answer came from a tool (green) and which the language model wrote itself (yellow).
+"""Highlight, in yellow, the numbers in an answer that the language model wrote itself rather than took from a tool.
 
 After the assistant answers, every number in its reply is compared with every number in the tool results
 of the conversation so far. A number counts as matching when it equals a tool value at the precision it is
 written (7.43 matches 7.4318; 85% matches a similarity of 0.85). Then:
 
-- green:  the number matches a tool value; it was looked up or computed by code
+- plain:  the number matches a tool value; it was looked up or computed by code
 - yellow: it matches nothing; the model produced it itself (its own arithmetic, rounding or recollection)
 - none:   numbers the person typed in their question, small counts (below 10, written without decimals,
           such as "2 pairs"), conventions (the 10 in "10^0.31", the 95% in "95% CI"), and anything inside an
           identifier or code (CHEMBL600647, `pki_range_ge_1.0`)
 
-Green means "this value appears in a tool result", not "this sentence uses it correctly"; a model could quote
-a real number in the wrong place. Sentences the model itself labels as general knowledge are tinted yellow
+An unhighlighted number means "this value appears in a tool result", not "this sentence uses it correctly"; a
+model could quote a real number in the wrong place. Only yellow is drawn: marking tool numbers too (green, until
+2026-10-02) made answers busy, and the person needs to see only the numbers to check. Sentences the model itself labels as general knowledge are tinted yellow
 too, since the system prompt requires that label for claims not taken from the data.
 """
 import json
 import re
 
-GREEN = "rgba(46, 160, 67, 0.20)"
 YELLOW = "rgba(234, 179, 8, 0.30)"
 SUPERSCRIPTS = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻", "0123456789-")
 
@@ -136,8 +136,8 @@ def highlight(answer, results, given=()):
         for start, end, number_kind in classify(piece, values, given):
             if number_kind:
                 counts[number_kind] += 1
-                colour = GREEN if number_kind == "tool" else YELLOW
-                tags += [(start, 3, f'<span style="background-color:{colour};border-radius:3px;padding:0 2px">'),
+            if number_kind == "model":
+                tags += [(start, 3, f'<span style="background-color:{YELLOW};border-radius:3px;padding:0 2px">'),
                          (end, 0, "</span>")]
         for start, end in general_knowledge_sentences(piece):
             tags += [(start, 2, f'<span style="background-color:{YELLOW};border-radius:3px">'), (end, 1, "</span>")]

@@ -212,6 +212,30 @@ class ToolTests(unittest.TestCase):
         self.assertIn("amide, urea, carbamate", both["warning"])
         self.assertEqual(assistant.pattern_check("c1ccccc1")["matches_reference_groups"], [])   # Rings do not "match" phenol.
 
+    def test_names_match_without_hyphens_spaces_or_commas(self):
+        # ChEMBL stores "Sr-144528" and "Win-552122"; people write SR144528 and WIN 55,212-2.
+        for name in ("SR144528", "sr 144528", "WIN 55,212-2"):
+            result = json.loads(assistant.run_tool(DATA, "lookup_compound", {"identifier": name})[0])
+            self.assertTrue(result["removed_measurements"], name)
+        requests = assistant.prefetch_requests(DATA, "Compare SR144528 and WIN 55,212-2")
+        self.assertIn(("lookup_compound", {"identifier": "CHEMBL381689"}), requests)
+        self.assertIn(("lookup_compound", {"identifier": "CHEMBL188"}), requests)
+
+    def test_a_near_miss_smiles_points_to_the_recorded_molecule(self):
+        # SR144528 written from memory with its chlorine and methyl swapped: no exact match, but its isomer is offered.
+        swapped = "Cc1ccc(Cn2nc(C(=O)NC3C4(C)CCC(C4)C3(C)C)cc2-c2ccc(C)c(Cl)c2)cc1"
+        result = json.loads(assistant.run_tool(DATA, "lookup_compound", {"identifier": swapped})[0])
+        self.assertFalse(result["found"])
+        first = result["possible_intended_molecules"][0]
+        self.assertEqual((first["chembl_ids"], first["same_formula"], first["in_modeling_dataset"]), ("CHEMBL381689", True, False))
+        self.assertEqual(first["removal_reasons"], ["pki_range_ge_1.0"])
+        self.assertTrue(first["difference_from_query"].startswith("same formula"))
+        # Asked by name, a missing name points to a SMILES retry; a homologue is offered with its difference shown.
+        self.assertIn("call lookup_compound again with its SMILES",
+                      json.loads(assistant.run_tool(DATA, "lookup_compound", {"identifier": "AM630"})[0])["message"])
+        jwh_073 = json.loads(assistant.run_tool(DATA, "describe_molecule", {"smiles": "CCCCn1cc(C(=O)c2cccc3ccccc23)c2ccccc21"})[0])
+        self.assertEqual(jwh_073["possible_intended_molecules"][0]["difference_from_query"], "+CH2 (a different formula)")
+
     def test_group_composition_reports_shares_not_one_example(self):
         result = json.loads(assistant.run_tool(DATA, "group_composition", {"substructure": "[a]-[CX4H1]-c1ccccc1"})[0])
         self.assertEqual(result["n_molecules"], 73)
