@@ -254,12 +254,19 @@ def audit_sheets(root=ROOT):
                    "tables": [("By variant", totals, [24, 10, 10, 10, 10, 10], None),
                               ("Every answer", detail, [9, 6, 5, 55, 22, 22, 10, 8, 9, 9], "Outcome")]})
 
-    table = pd.DataFrame([(run, group["model"].iloc[0], group["runs_on"].iloc[0], group["profile"].iloc[0]) + summary(group)
+    # The saved run names start with the order the runs were made in ("1. ...", "2. ..."). Here the rows are
+    # listed best first instead (the run after the speed work leads), so the order numbers are dropped rather
+    # than renumbered: a "1." on a run that came second would misstate the record.
+    table = pd.DataFrame([(run.split(". ", 1)[-1], group["model"].iloc[0], group["runs_on"].iloc[0],
+                           group["profile"].iloc[0]) + summary(group)
                           for run, group in history.groupby("run", sort=False)],
                          columns=["Run", "Model", "Runs on", "Prompt profile", "Correct", "Asked", "Mean s", "Median s",
                                   "Slowest s", "Cost $"])
+    after = table["Run"].str.contains("after the speed work")
+    table = pd.concat([table[after], table[~after]], ignore_index=True)
     sheets.append({"name": "Model history",
-                   "about": "Earlier runs that chose DeepSeek: before and after the speed work, and two local models.",
+                   "about": "Earlier runs that chose DeepSeek: after and before the speed work, and two local models. "
+                            "Listed best first; the order the runs were made in is in results/assistant_model_trials.csv.",
                    "tables": [(None, table, [48, 18, 10, 12, 9, 8, 9, 9, 10, 9], None)]})
 
     table = pd.DataFrame([(run, group["question_set"].iloc[0], group["time_of_day"].iloc[0]) + summary(group)
