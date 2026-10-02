@@ -273,6 +273,29 @@ def audit_sheets(root=ROOT):
                    "tables": [("By variant", totals, [34, 16, 10, 10], None),
                               ("Every answer", detail, [9, 6, 10, 9, 30, 120], "Outcome")]})
 
+    patterns = read("pattern_check_ab_test.csv")
+    totals = pd.DataFrame([(round_name, "A: no check" if v == "A" else "B: pattern check",
+                            f"{int(g['correct'].sum())}/{len(g)}", int(g["warned"].sum()), round(float(g["seconds"].mean()), 1),
+                            round(float(g["cost_usd"].sum()), 3)) for (round_name, v), g in patterns.groupby(["round", "variant"])],
+                          columns=["Round", "Variant", "Correct", "Warned", "Mean s", "Cost $"])
+    detail = pd.DataFrame([(r["round"].split(".")[0], r["variant"], r["number"], r["question"], r["expected"], r["answer"],
+                            "correct" if r["correct"] else "wrong", "yes" if r["warned"] else "", r["seconds"],
+                            r["patterns"] if isinstance(r["patterns"], str) else "") for r in patterns.to_dict("records")],
+                          columns=["Round", "Variant", "Q", "Question", "Expected", "Answer", "Outcome", "Warned", "Seconds",
+                                   "Patterns the LLM sent"])
+    sheets.append({"name": "Pattern check A-B test",
+                   "about": "Functional-group questions with answers counted by RDKit, side by side without and with the "
+                            "pattern check (each SMARTS the LLM writes is matched against small reference molecules; the "
+                            "tool result warns when it matches more than one group and says 'Clean' when it matches one). "
+                            "Round 1: the LLM used named groups for most questions; Q5 was worded ambiguously and both "
+                            "variants read it the same other way (reworded since). Without the check, a loose amide "
+                            "pattern counted ureas and carbamates (Q13: 1,693 for 1,572) and nothing flagged it; with "
+                            "it, the error was caught. Rounds 2-3 fixed over-refinement after a warning and checked each "
+                            "part of an 'A.B' pattern. Remaining misses in both variants are narrower definitions "
+                            "(acyl hydrazides as amides, sulfamides as sulfonamides), not loose patterns. Adopted.",
+                   "tables": [("By round and variant", totals, [58, 18, 9, 8, 8, 8], None),
+                              ("Every answer", detail, [7, 8, 5, 60, 10, 10, 10, 8, 9, 70], "Outcome")]})
+
     # The saved run names start with the order the runs were made in ("1. ...", "2. ..."). Here the rows are
     # listed best first instead (the run after the speed work leads), so the order numbers are dropped rather
     # than renumbered: a "1." on a run that came second would misstate the record.

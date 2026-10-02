@@ -152,6 +152,22 @@ FUNCTIONAL_GROUPS = {
     "long_alkyl_chain_c5": "[CH2][CH2][CH2][CH2][CH3]",
 }
 
+# One small, unambiguous molecule per functional group, used to check patterns the LLM writes itself.
+# "C(=O)O" written for a carboxylic acid also matches an ester and a carbamate; the check reports that in
+# the tool result, where the LLM and the person both see it. Groups not in FUNCTIONAL_GROUPS carry their
+# own SMARTS. A pattern counts as matching a group only if it covers a heteroatom of that group, so a
+# benzene ring does not "match" phenol.
+REFERENCE_MOLECULES = {
+    "carboxylic_acid": "CC(=O)O", "ester": "CC(=O)OC", "amide": "CC(=O)NC", "urea": "CNC(=O)NC",
+    "carbamate": "CNC(=O)OC", "sulfonamide": "CS(=O)(=O)NC", "sulfone": "CS(=O)(=O)C",
+    "primary_amine": "CCN", "secondary_amine": "CCNC", "tertiary_amine": "CCN(C)C", "hydroxyl": "CCO",
+    "phenol": "Oc1ccccc1", "ether": "CCOC", "ketone": "CC(=O)C", "nitrile": "CC#N",
+    "aromatic amine (aniline NH2)": ("Nc1ccccc1", "[NX3;H2]c"),
+    "aldehyde": ("CCC=O", "[CX3H1](=O)[#6]"),
+}
+PATTERN_ARGUMENTS = ("pattern", "substructure", "exclude_substructure", "terminal_group", "highlight_substructure")
+CHECK_PATTERNS = True   # Switched off only by scripts/pattern_check_ab_test.py, to measure what the check changes.
+
 # Named ring systems, used to name scaffolds from RDKit's analysis instead of letting the LLM read
 # SMILES. A name is given only when its pattern covers exactly the ring atoms of one ring system
 # (fused rings count as one system). More specific patterns come first: 4-quinolone before quinoline.
@@ -394,6 +410,58 @@ def pattern_from_text(pattern):
         raise ValueError(f"{pattern!r} is not a known functional-group name, valid SMARTS or SMILES. "
                          f"Known names: {', '.join(FUNCTIONAL_GROUPS)}")
     return query
+
+
+def reference_groups():
+    """[(group name, reference molecule, heteroatom indices that define the group)], built once."""
+    if not hasattr(reference_groups, "cache"):
+        groups = []
+        for name, entry in REFERENCE_MOLECULES.items():
+            smiles, smarts = entry if isinstance(entry, tuple) else (entry, FUNCTIONAL_GROUPS[name])
+            molecule = Chem.MolFromSmiles(smiles)
+            defining = {i for match in molecule.GetSubstructMatches(Chem.MolFromSmarts(smarts)) for i in match
+                        if molecule.GetAtomWithIdx(i).GetAtomicNum() != 6}
+            groups.append((name, molecule, defining))
+        reference_groups.cache = groups
+    return reference_groups.cache
+
+
+def pattern_parts(pattern):
+    """A SMARTS split at its top-level dots: "A.B" means A and B anywhere in one molecule, so each is checked alone."""
+    parts, depth, current = [], 0, ""
+    for character in str(pattern):
+        depth += {"[": 1, "(": 1, "]": -1, ")": -1}.get(character, 0)
+        if character == "." and depth == 0:
+            parts.append(current)
+            current = ""
+        else:
+            current += character
+    return [part for part in parts + [current] if part.strip()]
+
+
+def pattern_check(pattern):
+    """Which reference functional groups a pattern matches; None for a named substructure (already checked)."""
+    if str(pattern).strip().lower() in FUNCTIONAL_GROUPS:
+        return None
+    pattern_from_text(pattern)   # A readable error for an invalid pattern, before it is split.
+    parts = pattern_parts(pattern)
+    matches = {}
+    for part in parts:
+        query = pattern_from_text(part)
+        matches[part] = [name for name, molecule, defining in reference_groups()
+                         if any(defining & set(match) for match in molecule.GetSubstructMatches(query))]
+    check = {"pattern": pattern, "matches_reference_groups": matches[parts[0]] if len(parts) == 1 else matches}
+    loose = {part: groups for part, groups in matches.items() if len(groups) > 1}
+    if loose:
+        check["warning"] = ("; ".join(f"{part!r} matches {len(groups)} different functional groups ({', '.join(groups)})"
+                                      for part, groups in loose.items())
+                            + ". If the question is about only one of them, repeat the call once with that named "
+                              "substructure or a stricter SMARTS, and say which pattern the answer uses.")
+    elif any(matches.values()):
+        # Without this, a warned LLM kept tightening an already-correct pattern (A/B test: up to 9 rewrites).
+        found = ", ".join(groups[0] for groups in matches.values() if groups)
+        check["status"] = f"Clean: matches only {found} among the reference groups. No further refinement is needed."
+    return check
 
 
 def compute_descriptors(molecule):
@@ -1423,6 +1491,9 @@ def run_tool(data, name, arguments):
         if name not in TOOL_FUNCTIONS:
             raise ValueError(f"There is no tool named {name!r}")
         result = TOOL_FUNCTIONS[name](data, **arguments)
+        checks = [pattern_check(arguments[key]) for key in PATTERN_ARGUMENTS if CHECK_PATTERNS and arguments.get(key)]
+        if isinstance(result, dict) and any(checks):
+            result["pattern_check"] = [check for check in checks if check]
     except Exception as error:  # Any tool failure becomes a message the LLM can correct.
         result = {"error": f"{type(error).__name__}: {error}"}
     images = result.pop("_images", []) if isinstance(result, dict) else []

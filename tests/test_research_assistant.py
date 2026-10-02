@@ -198,6 +198,20 @@ class ToolTests(unittest.TestCase):
                                                if row["linker_atoms"] else "[a]-c1ccccc1")
             self.assertEqual(matched, int(mask.sum()))          # Every SMARTS match is in exactly one column.
 
+    def test_loose_patterns_are_flagged_in_the_tool_result(self):
+        # "C(=O)O" written for an acid also matches esters and carbamates; the named group is not checked.
+        result = json.loads(assistant.run_tool(DATA, "compare_substructure", {"pattern": "C(=O)O"})[0])
+        self.assertEqual(result["pattern_check"][0]["matches_reference_groups"], ["carboxylic_acid", "ester", "carbamate"])
+        self.assertIn("warning", result["pattern_check"][0])
+        self.assertNotIn("pattern_check", json.loads(assistant.run_tool(DATA, "compare_substructure",
+                                                                        {"pattern": "carboxylic_acid"})[0]))
+        # A strict pattern is reported clean, and each part of "A.B" is checked on its own.
+        self.assertIn("status", assistant.pattern_check("C(=O)[OH]"))
+        both = assistant.pattern_check("[CX3](=O)[NX3].[SX4](=O)(=O)[NX3]")
+        self.assertEqual(both["matches_reference_groups"]["[SX4](=O)(=O)[NX3]"], ["sulfonamide"])
+        self.assertIn("amide, urea, carbamate", both["warning"])
+        self.assertEqual(assistant.pattern_check("c1ccccc1")["matches_reference_groups"], [])   # Rings do not "match" phenol.
+
     def test_group_composition_reports_shares_not_one_example(self):
         result = json.loads(assistant.run_tool(DATA, "group_composition", {"substructure": "[a]-[CX4H1]-c1ccccc1"})[0])
         self.assertEqual(result["n_molecules"], 73)
