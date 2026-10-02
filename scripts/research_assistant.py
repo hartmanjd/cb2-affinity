@@ -995,7 +995,7 @@ def find_linkers(data, terminal_group, core="[a]", max_linker_atoms=5, filters=N
     core_smarts = Chem.MolToSmarts(core_query)
     lengths = range(0, max(0, min(int(max_linker_atoms), 8)) + 1)
     frame = select_compounds(data, filters)
-    rows, examples = [], {}
+    rows, examples, previous = [], {}, None
     for length in lengths:
         chain = "-".join(["[CX4]"] * length)
         query = Chem.MolFromSmarts(core_smarts + ("-" + chain if chain else "") + "-" + terminal_smarts)
@@ -1021,6 +1021,12 @@ def find_linkers(data, terminal_group, core="[a]", max_linker_atoms=5, filters=N
                      "mean_ci95": mean_interval(values), "median_pki": clean_value(values.median()) if len(values) else None,
                      "min_pki": clean_value(values.min()) if len(values) else None,
                      "max_pki": clean_value(values.max()) if len(values) else None})
+        # The step from the previous length, computed rather than judged by eye: two mean intervals can
+        # overlap while the difference between the means is still clearly different from zero.
+        if previous is not None and len(values) >= 2 and len(previous) >= 2:
+            rows[-1]["mean_difference_vs_previous_length"] = clean_value(values.mean() - previous.mean())
+            rows[-1]["mean_difference_vs_previous_length_ci95"] = bootstrap_difference_interval(values, previous, np.mean)
+        previous = values if len(values) else None
         if genuine_rows:
             best = values.idxmax()
             examples[length] = {"smiles": frame.at[best, "smiles"], "pki": clean_value(frame.at[best, "pki"])}
@@ -1032,7 +1038,12 @@ def find_linkers(data, terminal_group, core="[a]", max_linker_atoms=5, filters=N
                         "ring (a real flexible chain) and is what the statistics describe. n_ring_path_only counts "
                         "molecules matched only through atoms inside a fused ring system: those are NOT linkers of "
                         "that length and are excluded. A length with few genuine molecules, or n_papers of 1-2, "
-                        "cannot support a claim about linker-length SAR."),
+                        "cannot support a claim about linker-length SAR. To compare two lengths, quote "
+                        "mean_difference_vs_previous_length and its ci95: if that interval excludes 0 the averages "
+                        "really differ, even when the two mean_ci95 overlap. Do not judge a difference between "
+                        "group averages against the ~0.54 pKi single-measurement noise floor; averages of many "
+                        "molecules are far more precise than one measurement. A real average difference across "
+                        "the whole dataset can still be confounded by which series use which linker."),
     }
 
 

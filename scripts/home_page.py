@@ -10,6 +10,8 @@ import json
 
 import pandas as pd
 
+import number_check
+
 # Chart colours from the data-visualisation guide's validated reference palette: one accent
 # (blue) for the model the chart is about, its muted grey for the rest, and ink for each theme.
 COLOURS = {"light": {"page": "#ffffff", "accent": "#2a78d6", "outline": "#184f95", "muted": "#898781", "ink": "#0b0b0b", "secondary": "#52514e"},
@@ -383,6 +385,11 @@ def render(st, data, root, draw_png):
         "inputs and raw result.\n"
         "- **Every claim is labelled** as measured (from the data), predicted (from the model) or general "
         "knowledge (from the language model, worth checking).\n"
+        f"- **Every number in an answer is checked by code.** Numbers that match what a tool returned are "
+        f"<span style=\"background-color:{number_check.GREEN};border-radius:3px;padding:0 3px\">highlighted green</span>; "
+        f"numbers the language model wrote itself (its own arithmetic or recollection), and sentences it labels as "
+        f"general knowledge, are <span style=\"background-color:{number_check.YELLOW};border-radius:3px;padding:0 3px\">"
+        f"highlighted yellow</span>, so you know which to double-check.\n"
         "- **Every number carries its uncertainty**: confidence intervals, prediction intervals and the range lab "
         "measurements themselves vary over.\n"
         "- **The model is never asked to read a structure.** Formulas, ring names and stereochemistry come from "
@@ -391,7 +398,8 @@ def render(st, data, root, draw_png):
         f"- **It is tested against answers it could not have guessed**: [{chemistry[0]}/{chemistry[1]} chemistry "
         f"questions and {dataset[0]}/{dataset[1]} questions about the data](#{AUDIT_ANCHOR}) correct, and every change "
         "to the assistant was measured before it was kept. Follow the link to the full audit below: every question, "
-        "how its true answer was computed, the answer given, and every condition held fixed.")
+        "how its true answer was computed, the answer given, and every condition held fixed.",
+        unsafe_allow_html=True)   # Only for the two colour samples above, which this code writes itself.
     st.markdown(
         "Language models still make mistakes. The point is not that this one cannot, but that when it does, you "
         "can see exactly where.")

@@ -43,6 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import research_assistant as assistant  # noqa: E402
 import free_credit  # noqa: E402
 import home_page  # noqa: E402
+import number_check  # noqa: E402
 
 PUBLIC_DEMO = os.environ.get("ASSISTANT_PUBLIC_DEMO", "").lower() in ("1", "true", "yes")
 
@@ -101,12 +102,38 @@ def show_tool(call):
         st.image(png)
 
 
+def highlight_answer(entry):
+    """Mark the answer's numbers: green if a tool returned them in this conversation, yellow if the model wrote
+    them itself (see number_check.py). Numbers from the person's own questions are left plain."""
+    earlier = st.session_state.display
+    results = [call["result"] for e in earlier for call in e.get("tools", [])] + [c["result"] for c in entry["tools"]]
+    questions = [e["text"] for e in earlier if e["role"] == "user"]
+    entry["highlighted"], entry["counts"] = number_check.highlight(entry["text"], results, questions)
+
+
+def number_key(counts):
+    # The legend under each answer, with the same two colours as the highlights.
+    swatch = '<span style="background-color:{};border-radius:3px;padding:0 4px">{}</span>'
+    return (f"{swatch.format(number_check.GREEN, counts['tool'])} numbers match a tool result · "
+            f"{swatch.format(number_check.YELLOW, counts['model'])} written by the language model itself, "
+            "so check them")
+
+
+def show_answer(entry):
+    if entry.get("highlighted") is not None:
+        st.markdown(entry["highlighted"], unsafe_allow_html=True)
+        if entry["counts"]["tool"] or entry["counts"]["model"]:
+            st.caption(number_key(entry["counts"]), unsafe_allow_html=True)
+    else:
+        st.markdown(entry["text"])
+
+
 def show_entry(entry):
     with st.chat_message(entry["role"]):
         for call in entry.get("tools", []):
             show_tool(call)
         if entry.get("text"):
-            st.markdown(entry["text"])
+            show_answer(entry) if entry["role"] == "assistant" else st.markdown(entry["text"])
         if entry.get("cost"):
             st.caption(entry["cost"])
 
@@ -249,7 +276,8 @@ if question:
             ledger.charge(visitor, cost)
         if tokens:
             entry["cost"] = f"{tokens:,} tokens · ${cost:.4f} · {time.time() - started:.1f} s"
-        st.markdown(entry["text"])
+        highlight_answer(entry)
+        show_answer(entry)
         if entry.get("cost"):
             st.caption(entry["cost"])
     st.session_state.display.append(entry)

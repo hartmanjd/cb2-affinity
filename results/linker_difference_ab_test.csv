@@ -1,0 +1,134 @@
+variant,repeat,question,answer,seconds,tools,cost_usd
+A,1,How does binding change as the carbon chain between an aromatic ring and a phenyl group gets longer? How much should I trust that trend?,"## The linker-length trend (measured)
+
+I used `find_linkers` to count the number of **sp³ carbons between any aromatic atom and a terminal phenyl group** (0 = phenyl directly attached; 1 = a one-carbon ""benzyl-type"" chain, etc.). Molecules matched only *through* fused-ring atoms were excluded, because those are ring paths, not flexible chains.
+
+| Linker atoms (sp³ C) | n molecules | n papers | mean pKi (95% CI) | median pKi |
+|---|---|---|---|---|
+| 0 (direct biaryl) | 899 | 109 | 6.73 (6.67–6.80) | 6.66 |
+| 1 | 437 | 59 | 6.91 (6.80–7.02) | 6.68 |
+| 2 | 5 | 5 | 6.96 (5.81–8.11) | 6.54 |
+| 3 | 1 | 1 | 6.80 (no CI, n=1) | 6.80 |
+| 4–6 | 0 | 0 | — | — |
+
+**What the data show:** going from a directly attached phenyl (0 carbons) to a one-carbon spacer, the mean pKi rises by only ~0.18 units (6.73 → 6.91), and the medians are essentially identical (6.66 → 6.68). The 95% CIs just barely touch (6.67–6.80 vs 6.80–7.02), so this is **not a clearly different** change. Beyond one carbon there is essentially **no real data**: only 5 molecules at 2 carbons and 1 molecule at 3 carbons, so no trend longer than one atom can be claimed from this dataset.
+
+## How much to trust it
+
+- **The 0-vs-1 comparison is well sampled** (899 and 437 molecules, from 109 and 59 papers), so it's a reliable estimate of the *average* for these two, mixed sets. But the shift (~0.18 pKi) is **smaller than the ~0.54 pKi measurement-noise floor**, and the confidence intervals overlap — so the honest conclusion is ""roughly flat, with maybe a tiny mean increase.""
+- **Anything longer than one carbon is not trustworthy.** The 2- and 3-carbon points come from 1–5 papers and 1–5 molecules; their statistics reflect a few individual compounds, not a general linker-length relationship.
+- **Confounding is a real issue.** The search matched ""any aromatic atom"" as the core, so the 0-carbon set (biaryls) and the 1-carbon set (benzyl-type compounds) are **different chemical series**, not matched pairs. The small mean difference could easily reflect which scaffolds happen to be in each bucket rather than a true effect of adding one methylene. The mean being pulled up while the median barely moves suggests a few high-affinity outliers, not a uniform shift.
+
+If you want a cleaner answer, the right experiment is a **matched comparison within one scaffold** — e.g. `compare_molecules` on two compounds that differ only by inserting one CH₂ between an aromatic core and a phenyl. I can run that if you give me (or let me pick) a pair.",18.7,find_linkers,0.010846616
+A,2,How does binding change as the carbon chain between an aromatic ring and a phenyl group gets longer? How much should I trust that trend?,"Using the linker-length tool (which counts only genuine flexible sp³ carbons outside any ring, and discards matches that run through fused-ring atoms), here is what the data actually shows for a phenyl group attached to an aromatic core:
+
+| Linker carbons | n (genuine) | n_papers | Mean pKi (95% CI) | Median pKi | Min–max |
+|---|---|---|---|---|---|
+| 0 (directly attached) | 899 | 109 | 6.73 (6.67–6.80) | 6.66 | 4.12–10.42 |
+| 1 (one CH₂) | 437 | 59 | 6.91 (6.80–7.02) | 6.68 | 4.51–9.92 |
+| 2 | 5 | 5 | 6.96 (5.81–8.11) | 6.54 | 6.08–8.43 |
+| 3 | 1 | 1 | 6.80 (not estimable) | 6.80 | 6.80 |
+| 4–8 | 0 | 0 | — | — | — |
+
+**The bottom line: there is no real trend to trust.** The only linkers with enough data to compare are 0 vs 1 carbon, and they are effectively the same: the mean rises by only ~0.18 pKi (6.73 → 6.91), and the 95% confidence intervals overlap, while the medians are nearly identical (6.66 vs 6.68). So adding one methylene between an aromatic ring and a phenyl does not clearly change CB2 binding in this dataset.
+
+**Why I'd distrust any ""longer chain"" story:**
+- The 2-carbon group is only **5 molecules from 5 papers**, with a CI spanning ~2.3 pKi units — essentially uninformative.
+- The 3-carbon group is a **single molecule from a single paper**, so its value reflects one compound, not a length trend.
+- There are **zero** genuine 4–8-carbon linkers, so nothing can be said about chains of that length.
+- These are also *different molecule sets from different papers* (109 vs 59 papers for 0 vs 1), so even the 0-vs-1 comparison is cross-series and confounded — the two groups differ in more than just the linker. A proper check would need matched pairs within the same scaffold (via `compare_molecules`), which the current comparison does not do.
+
+One technical caveat worth flagging: the tool also excluded ring-path-only matches (e.g. 33 at length 1, 16 at length 3) because those carbons sit inside fused rings, not in a flexible linker — so the counts above are the *genuine* linker molecules only.
+
+*Source: measured values from the curated ChEMBL CB2 dataset, via the linker-length SAR tool.*",15.8,find_linkers,0.009280744
+A,3,How does binding change as the carbon chain between an aromatic ring and a phenyl group gets longer? How much should I trust that trend?,"## Measured trend (from the data)
+
+I asked the linker-SAR tool to count molecules where a **phenyl group (benzene)** is attached to an **aromatic atom** through a chain of sp³ carbons. Genuine flexible chains only (chain atoms outside every ring):
+
+| Linker length | n (genuine) | n papers | Mean pKi (95% CI) |
+|---|---|---|---|
+| 0 (directly attached) | 899 | 109 | 6.73 (6.67–6.80) |
+| 1 carbon | 437 | 59 | 6.91 (6.80–7.02) |
+| 2 carbons | 5 | 5 | 6.96 (5.81–8.11) |
+| 3 carbons | 1 | 1 | 6.80 (no interval — single molecule) |
+| 4–6 carbons | 0 | 0 | no data |
+
+**What this says:** there is a small apparent rise of about **0.18 pKi** going from directly attached → one-carbon linker, but the 95% confidence intervals overlap, so that difference is **not clearly distinguishable from noise** (repeat measurements already disagree by ~0.5 pKi). Beyond one carbon, the dataset essentially runs out: **5 molecules** with a two-carbon linker, **1 molecule** with three, and **zero** with four or more.
+
+## How much to trust it
+
+- **The 0 → 1 carbon comparison is the only one with real sample sizes** (899 vs 437 molecules, from 109 and 59 papers). It is reasonably well-powered in count, but it is **not a matched comparison** — the two buckets mix different scaffolds and chemical series, so the small difference could come from the series that happen to populate each bucket rather than from the linker itself. Treat it as a weak, confounded hint, not a causal SAR trend.
+- **Two carbons and beyond: do not trust any trend.** n = 5 (from 5 papers) with a CI spanning 5.81–8.11 is uninformative, and 3 carbons rests on a single molecule from a single paper. Four-carbon and longer aryl→phenyl chains are simply **absent** from this dataset.
+
+**Bottom line:** the data support at most ""a one-carbon spacer gives similar or very slightly higher affinity than direct attachment, and the difference is within measurement noise."" There is **no usable evidence** here about what happens as the chain grows to 2+ carbons — if that's the SAR you care about, this dataset can't answer it, and you'd want matched pairs within a single scaffold (e.g. via `compare_molecules`) or external data.",15.7,find_linkers,0.009279424
+B,1,How does binding change as the carbon chain between an aromatic ring and a phenyl group gets longer? How much should I trust that trend?,"## Linker-length SAR: aromatic ring → phenyl
+
+I searched all 3,576 molecules for a phenyl group attached to any aromatic atom through a chain of sp³ carbons, counting only genuine flexible chains (chain atoms outside every ring; matches that ran through fused-ring atoms were excluded). Measured pKi values, from the data:
+
+| Linker carbons | Meaning | n molecules | n papers | Mean pKi (95% CI) | Change vs shorter |
+|---|---|---|---|---|---|
+| 0 | phenyl directly attached (biphenyl) | 899 | 109 | 6.73 (6.67–6.80) | — |
+| 1 | benzyl (–CH₂–) | 437 | 59 | 6.91 (6.80–7.02) | **+0.18 (+0.04 to +0.31)** |
+| 2 | phenethyl (–CH₂CH₂–) | 5 | 5 | 6.96 (5.81–8.11) | +0.04 (−0.62 to +0.84) |
+| 3 | –(CH₂)₃– | 1 | 1 | 6.80 | no interval estimable |
+| 4–8 | | 0 | 0 | no data | no data |
+
+## What the trend says
+
+There is **no meaningful ""longer chain"" trend** to report — because longer chains essentially don't exist in this dataset.
+
+- **0 → 1 carbon:** a small average affinity gain of +0.18 pKi (95% CI 0.04–0.31), i.e. roughly 1.5-fold lower Kᵢ on average. The interval excludes zero, so the group averages really differ. But the effect is small, and it is a *dataset-wide* average across many different chemical series.
+- **1 → 2 carbons:** no detectable difference (CI −0.62 to +0.84, and only 5 molecules).
+- **3+ carbons:** essentially no data — one molecule at 3 carbons and zero at 4–8.
+
+## How much to trust it
+
+- **The 0 vs 1 comparison is statistically solid** in the sense of sample size: 899 vs 437 molecules drawn from 109 and 59 papers. The +0.18 pKi difference is real as a dataset-wide statement.
+- **But it is confounded, not causal.** Different chemical series use different linkers, so this is a mixed comparison across chemotypes, not a controlled lengthening of the same molecule. I would not claim ""adding a CH₂ improves binding"" without a matched-pair check (same scaffold, compare_molecules).
+- **The 1 vs 2 comparison cannot be trusted:** 5 molecules from 5 papers, with a 95% CI spanning ~2.7 pKi units — wider than the entire effect being tested.
+- **No chain of 2+ carbons is populated enough to support SAR at all**, so any ""lengthening improves/flattens"" narrative beyond one carbon would be speculation.
+
+**Bottom line:** In this dataset, going from a directly attached phenyl to a benzyl group is associated with a small (~0.2 log unit) affinity increase, but that's the only step with enough data to assess, and it mixes different series. There is no evidence here about 2-, 3- or longer carbon spacers. If you have a specific scaffold in mind, I can run a matched comparison within that scaffold — that's the only way to turn this into a credible causal statement.",22.4,find_linkers,0.013612984
+B,2,How does binding change as the carbon chain between an aromatic ring and a phenyl group gets longer? How much should I trust that trend?,"## What the data show
+
+I looked specifically at molecules with a **benzene (phenyl) group attached to an aromatic ring through 0–8 sp³ carbons**, using the linker finder that counts only genuine flexible chains (excluding matches where the ""chain"" is actually part of a fused ring).
+
+| sp³ carbons in linker | Genuine molecules | Source papers | Mean pKi (95% CI) | Δ vs previous length (95% CI) |
+|---|---|---|---|---|
+| 0 (phenyl directly on ring) | 899 | 109 | 6.73 (6.67–6.80) | — |
+| 1 (benzyl-type) | 437 | 59 | 6.91 (6.80–7.02) | **+0.18 (0.04–0.31)** |
+| 2 | 5 | 5 | 6.96 (5.81–8.11) | +0.04 (−0.62 to 0.84) |
+| 3 | 1 | 1 | 6.80 (CI not estimable) | — |
+| 4–8 | 0 | — | — | — |
+
+**The takeaway: there is no real ""longer chain"" trend to see.** The dataset essentially only contains phenyl attached directly (0 carbons) or through one CH₂ (1 carbon). Going from 0 to 1 carbon gives a small but statistically real average increase of **+0.18 pKi** (95% CI 0.04–0.31) — the interval excludes zero, so the group averages genuinely differ. Beyond that, there are only 5 molecules with a 2-carbon linker and 1 with a 3-carbon linker, so nothing can be concluded about chains of 2 or more carbons. (For context, a 3-carbon ""chain"" was almost entirely fused-ring artefacts — 16 matches were excluded as ring-path-only, leaving 1 genuine molecule.)
+
+## How much to trust the 0→1 result
+
+- **Statistically real, but chemically tiny.** +0.18 pKi is roughly a 1.5-fold change in Ki. That's far smaller than the ~0.54 pKi disagreement between repeat lab measurements and the ~0.6 pKi model validation error, so for any individual compound it would be lost in noise. The averages across 899 vs 437 molecules are precise enough to detect it, but the *size* of the effect is negligible.
+- **Confounded by which series use which linker.** Neither bucket is dominated by one series: the direct-phenyl set's largest scaffold is only 5.6% of molecules (top three: 5.6%, 3.7%, 2.8%), and the 1-carbon set's largest is 12.8% (coumarin + benzene; next 6.7%, 5.1%). Both come from many papers (109 and 59), so they're not single-lab artefacts — but they *are* different mixtures of chemotypes. The +0.18 could reflect that slightly higher-affinity series happen to use benzyl linkers rather than an intrinsic linker effect.
+- **No matched-pair control exists here.** To attribute the change to the linker itself, you'd want the same scaffold with the phenyl swapped between direct and CH₂ attachment. That comparison isn't possible from these aggregate numbers.
+
+**Bottom line:** measured trend = direct → one-carbon linker gives a barely-detectable, statistically significant average boost (+0.18 pKi), and there is effectively **no data for 2+ carbon linkers** to support any ""longer chain"" claim. Treat the 0→1 effect as real but confounded and chemically minor; do not extend it to longer chains.",40.5,"find_linkers, group_composition, group_composition",0.024195424
+B,3,How does binding change as the carbon chain between an aromatic ring and a phenyl group gets longer? How much should I trust that trend?,"I ran the linker-length SAR tool on the whole dataset, counting genuine sp3-carbon chains between any aromatic atom and a terminal benzene/phenyl group (atoms inside fused rings are excluded, since those aren't linkers). Here's what the measured data show:
+
+| Linker carbons | Molecules (genuine chain) | Papers | Mean pKi (95% CI) | Change vs previous length |
+|---|---|---|---|---|
+| 0 (phenyl directly attached) | 899 | 109 | 6.73 (6.67–6.80) | — |
+| 1 (benzyl-type) | 437 | 59 | 6.91 (6.80–7.02) | +0.18 (0.04–0.31) |
+| 2 | 5 | 5 | 6.96 (5.81–8.11) | +0.04 (−0.62 to +0.84) |
+| 3 | 1 | 1 | 6.80 (no CI) | — |
+| 4–8 | 0 | 0 | — | — |
+
+**The trend, such as it is (measured):** going from a directly attached phenyl to a one-carbon (benzyl) linker gives a small average increase of about **+0.18 pKi** (95% CI +0.04 to +0.31). That interval excludes zero, so at the whole-dataset level the two averages are genuinely different. The medians, though, are essentially identical (6.66 vs 6.68), so the effect is driven by a subset of higher-affinity one-carbon examples rather than a uniform shift.
+
+**Beyond one carbon there is no real trend to see.** Only **5 molecules** have a genuine 2-carbon chain, **1 molecule** has a 3-carbon chain, and there are **zero** compounds with 4–8 carbons. The 2-carbon mean's confidence interval (5.81–8.11) is so wide it overlaps everything, and the 3-carbon point is a single compound from a single paper.
+
+**How much should you trust this?**
+- The 0→1 step is statistically real as a dataset average, but it's a **small effect (~0.2 pKi)** and it is **confounded by chemistry**: the 0-carbon group spans 109 papers and the 1-carbon group 59 papers, so this is not one controlled series varying only the linker. Which series happen to use direct vs benzyl attachment drives the number as much as the linker itself.
+- The 2- and 3-carbon results are **far too sparse to trust** (5 and 1 molecules, respectively) — no credible SAR conclusion about longer chains is possible from this dataset.
+- There is simply **no data** for linkers of 4+ carbons, so any claim about longer chains would be pure extrapolation.
+
+One technical note: the tool flagged 33, 4, 16, 10 and 3 molecules that would have been *falsely* counted as 1–5-carbon linkers if matched by a naive SMARTS pattern, because the carbon path runs through a fused ring. Those were excluded, so the numbers above reflect genuine flexible chains.
+
+**Bottom line:** the only supportable statement is that a one-carbon linker looks slightly (but not dramatically) better than direct attachment on average; everything longer is essentially unrepresented. If you want to test this properly, do a **matched comparison within a single scaffold** (same ring system, varying only the linker) — I can set that up with `compare_molecules` if you point me at a specific series.",20.8,find_linkers,0.012622984

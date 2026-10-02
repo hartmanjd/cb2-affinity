@@ -169,6 +169,18 @@ class ToolTests(unittest.TestCase):
             self.assertLessEqual(model["rmse_ci95_low"], model["rmse_pki"])
             self.assertGreaterEqual(model["rmse_ci95_high"], model["rmse_pki"])
 
+    def test_linkers_report_the_difference_between_lengths(self):
+        # The step from one chain length to the next comes with its own interval, computed rather than judged
+        # from two overlapping mean intervals: for a phenyl, one CH2 vs none is a small but real difference.
+        rows = json.loads(assistant.run_tool(DATA, "find_linkers", {"terminal_group": "benzene"})[0])["lengths"]
+        one = rows[1]
+        self.assertAlmostEqual(one["mean_difference_vs_previous_length"], one["mean_pki"] - rows[0]["mean_pki"], places=2)
+        low, high = one["mean_difference_vs_previous_length_ci95"]
+        self.assertGreater(low, 0)
+        self.assertLess(low, one["mean_difference_vs_previous_length"])
+        self.assertGreater(high, one["mean_difference_vs_previous_length"])
+        self.assertNotIn("mean_difference_vs_previous_length", rows[0])   # Nothing before length 0.
+
     def test_linkers_separate_real_chains_from_ring_paths(self):
         result = json.loads(assistant.run_tool(DATA, "find_linkers", {"terminal_group": "benzene", "max_linker_atoms": 4})[0])
         rows = {row["linker_atoms"]: row for row in result["lengths"]}

@@ -254,6 +254,25 @@ def audit_sheets(root=ROOT):
                    "tables": [("By variant", totals, [24, 10, 10, 10, 10, 10], None),
                               ("Every answer", detail, [9, 6, 5, 55, 22, 22, 10, 8, 9, 9], "Outcome")]})
 
+    linker = read("linker_difference_ab_test.csv")
+    # Scoring rule, fixed with the test: an answer reads the 0-vs-1-carbon step correctly when it quotes the
+    # computed interval of that difference (+0.04 to +0.31 pKi). Variant A's tool never supplied it.
+    linker["reads_step_correctly"] = linker["answer"].str.contains(r"0\.04\s*(?:to|–|-)\s*\+?0\.31", regex=True)
+    totals = pd.DataFrame([(("A: means and intervals only" if v == "A" else "B: with the computed difference"),
+                            f"{int(g['reads_step_correctly'].sum())}/{len(g)}", round(float(g["seconds"].mean()), 1),
+                            round(float(g["cost_usd"].sum()), 3)) for v, g in linker.groupby("variant")],
+                          columns=["Variant", "Reads the 0 vs 1 step correctly", "Mean s", "Cost $"])
+    detail = pd.DataFrame([(r["variant"], r["repeat"], "correct" if r["reads_step_correctly"] else "wrong", r["seconds"],
+                            tools_used(r["tools"]), r["answer"]) for r in linker.to_dict("records")],
+                          columns=["Variant", "Pass", "Outcome", "Seconds", "Tools used", "Answer"])
+    sheets.append({"name": "Linker difference A-B test",
+                   "about": "The linker question, three times per variant, side by side. Without a computed difference "
+                            "between chain lengths, the assistant called the small but real 0-vs-1-carbon difference "
+                            "(+0.18 pKi, 95% CI +0.04 to +0.31) 'not a real effect', from overlapping intervals and the "
+                            "single-measurement noise floor. With it, every answer read the step correctly. Adopted.",
+                   "tables": [("By variant", totals, [34, 16, 10, 10], None),
+                              ("Every answer", detail, [9, 6, 10, 9, 30, 120], "Outcome")]})
+
     # The saved run names start with the order the runs were made in ("1. ...", "2. ..."). Here the rows are
     # listed best first instead (the run after the speed work leads), so the order numbers are dropped rather
     # than renumbered: a "1." on a run that came second would misstate the record.
@@ -306,7 +325,7 @@ def render(root=ROOT):
     for spec in sheets:
         sheet = book.create_sheet(spec["name"])
         row = 1
-        if len(spec["tables"]) > 1 or spec["name"] in ("Refinement stages", "Stereo note A-B test"):
+        if len(spec["tables"]) > 1:
             sheet.cell(row=row, column=1, value=spec["about"])
             row += 2
         for title, table, widths, outcome in spec["tables"]:
