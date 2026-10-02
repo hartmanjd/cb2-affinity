@@ -103,27 +103,17 @@ def show_tool(call):
 
 
 def highlight_answer(entry):
-    """Mark the answer's numbers: green if a tool returned them in this conversation, yellow if the model wrote
-    them itself (see number_check.py). Numbers from the person's own questions are left plain."""
+    """Highlight in yellow the numbers the model wrote itself, not returned by a tool in this conversation
+    (see number_check.py). Numbers from the person's own questions are left plain."""
     earlier = st.session_state.display
     results = [call["result"] for e in earlier for call in e.get("tools", [])] + [c["result"] for c in entry["tools"]]
     questions = [e["text"] for e in earlier if e["role"] == "user"]
     entry["highlighted"], entry["counts"] = number_check.highlight(entry["text"], results, questions)
 
 
-def number_key(counts):
-    # The legend under each answer, with the same two colours as the highlights.
-    swatch = '<span style="background-color:{};border-radius:3px;padding:0 4px">{}</span>'
-    return (f"{swatch.format(number_check.GREEN, counts['tool'])} numbers match a tool result · "
-            f"{swatch.format(number_check.YELLOW, counts['model'])} written by the language model itself, "
-            "so check them")
-
-
 def show_answer(entry):
     if entry.get("highlighted") is not None:
         st.markdown(entry["highlighted"], unsafe_allow_html=True)
-        if entry["counts"]["tool"] or entry["counts"]["model"]:
-            st.caption(number_key(entry["counts"]), unsafe_allow_html=True)
     else:
         st.markdown(entry["text"])
 

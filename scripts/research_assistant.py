@@ -581,6 +581,7 @@ class ResearchData:
         assert self.validation_errors["maximum_tanimoto"].notna().all(), "Missing neighbour similarity for a validation molecule"
         self.cliff_pairs = None   # Computed the first time someone asks for activity cliffs.
         self.model_comparison = None   # Computed the first time someone compares models.
+        self.recorded_structures = None   # Every measured structure, kept or removed; built for the first near-miss search.
         # Read-only allowlist of READMEs, notebooks, manifests and small result tables.
         self.library = project_knowledge.ProjectLibrary(self.root)
 
@@ -730,11 +731,25 @@ def find_compound(data, identifier):
     if molecule is not None and molecule.GetNumAtoms():
         return data.row_of_smiles.get(Chem.MolToSmiles(molecule))
     # An exact name first: a substring search alone would return "Rac-Ibipinabant" for "Ibipinabant".
-    names = data.compounds["name"].fillna("")
-    hits = data.compounds.index[names.str.lower() == text.lower()]
+    # Names are compared without case, spaces or punctuation: ChEMBL stores "Sr-144528" for SR144528.
+    key = name_key(text)
+    if len(key) < 4:
+        return None
+    names = data.compounds["name"].fillna("").map(name_key)
+    hits = data.compounds.index[names == key]
     if not len(hits):
-        hits = data.compounds.index[names.str.contains(text, case=False, regex=False)]
+        hits = data.compounds.index[names.str.contains(key, regex=False)]
     return int(hits[0]) if len(hits) else None
+
+
+def name_key(name):
+    """A compound name reduced to lowercase letters and digits: "WIN 55,212-2" and "Win-552122" both give "win552122"."""
+    return re.sub(r"[^a-z0-9]", "", str(name).lower())
+
+
+def name_pattern(name):
+    """A regex finding a stored name in free text, whatever spaces, hyphens or commas separate its characters."""
+    return r"(?<![\w-])" + r"[\s,.\-]{0,2}".join(re.escape(c) for c in name_key(name)) + r"(?![\w-])"
 
 
 def similarity_to_dataset(data, molecule):
@@ -944,7 +959,83 @@ def describe_molecule(data, smiles):
         result["measured_pki_approx_95_range"] = measured_interval(data.compounds.at[row, "pki"],
                                                                    data.compounds.at[row, "n_measurements"])
         result["name"] = data.compounds.at[row, "name"]
+    elif NEAR_MISS_SEARCH and (candidates := near_misses(data, molecule)):
+        # A SMILES written from memory for a named compound is checked here too, not only by lookup_compound.
+        result["near_miss_note"] = NEAR_MISS_NOTE
+        result["possible_intended_molecules"] = candidates
     return result
+
+
+NEAR_MISS_SEARCH = True   # Switched off only by scripts/near_miss_ab_test.py, to measure what the search changes.
+
+
+NEAR_MISS_NOTE = ("The recorded molecules below have the same formula or nearly the same structure. A SMILES written from "
+                  "memory often has a substituent in the wrong position or different stereochemistry: if the person named "
+                  "a compound, check whether one of these is it (compare with the named compound's known structure) and "
+                  "look it up by ChEMBL ID. If none is, the molecule is not in the dataset. A candidate can also be a "
+                  "different, related compound (an isomer or homologue), so if you report one as the named compound, say "
+                  "in the answer that it was matched as a near miss, give its ChEMBL ID and difference_from_query, and "
+                  "ask the person to verify the identity.")
+
+
+def atom_counts(molecule):
+    """Element counts including implicit hydrogens, e.g. {"C": 26, "H": 40, "O": 2}."""
+    counts = {}
+    for atom in Chem.AddHs(molecule).GetAtoms():
+        counts[atom.GetSymbol()] = counts.get(atom.GetSymbol(), 0) + 1
+    return counts
+
+
+def formula_difference(query, candidate):
+    """How a candidate's formula differs from the query's: "+CH2", "-Cl +Br", or "same formula (isomer)"."""
+    changes = []
+    for element in sorted(set(query) | set(candidate), key=lambda e: (e not in "CH", "CH".find(e), e)):
+        change = candidate.get(element, 0) - query.get(element, 0)
+        if change:
+            changes.append((element, change))
+    if not changes:
+        return "same formula (isomer: atoms arranged differently)"
+    text = []
+    for sign in (1, -1):
+        part = "".join(f"{e}{abs(c) if abs(c) > 1 else ''}" for e, c in changes if c * sign > 0)
+        if part:
+            text.append(("+" if sign > 0 else "-") + part)
+    return " ".join(text) + " (a different formula)"
+
+
+def near_misses(data, molecule, limit=3):
+    """Recorded molecules, kept or removed by curation, that may be the one meant by a SMILES with no exact match.
+
+    A SMILES written from memory is often a near miss: SR144528 with its chlorine and methyl swapped found nothing,
+    and its 18 recorded measurements went unreported. Candidates have the same molecular formula and Tanimoto at
+    least 0.5 (isomers), or Tanimoto at least 0.9 (close analogues).
+    """
+    if data.recorded_structures is None:
+        smiles = data.measurements["smiles"].dropna().unique()
+        molecules = [Chem.MolFromSmiles(s) for s in smiles]
+        data.recorded_structures = (smiles, [rdMolDescriptors.CalcMolFormula(m) for m in molecules],
+                                    [fingerprint_generator().GetFingerprint(m) for m in molecules])
+    smiles, formulas, fingerprints = data.recorded_structures
+    formula = rdMolDescriptors.CalcMolFormula(molecule)
+    query_atoms = atom_counts(molecule)
+    similarity = DataStructs.BulkTanimotoSimilarity(fingerprint_generator().GetFingerprint(molecule), fingerprints)
+    order = sorted((i for i, t in enumerate(similarity) if t >= 0.9 or (t >= 0.5 and formulas[i] == formula)),
+                   key=lambda i: -similarity[i])
+    candidates = []
+    for i in order[:limit]:
+        rows = data.measurements[data.measurements["smiles"] == smiles[i]]
+        retained = rows[rows["status"] == "retained"]
+        candidates.append({
+            "smiles": smiles[i], "tanimoto": round(similarity[i], 3), "same_formula": formulas[i] == formula,
+            "difference_from_query": formula_difference(query_atoms, atom_counts(Chem.MolFromSmiles(smiles[i]))),
+            "chembl_ids": ";".join(sorted(set(rows["molecule_chembl_id"]))),
+            "names": sorted({data.names[c] for c in rows["molecule_chembl_id"] if c in data.names}),
+            "in_modeling_dataset": smiles[i] in data.row_of_smiles,
+            "curated_pki": clean_value(data.compounds.at[data.row_of_smiles[smiles[i]], "pki"]) if smiles[i] in data.row_of_smiles else None,
+            "n_measurements": len(rows), "n_removed": int(len(rows) - len(retained)),
+            "removal_reasons": sorted(set(rows.loc[rows["status"] != "retained", "review_reason"].dropna())),
+            "measured_pki_range": [clean_value(rows["pki"].min()), clean_value(rows["pki"].max())]})
+    return candidates
 
 
 def lookup_compound(data, identifier):
@@ -954,7 +1045,8 @@ def lookup_compound(data, identifier):
         # for it among every recorded measurement before saying it is absent.
         text = str(identifier).strip()
         molecule = Chem.MolFromSmiles(text)
-        ids = {text.upper()} | {i for i, n in data.names.items() if text.lower() in n.lower()}
+        key = name_key(text)
+        ids = {text.upper()} | ({i for i, n in data.names.items() if key in name_key(n)} if len(key) >= 4 else set())
         removed = data.measurements[data.measurements["molecule_chembl_id"].isin(ids)
                                     | (data.measurements["smiles"] == (Chem.MolToSmiles(molecule) if molecule else None))]
         if len(removed):
@@ -962,8 +1054,21 @@ def lookup_compound(data, identifier):
                     "message": "This molecule was measured but every measurement was removed during curation; see review_reason.",
                     "names": sorted({data.names[i] for i in removed["molecule_chembl_id"] if i in data.names}),
                     "removed_measurements": records(removed, 30)}
-        return {"found": False, "message": f"{identifier!r} is not in the dataset (searched SMILES, ChEMBL IDs and names). "
-                                           "Use find_similar for its nearest neighbours or predict_pki for an estimate."}
+        result = {"found": False, "message": f"{identifier!r} is not in the dataset (searched SMILES, ChEMBL IDs and names). "
+                                             "Use find_similar for its nearest neighbours or predict_pki for an estimate."}
+        if molecule is None and not text.upper().startswith("CHEMBL") and NEAR_MISS_SEARCH:
+            # Asked by name, the LLM otherwise concluded "not in the dataset" (A/B test: AM630, JTE-907), though
+            # most molecules were recorded without one.
+            named = data.compounds["name"].notna().sum()
+            result["message"] = (f"{identifier!r} is not a stored name, but only {named} of {len(data.compounds)} molecules "
+                                 "have a name in ChEMBL, so a known compound can be here unnamed. If you know its structure, "
+                                 "call lookup_compound again with its SMILES (label it as general knowledge): an exact match, "
+                                 "or a near match with the same formula, will be reported.")
+        candidates = near_misses(data, molecule) if molecule is not None and NEAR_MISS_SEARCH else []
+        if candidates:
+            result["message"] = f"No exact match for {identifier!r}. " + NEAR_MISS_NOTE
+            result["possible_intended_molecules"] = candidates
+        return result
     compound = records(data.compounds.iloc[[row]])[0]
     compound["measured_pki_approx_95_range"] = measured_interval(data.compounds.at[row, "pki"], compound["n_measurements"])
     compound["range_note"] = ("Approximate: assumes the published ~0.54 pKi noise of a single public ChEMBL Ki "
@@ -1551,9 +1656,9 @@ def prefetch_requests(data, text):
     # Names: whole-word, case-insensitive, longest first so "Methanandamide" is not also read as
     # "Anandamide". Each ChEMBL molecule is looked up once even if several of its names appear.
     lowered, seen = text.lower(), set()
-    for chembl_id, name in sorted(data.names.items(), key=lambda item: -len(item[1])):
-        pattern = r"(?<![\w-])" + re.escape(name.lower()) + r"(?![\w-])"
-        if len(name) >= 4 and chembl_id not in seen and re.search(pattern, lowered):
+    for chembl_id, name in sorted(data.names.items(), key=lambda item: -len(name_key(item[1]))):
+        pattern = name_pattern(name)   # "SR144528" in a question finds the stored "Sr-144528".
+        if len(name_key(name)) >= 4 and chembl_id not in seen and re.search(pattern, lowered):
             seen.add(chembl_id)
             lowered = re.sub(pattern, " ", lowered)
             # Looked up by ID, which is exact, rather than by name, which is matched loosely.
